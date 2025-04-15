@@ -4,68 +4,127 @@
 <head>
     <title>Kilin's Page Info</title>
     <style>
+        html {
+            height: 100%;
+        }
+
         body {
-            background-color: #fff3d4;
-            /* 溫暖的淺黃色背景 */
-            background-image: url('https://images.unsplash.com/photo-1560823801-61942def41eb');
-            /* 熊的圖片 */
+            background-image: url('bear.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            background-blend-mode: overlay;
-            /* 讓背景圖和顏色混合 */
-            padding: 20px;
-            font-family: Arial, sans-serif;
-        }
-
-        h1,
-        h2,
-        h3,
-        h4 {
-            background-color: rgba(255, 222, 121, 0.8);
-            /* 半透明的黃色 */
-            padding: 10px;
-            border-radius: 5px;
-            /* 圓角 */
-            box-shadow: 3px 3px 5px rgba(0, 0, 0, 0.2);
-            /* 輕微陰影 */
-            margin: 15px 0;
-        }
-
-        h1 {
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+            font-family: 'Arial', sans-serif;
             color: #663300;
-            /* 深棕色文字 */
         }
 
-        h2,
-        h3,
-        h4 {
-            color: #996633;
-            /* 棕色文字 */
+        .overlay {
+            background-color: rgba(255, 248, 220, 0.4);
+            min-height: 100vh;
+            padding: 40px 20px;
         }
 
-        .content {
+        .container {
             max-width: 800px;
             margin: 0 auto;
             background-color: rgba(255, 248, 220, 0.85);
-            /* 半透明的米色背景 */
-            padding: 20px;
-            border-radius: 10px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            background-color: rgba(255, 222, 121, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+            margin: 25px 0 20px 0;
+            color: #663300;
+            font-size: 24px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+            border-left: 5px solid #FF9900;
+        }
+
+        h2,
+        h3,
+        h4 {
+            background-color: rgba(255, 237, 170, 0.9);
+            padding: 12px 15px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 15px 0;
+            color: #996633;
+            border-left: 3px solid #FF9900;
+        }
+
+        h2 {
+            font-size: 20px;
+        }
+
+        h3 {
+            font-size: 18px;
+        }
+
+        h4 {
+            font-size: 16px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            background: none;
+            box-shadow: none;
+            font-size: 32px;
+            color: #663300;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            border: none;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 14px;
+            color: #996633;
+            padding: 10px;
         }
     </style>
 </head>
 
 <body>
-    <div class="content">
-        <h1>1. 個人簡介</h1>
-        <h2>我是 葉其霖</h2>
-        <h3>英文名字是Kilin，唸起來是KIRIN BAR 裡面KIRIN的諧音</h3>
-        <h4>目前就讀於Orsino老師網頁研究中心</h4>
+    <div class="overlay">
+        <div class="container">
+            <div class="header">
+                <h1>葉其霖的個人網頁</h1>
+            </div>
 
-        <h1>2. 天氣</h1>
-        <h2>今天天氣，怎麼說呢...</h2>
-        <h3>有點像晴天，但是氣象報導可能會下雨</h3>
-        <h4>所以我覺得要出門的話還是帶把雨傘比較好</h4>
+            <div class="section">
+                <h1>1. 個人簡介</h1>
+                <h2>我是 葉其霖</h2>
+                <h3>英文名字是Kilin，唸起來是KIRIN BAR 裡面KIRIN的諧音</h3>
+                <h4>目前就讀於Orsino老師網頁研究中心</h4>
+            </div>
+
+            <div class="section">
+                <h1>2. 天氣</h1>
+                <h2>今天天氣，怎麼說呢...</h2>
+                <h3>有點像晴天，但是氣象報導可能會下雨</h3>
+                <h4>所以我覺得要出門的話還是帶把雨傘比較好</h4>
+            </div>
+
+            <div class="footer">
+                © 2025 葉其霖 - 網頁設計作品
+            </div>
+        </div>
     </div>
 </body>
 
