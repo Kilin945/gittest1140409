@@ -3,23 +3,41 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kilin's Page Info</title>
+    <!-- 添加 Font Awesome 圖標庫 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             background-color: #f5efd5;
-            /* 米黃色背景 */
             color: #5d4037;
-            /* 深咖啡色字體 */
-            font-family: Arial, sans-serif;
+            font-family: "微軟正黑體", "Microsoft JhengHei", sans-serif;
             margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #e6d7b9;
             padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         h1 {
             text-align: center;
-            /* 網站目錄在最上面中間 */
-            margin-bottom: 30px;
+            margin: 0;
             padding: 10px;
+            font-size: 2em;
+            color: #3e2723;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+            flex: 1;
         }
 
         ul {
@@ -29,38 +47,93 @@
         }
 
         li {
-            margin-bottom: 10px;
+            margin-bottom: 15px;
             text-align: left;
-            /* 小標題靠左對齊 */
             background-color: #f0e6c0;
-            /* 比背景稍深的淺黃色 */
-            padding: 10px;
-            border-radius: 5px;
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        li:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
         a {
             color: #5d4037;
-            /* 深咖啡色連結 */
             text-decoration: none;
             display: block;
-            padding: 5px;
+            padding: 15px;
+            font-size: 1.1em;
         }
 
         a:hover {
-            text-decoration: underline;
+            text-decoration: none;
+            background-color: #e8dab0;
+            border-radius: 8px;
+        }
+
+        /* 新增圖標樣式 */
+        .icon {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+            color: #7d5a50;
+            /* 圖標顏色稍深一些 */
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: auto;
+            background-color: #e6d7b9;
+            color: #5d4037;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .container {
+                padding: 0 10px;
+            }
+
+            li {
+                margin-bottom: 10px;
+            }
+
+            a {
+                padding: 12px;
+            }
+
+            .icon {
+                margin-right: 8px;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>網站目錄</h1>
+    <header>
+        <h1>Kilin 的網站目錄</h1>
+    </header>
 
-    <ul>
-        <li><a href="TEST1140412.html">Kilin的個人網頁</a></li>
-        <li><a href="TESTTALK.html">小聊天室</a></li>
-        <li><a href="TESTGAME1.html">小遊戲1</a></li>
-        <li><a href="TESTVIDEO.html">看影片</a></li>
-    </ul>
+    <div class="container">
+        <ul>
+            <li><a href="TEST1140412.html"><i class="fas fa-user icon"></i>Kilin的個人網頁</a></li>
+            <li><a href="TESTTALK.html"><i class="fas fa-comments icon"></i>小聊天室</a></li>
+            <li><a href="TESTGAME1.html"><i class="fas fa-gamepad icon"></i>小遊戲1</a></li>
+            <li><a href="TESTVIDEO.html"><i class="fas fa-music icon"></i>來聽聽音樂吧~~</a></li>
+        </ul>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Kilin's Website. All Rights Reserved.</p>
+    </footer>
 </body>
 
 </html>
