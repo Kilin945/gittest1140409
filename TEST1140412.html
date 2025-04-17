@@ -9,11 +9,7 @@
         }
 
         body {
-            background-image: url('bear.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            background-repeat: no-repeat;
+            background-color: #FFF8DC;
             margin: 0;
             padding: 0;
             min-height: 100%;
@@ -22,7 +18,6 @@
         }
 
         .overlay {
-            background-color: rgba(255, 248, 220, 0.4);
             min-height: 100vh;
             padding: 40px 20px;
         }
@@ -34,42 +29,38 @@
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
         }
 
         h1 {
             background-color: rgba(255, 222, 121, 0.9);
-            padding: 15px;
+            padding: 20px;
+            /* 增加內邊距 */
             border-radius: 8px;
             box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
-            margin: 25px 0 20px 0;
+            margin: 20px 0;
             color: #663300;
-            font-size: 24px;
+            font-size: 32px;
+            /* 進一步增大字體 */
             text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
             border-left: 5px solid #FF9900;
         }
 
-        h2,
-        h3,
-        h4 {
+        .animal-item {
             background-color: rgba(255, 237, 170, 0.9);
-            padding: 12px 15px;
-            border-radius: 6px;
+            padding: 20px 25px;
+            /* 增加內邊距 */
+            border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             margin: 15px 0;
             color: #996633;
             border-left: 3px solid #FF9900;
-        }
-
-        h2 {
-            font-size: 20px;
-        }
-
-        h3 {
-            font-size: 18px;
-        }
-
-        h4 {
-            font-size: 16px;
+            font-size: 28px;
+            /* 進一步增大字體 */
+            display: flex;
+            align-items: center;
+            min-height: 80px;
+            /* 確保最小高度 */
         }
 
         .section {
@@ -98,21 +89,17 @@
             padding: 10px;
         }
 
-        /* 新增的圖片樣式 */
-        h2 {
-            display: flex;
-            align-items: center;
-            padding: 8px 15px;
-        }
-
         .animal-img {
-            width: 60px;
-            height: 60px;
+            width: 70px;
+            /* 調大圖片 */
+            height: 70px;
+            /* 調大圖片 */
             object-fit: cover;
             border-radius: 10px;
             border: 2px solid #FF9900;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            margin-left: 15px;
+            margin-right: 20px;
+            /* 增加右邊距 */
             transition: transform 0.3s ease;
         }
 
@@ -120,23 +107,25 @@
             transform: scale(1.1);
         }
 
-        .animal-text {
-            flex-shrink: 0;
+        .home-button {
+            position: absolute;
+            bottom: 20px;
+            right: 30px;
+            background-color: #FF9900;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
         }
 
-        .last-row {
-            display: flex;
-            align-items: center;
-            padding: 8px 15px;
-        }
-
-        .last-row-text {
-            margin-right: 15px;
-        }
-
-        .img-container {
-            display: flex;
-            gap: 10px;
+        .home-button:hover {
+            background-color: #E08700;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
     </style>
 </head>
@@ -150,38 +139,33 @@
 
             <div class="section">
                 <h1>1. 個人簡介</h1>
-                <h2>我的名字是 葉其霖，英文是Kilin</h2>
-                <h2></h2>
+                <div class="animal-item">我的名字是 葉其霖，英文是Kilin</div>
             </div>
 
             <div class="section">
                 <h1>2. 喜歡的動物</h1>
 
-                <!-- 動物列表搭配圖片 -->
-                <h2>
-                    <span class="animal-text">卡皮巴拉</span>
+                <div class="animal-item">
                     <img src="picture/卡皮巴拉.jpg" alt="卡皮巴拉" class="animal-img">
-                </h2>
-
-                <h2>
-                    <span class="animal-text">北極熊</span>
-                    <img src="picture/北極熊.jpg" alt="北極熊" class="animal-img">
-                </h2>
-
-                <h2>
-                    <span class="animal-text">拉布布</span>
-                    <img src="picture/拉布布.jpg" alt="拉布布" class="animal-img">
-                </h2>
-
-                <div class="last-row">
-                    <span class="last-row-text">他們都在我的床頭櫃上陪我</span>
-                    <div class="img-container">
-                        <img src="picture/刺蝟.jpg" alt="刺蝟" class="animal-img">
-                        <img src="picture/卡皮巴拉.jpg" alt="卡皮巴拉" class="animal-img">
-                        <img src="picture/北極熊.jpg" alt="北極熊" class="animal-img">
-                        <img src="picture/拉布布.jpg" alt="拉布布" class="animal-img">
-                    </div>
+                    <span>卡皮巴拉</span>
                 </div>
+
+                <div class="animal-item">
+                    <img src="picture/北極熊.jpg" alt="北極熊" class="animal-img">
+                    <span>北極熊</span>
+                </div>
+
+                <div class="animal-item">
+                    <img src="picture/拉布布.jpg" alt="拉布布" class="animal-img">
+                    <span>拉布布</span>
+                </div>
+
+                <div class="animal-item">
+                    <img src="picture/刺蝟.jpg" alt="刺蝟" class="animal-img">
+                    <span>他們都在我的床頭櫃上陪我</span>
+                </div>
+
+                <a href="index.html" class="home-button">返回首頁</a>
             </div>
 
             <div class="footer">
