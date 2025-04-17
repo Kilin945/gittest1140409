@@ -97,6 +97,35 @@
             color: #996633;
             padding: 10px;
         }
+
+        /* 新增的圖片樣式 */
+        h2 {
+            display: flex;
+            align-items: center;
+            padding-right: 15px;
+            position: relative;
+        }
+
+        .animal-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #FF9900;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin-right: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .animal-img:hover {
+            transform: scale(1.1);
+        }
+
+        .animal-text {
+            flex-grow: 0;
+            text-align: left;
+            margin-left: 5px;
+        }
     </style>
 </head>
 
@@ -111,18 +140,38 @@
                 <h1>1. 個人簡介</h1>
                 <h2>我的名字是 葉其霖，英文是Kilin</h2>
                 <h2></h2>
-                
             </div>
 
-        <h1>2. 喜歡的動物</h1>
-        <h2>卡皮巴拉</h2>
-        <h2>北極熊</h2>
-        <h2>拉布布</h2>
-        <h4>他們都在我的床頭櫃上陪我</h4>
-    </div>
-    <div class="footer";color: #996633;>
-        © 2025 Kilin - Web Designer and Developer
-        <br>
+            <div class="section">
+                <h1>2. 喜歡的動物</h1>
+
+                <!-- 動物列表搭配圖片 -->
+                <h2>
+                    <img src="卡皮巴拉.jpg" alt="卡皮巴拉" class="animal-img">
+                    <span class="animal-text">卡皮巴拉</span>
+                </h2>
+
+                <h2>
+                    <img src="北極熊.jpg" alt="北極熊" class="animal-img">
+                    <span class="animal-text">北極熊</span>
+                </h2>
+
+                <h2>
+                    <img src="拉布布.jpg" alt="拉布布" class="animal-img">
+                    <span class="animal-text">拉布布</span>
+                </h2>
+
+                <h2>
+                    <img src="刺蝟.jpg" alt="刺蝟" class="animal-img">
+                    <span class="animal-text">他們都在我的床頭櫃上陪我</span>
+                </h2>
+            </div>
+
+            <div class="footer">
+                © 2025 Kilin - Web Designer and Developer
+                <br>
+            </div>
+        </div>
     </div>
 </body>
 
