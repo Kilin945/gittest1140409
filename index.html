@@ -1,294 +1,290 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kilin's Page Info</title>
-    <!-- 添加 Font Awesome 圖標庫 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        html {
-            height: 100%;
-        }
-
-        body {
-            background-color: #FFF8DC;
-            margin: 0;
-            padding: 0;
-            min-height: 100%;
-            font-family: '微軟正黑體', 'Microsoft JhengHei', sans-serif;
-            color: #663300;
-        }
-
-        .overlay {
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: rgba(255, 248, 220, 0.85);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            background: none;
-            box-shadow: none;
-            font-size: 38px;
-            color: #5D3A1A;
-            /* 更深的咖啡色 */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-            border: none;
-            padding: 5px 0;
-            /* 減少上下padding */
-            font-family: '微軟正黑體', 'Microsoft JhengHei', sans-serif;
-        }
-
-        .section {
-            margin-bottom: 20px;
-            /* 減少下邊距 */
-        }
-
-        h1 {
-            background-color: rgba(255, 222, 121, 0.9);
-            padding: 15px;
-            /* 減少padding */
-            border-radius: 8px;
-            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
-            margin: 15px 0;
-            /* 減少上下margin */
-            color: #5D3A1A;
-            /* 更深的咖啡色 */
-            font-size: 32px;
-            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
-            border-left: 5px solid #FF9900;
-        }
-
-        .menu-item {
-            background-color: rgba(255, 237, 170, 0.9);
-            padding: 20px 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin: 15px 0;
-            border-left: 3px solid #FF9900;
-            font-size: 28px;
-            display: block;
-            min-height: 80px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .menu-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-            background-color: rgba(255, 230, 150, 0.95);
-        }
-
-        .menu-item a {
-            color: #996633;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            width: 100%;
-            height: 100%;
-        }
-
-        .icon {
-            font-size: 36px;
-            margin-right: 25px;
-            color: #FF9900;
-            width: 50px;
-            text-align: center;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            font-size: 18px;
-            color: #996633;
-            padding: 20px 10px;
-            border-top: 1px solid rgba(255, 153, 0, 0.3);
-        }
-
-        /* 點讚按鈕樣式 */
-        .like-button {
-            position: absolute;
-            bottom: 20px;
-            right: 30px;
-            background-color: #FF9900;
-            color: #5D3A1A;
-            /* 咖啡色文字 */
-            border: none;
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-weight: bold;
-            font-size: 18px;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-
-        .like-button:hover {
-            background-color: #E08700;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .like-button.liked {
-            animation: pulse 0.3s ease;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Kilin's Page Info</title>
+        <!-- 添加 Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <style>
+            html {
+                height: 100%;
             }
 
-            50% {
-                transform: scale(1.1);
+            body {
+                background-color: #fff8dc;
+                margin: 0;
+                padding: 0;
+                min-height: 100%;
+                font-family: "微軟正黑體", "Microsoft JhengHei", sans-serif;
+                color: #663300;
             }
 
-            100% {
-                transform: scale(1);
+            .overlay {
+                min-height: 100vh;
+                padding: 40px 20px;
             }
-        }
 
-        .like-count {
-            background-color: white;
-            color: #5D3A1A;
-            /* 咖啡色文字 */
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 10px;
-            font-weight: bold;
-        }
-
-        @media (max-width: 600px) {
             .container {
-                padding: 20px 15px;
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: rgba(255, 248, 220, 0.85);
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                position: relative;
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
             }
 
             .header h1 {
-                font-size: 30px;
+                background: none;
+                box-shadow: none;
+                font-size: 38px;
+                color: #5d3a1a;
+                /* 更深的咖啡色 */
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+                border: none;
+                padding: 5px 0;
+                /* 減少上下padding */
+                font-family: "微軟正黑體", "Microsoft JhengHei", sans-serif;
+            }
+
+            .section {
+                margin-bottom: 20px;
+                /* 減少下邊距 */
             }
 
             h1 {
-                font-size: 26px;
+                background-color: rgba(255, 222, 121, 0.9);
                 padding: 15px;
+                /* 減少padding */
+                border-radius: 8px;
+                box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+                margin: 15px 0;
+                /* 減少上下margin */
+                color: #5d3a1a;
+                /* 更深的咖啡色 */
+                font-size: 32px;
+                text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+                border-left: 5px solid #ff9900;
             }
 
             .menu-item {
-                padding: 15px 20px;
-                font-size: 22px;
-                min-height: 60px;
+                background-color: rgba(255, 237, 170, 0.9);
+                padding: 20px 25px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                margin: 15px 0;
+                border-left: 3px solid #ff9900;
+                font-size: 28px;
+                display: block;
+                min-height: 80px;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .menu-item:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+                background-color: rgba(255, 230, 150, 0.95);
+            }
+
+            .menu-item a {
+                color: #996633;
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                width: 100%;
+                height: 100%;
             }
 
             .icon {
-                font-size: 28px;
-                margin-right: 15px;
-                width: 40px;
+                font-size: 36px;
+                margin-right: 25px;
+                color: #ff9900;
+                width: 50px;
+                text-align: center;
             }
 
+            .footer {
+                text-align: center;
+                margin-top: 40px;
+                font-size: 18px;
+                color: #996633;
+                padding: 20px 10px;
+                border-top: 1px solid rgba(255, 153, 0, 0.3);
+            }
+
+            /* 點讚按鈕樣式 */
             .like-button {
-                padding: 8px 16px;
-                font-size: 16px;
+                position: absolute;
+                bottom: 20px;
+                right: 30px;
+                background-color: #ff9900;
+                color: #5d3a1a;
+                /* 咖啡色文字 */
+                border: none;
+                padding: 10px 20px;
+                border-radius: 30px;
+                font-weight: bold;
+                font-size: 18px;
+                cursor: pointer;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
             }
-        }
-    </style>
-</head>
 
-<body>
-    <div class="overlay">
-        <div class="container">
-            <div class="header">
-                <h1>Kilin 的網站目錄</h1>
+            .like-button:hover {
+                background-color: #e08700;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            }
+
+            .like-button.liked {
+                animation: pulse 0.3s ease;
+            }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.1);
+                }
+
+                100% {
+                    transform: scale(1);
+                }
+            }
+
+            .like-count {
+                background-color: white;
+                color: #5d3a1a;
+                /* 咖啡色文字 */
+                border-radius: 50%;
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-left: 10px;
+                font-weight: bold;
+            }
+
+            @media (max-width: 600px) {
+                .container {
+                    padding: 20px 15px;
+                }
+
+                .header h1 {
+                    font-size: 30px;
+                }
+
+                h1 {
+                    font-size: 26px;
+                    padding: 15px;
+                }
+
+                .menu-item {
+                    padding: 15px 20px;
+                    font-size: 22px;
+                    min-height: 60px;
+                }
+
+                .icon {
+                    font-size: 28px;
+                    margin-right: 15px;
+                    width: 40px;
+                }
+
+                .like-button {
+                    padding: 8px 16px;
+                    font-size: 16px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="overlay">
+            <div class="container">
+                <div class="header">
+                    <h1>Kilin 的網站目錄</h1>
+                </div>
+
+                <div class="section">
+                    <div class="menu-item">
+                        <a href="TEST1140412.html">
+                            <i class="fas fa-user icon"></i>
+                            <span>Kilin的個人網頁</span>
+                        </a>
+                    </div>
+
+                    <div class="menu-item">
+                        <a href="TESTTALK.html">
+                            <i class="fas fa-comments icon"></i>
+                            <span>小聊天室</span>
+                        </a>
+                    </div>
+
+                    <div class="menu-item">
+                        <a href="TESTGAME1.html">
+                            <i class="fas fa-gamepad icon"></i>
+                            <span>小遊戲1</span>
+                        </a>
+                    </div>
+
+                    <div class="menu-item">
+                        <a href="TESTVIDEO.html">
+                            <i class="fas fa-music icon"></i>
+                            <span>來聽聽音樂吧~~</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer">© 2025 Kilin's Website. All Rights Reserved.</div>
+
+                <!-- 點讚按鈕 -->
+                <button class="like-button" onclick="addLike()">
+                    幫網站點個讚吧 <span class="like-count" id="likeCount">0</span>
+                </button>
             </div>
-
-            <div class="section">
-                <div class="menu-item">
-                    <a href="TEST1140412.html">
-                        <i class="fas fa-user icon"></i>
-                        <span>Kilin的個人網頁</span>
-                    </a>
-                </div>
-
-                <div class="menu-item">
-                    <a href="TESTTALK.html">
-                        <i class="fas fa-comments icon"></i>
-                        <span>小聊天室</span>
-                    </a>
-                </div>
-
-                <div class="menu-item">
-                    <a href="TESTGAME1.html">
-                        <i class="fas fa-gamepad icon"></i>
-                        <span>小遊戲1</span>
-                    </a>
-                </div>
-
-                <div class="menu-item">
-                    <a href="TESTVIDEO.html">
-                        <i class="fas fa-music icon"></i>
-                        <span>來聽聽音樂吧~~</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="footer">
-                © 2025 Kilin's Website. All Rights Reserved.
-            </div>
-
-            <!-- 點讚按鈕 -->
-            <button class="like-button" onclick="addLike()">
-                幫網站點個讚吧 <span class="like-count" id="likeCount">0</span>
-            </button>
         </div>
-    </div>
 
-    <script>
-        // 讀取localStorage中的點讚數
-        function loadLikes() {
-            const likes = localStorage.getItem('websiteLikes');
-            return likes ? parseInt(likes) : 0;
-        }
+        <script>
+            // 讀取localStorage中的點讚數
+            function loadLikes() {
+                const likes = localStorage.getItem("websiteLikes");
+                return likes ? parseInt(likes) : 0;
+            }
 
-        // 顯示點讚數
-        function displayLikes() {
-            document.getElementById('likeCount').textContent = loadLikes();
-        }
+            // 顯示點讚數
+            function displayLikes() {
+                document.getElementById("likeCount").textContent = loadLikes();
+            }
 
-        // 添加點讚
-        function addLike() {
-            const currentLikes = loadLikes();
-            const newLikes = currentLikes + 1;
-            localStorage.setItem('websiteLikes', newLikes);
-            document.getElementById('likeCount').textContent = newLikes;
+            // 添加點讚
+            function addLike() {
+                const currentLikes = loadLikes();
+                const newLikes = currentLikes + 1;
+                localStorage.setItem("websiteLikes", newLikes);
+                document.getElementById("likeCount").textContent = newLikes;
 
-            // 添加點讚動畫效果
-            const likeButton = document.querySelector('.like-button');
-            likeButton.classList.add('liked');
-            setTimeout(() => {
-                likeButton.classList.remove('liked');
-            }, 300);
-        }
+                // 添加點讚動畫效果
+                const likeButton = document.querySelector(".like-button");
+                likeButton.classList.add("liked");
+                setTimeout(() => {
+                    likeButton.classList.remove("liked");
+                }, 300);
+            }
 
-        // 頁面加載時顯示點讚數
-        window.onload = displayLikes;
-    </script>
-</body>
-
+            // 頁面加載時顯示點讚數
+            window.onload = displayLikes;
+        </script>
+    </body>
 </html>
