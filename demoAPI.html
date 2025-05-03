@@ -1,45 +1,33 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
     <head>
-        <meta charset="UTF-8" />
         <title>天氣預報 (36 小時)</title>
     </head>
     <body>
-        <div class="container">
+        <div>
+            <div id="mymessage"></div>
             <h1>未來 36 小時各區天氣預報</h1>
             <div id="weatherList">載入中…</div>
-            <div class="btn-container">
-                <a class="btn" href="javascript:history.back()">上一頁</a>
-                <a class="btn" href="index.html">回首頁</a>
-            </div>
         </div>
-
         <script>
-            const apiUrl = //url要改
-                "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWB-FE4AD205-4642-40AD-B7FD-336A53D1ED2A";
-            const weatherList = document.getElementById("weatherList");
-
-            async function loadWeather() {
-                //裡面有await 所以外面要用async
+            //url要改
+            const apiUrl2 = "http://localhost:8000/api/hello";
+            const mymessage = document.getElementById("mymessage");
+            async function loadMessage() {
                 try {
-                    const resp = await fetch(apiUrl); //GET  ；要得到資料要用await等他完成; fetch:下載，去敲門去把資料拿回來(放在resp裡面)
-                    if (!resp.ok) throw new Error(`HTTP 錯誤：${resp.status}`); //如果什麼都沒拿到就會報錯:Error('HTTP 錯誤:'+resp.status)'
-                    const data = await resp.json();
-                    const locations = data.records.location; //location是一個陣列，裡面有很多物件   要改 .recoud.location 直接指向關鍵資料
-                    if (!locations || !locations.length) {
-                        //如果locations沒有資料或是長度為0就報錯
-                        weatherList.textContent = "未取得任何天氣資料";
+                    const resp = await fetch(apiUrl2); //GET
+                    if (!resp.ok) throw new Error("HTTP 錯誤:" + resp.status);
+                    const data = await resp.text();
+                    if (!data) {
+                        weatherList.textContent = "未取得任何資料";
                         return;
                     }
-
-                    // 清空載入中提示
-                    weatherList.innerHTML = locations[0].weatherElement[0].time[0].parameter.parameterName;
+                    mymessage.textContent = data;
                 } catch (err) {
-                    weatherList.textContent = "載入失敗：" + err.message;
+                    mymessage.textContent = "載入失敗：" + err.message;
                 }
             }
-
-            loadWeather();
+            loadMessage();
         </script>
     </body>
 </html>

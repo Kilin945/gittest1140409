@@ -7,6 +7,7 @@
     <body>
         <div class="container">
             <h2>未來36小時各區域天氣預報</h2>
+            <div id="mymessage"></div>
             <div id="weatherList">載入中...</div>
             <div class="btn-container">
                 <a class="btn" href="javascript:history.back()">上一頁</a>
@@ -15,10 +16,27 @@
         </div>
 
         <script>
+            const apiUrl2 = "http://localhost:8000/api/hello"; //API網址
+            const mymessage = document.getElementById("mymessage");
+            async function loadMessage() {
+                try {
+                    const resp = await fetch(apiUrl2);
+                    if (!resp.ok) throw new Error("錯誤 : " + resp.status);
+                    const data = await resp.text();
+                    if (!data) {
+                        weatherList.textContent = "未取得任何資料";
+                        return;
+                    }
+                    mymessage.textContent = data;
+                } catch (error) {
+                    mymessage.textContent = "載入失敗：" + error.message;
+                }
+            }
+            //loadMessage(); //呼叫函式
+
             const apiUrl =
                 "https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-67CE4800-C080-413E-AA4D-CD2E189F558F&format=JSON";
             const weatherList = document.getElementById("weatherList");
-
             async function loadWeather() {
                 try {
                     const resp = await fetch(apiUrl); //GET
@@ -41,37 +59,57 @@
                         item.appendChild(area); //把h2的標題放進去item裡面
 
                         const t = loc.weatherElement.find((e) => e.elementName === "Wx");
-                        const desc = t && t.time && t.time[0] ? t.time[0].parameter.parameterName : "--";
 
-                        const startTime =
-                            t && t.time && t.time[0] && t.time[0].startTime
-                                ? new Date(t.time[0].startTime).toLocaleString("zh-TW")
-                                : "--";
-                        const endTime =
-                            t && t.time && t.time[0] && t.time[0].endTime
-                                ? new Date(t.time[0].endTime).toLocaleString("zh-TW")
-                                : "--";
+                        //新增: 使用for迴圈替代直接索引陣列
+                        if (t && t.time && t.time.length > 0) {
+                            t.time.forEach((timeData) => {
+                                const desc = timeData.parameter.parameterName || "--"; //天氣現象
+                                const startTime = timeData.startTime
+                                    ? new Date(timeData.startTime).toLocaleString("zh-TW")
+                                    : "--"; //開始時間
+                                const endTime = timeData.endTime
+                                    ? new Date(timeData.endTime).toLocaleString("zh-TW")
+                                    : "--"; //結束時間
 
-                        const startTimeP = document.createElement("p");
-                        startTimeP.textContent = `開始時間：  ${startTime}`;
-                        item.appendChild(startTimeP);
+                                const timeBlock = document.createElement("div"); //創建一個新的div來顯示時間區間
+                                timeBlock.className = "time-block";
 
-                        const endTimeP = document.createElement("p");
-                        endTimeP.textContent = `結束時間：  ${endTime}`;
-                        item.appendChild(endTimeP);
+                                const startTimeP = document.createElement("p");
+                                startTimeP.textContent = `開始時間：${startTime}`;
+                                timeBlock.appendChild(startTimeP); //將開始時間加入到時間區間的div中
 
-                        const p = document.createElement("p");
-                        p.textContent = `天氣：${desc}`;
-                        item.appendChild(p);
+                                const endTimeP = document.createElement("p");
+                                endTimeP.textContent = `結束時間：${endTime}`;
+                                timeBlock.appendChild(endTimeP); //將結束時間加入到時間區間的div中
 
-                        weatherList.appendChild(item);
+                                const p = document.createElement("p");
+                                p.textContent = `天氣：${desc}`;
+                                timeBlock.appendChild(p);
+
+                                item.appendChild(timeBlock); //將時間區間的div加入到item中
+                            });
+                        } else {
+                            const p = document.createElement("p");
+                            p.textContent = "無天氣資料";
+                            item.appendChild(p);
+                        }
+                        weatherList.appendChild(item); //將item加入到weatherList中
+
+                        /*const desc = t && t.time && t.time[0] ? t.time[0].parameter.parameterName : "--";
+                        const startTime =t && t.time && t.time[0] && t.time[0].startTime? new Date(t.time[0].startTime).toLocaleString("zh-TW"): "--";
+                        const endTime =t && t.time && t.time[0] && t.time[0].endTime? new Date(t.time[0].endTime).toLocaleString("zh-TW"): "--";
+                        */
                     });
                 } catch (error) {
                     weatherList.textContent = "failed to load: " + error.message;
                 }
             }
-
-            loadWeather();
+            //loadWeather();
+            async function loadData() {
+                await loadMessage();
+                await loadWeather();
+            }
+            loadData(); //呼叫函式
         </script>
     </body>
 </html>
