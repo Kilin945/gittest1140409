@@ -7,7 +7,8 @@
     <body>
         <div class="container">
             <h2>未來36小時各區域天氣預報</h2>
-            <div id="mymessage"></div>
+            <pre id="mymessage"></pre>
+            <div id="tableContainer">載入中</div>
             <div id="weatherList">載入中...</div>
             <div class="btn-container">
                 <a class="btn" href="javascript:history.back()">上一頁</a>
@@ -17,10 +18,43 @@
 
         <script>
             const apiUrl2 = "http://localhost:8000/api/hello"; //API網址
-            const mymessage = document.getElementById("mymessage");
-            async function loadMessage() {
+            const mymessage = document.getElementById("mymessage"); //綁定容器
+            const container = document.getElementById("tableContainer"); //綁定容器
+            async function loadTable() {
                 try {
-                    const resp = await fetch(apiUrl2);
+                    const resp = await fetch(apiUrl2); //GET回來之後，放在resp裡面
+                    if (!resp.ok) throw new Error("錯誤 : " + resp.status);
+                    const data = await resp.json(); //轉成json格式
+                    if (!Array.isArray(data) || data.length === 0) {
+                        container.textContent = "沒有資料";
+                        return;
+                    }
+                    //產生表格
+                    let table = "<table><thead><tr>";
+                    //自動產出表頭
+                    const keys = Object.keys(data[0]); //取出第一列的key值
+                    keys.forEach((k) => {
+                        table += `<th>${k}</th>`; //用forEach去跑每一個key值，並且產生表頭
+                    });
+                    table += "</tr></thead><tbody>";
+                    //每一列資料
+                    data.forEach((row) => {
+                        table += "<tr>";
+                        keys.forEach((k) => {
+                            table += `<td>${row[k]}</td>`; //這裡的row[k]是指每一列的資料
+                        });
+                        table += "</tr>";
+                    });
+                    table += "</tbody></table>";
+                    container.innerHTML = table; //把表格放進去container裡面
+                } catch (err) {
+                    container.textContent = "載入失敗：" + err.message;
+                }
+            }
+            /*async function loadMessage() {
+                //用async 去 loadMessage
+                try {
+                    const resp = await fetch(apiUrl2); //GET回來之後，放在resp裡面
                     if (!resp.ok) throw new Error("錯誤 : " + resp.status);
                     const data = await resp.text();
                     if (!data) {
@@ -31,7 +65,7 @@
                 } catch (error) {
                     mymessage.textContent = "載入失敗：" + error.message;
                 }
-            }
+            }*/
             //loadMessage(); //呼叫函式
 
             const apiUrl =
@@ -106,7 +140,7 @@
             }
             //loadWeather();
             async function loadData() {
-                await loadMessage();
+                await loadTable();
                 await loadWeather();
             }
             loadData(); //呼叫函式

@@ -5,7 +5,8 @@
     </head>
     <body>
         <div>
-            <div id="mymessage"></div>
+            <pre id="mymessage"></pre>
+            <div id="tableContainer">載入中…</div>
             <h1>未來 36 小時各區天氣預報</h1>
             <div id="weatherList">載入中…</div>
         </div>
@@ -13,21 +14,41 @@
             //url要改
             const apiUrl2 = "http://localhost:8000/api/hello";
             const mymessage = document.getElementById("mymessage");
-            async function loadMessage() {
+            const container = document.getElementById("tableContainer");
+            async function loadTable() {
                 try {
-                    const resp = await fetch(apiUrl2); //GET
-                    if (!resp.ok) throw new Error("HTTP 錯誤:" + resp.status);
-                    const data = await resp.text();
-                    if (!data) {
-                        weatherList.textContent = "未取得任何資料";
+                    const resp = await fetch(apiUrl2);
+                    if (!resp.ok) throw new Error(`HTTP 錯誤: ${resp.status}`);
+                    const data = await resp.json();
+                    if (!Array.isArray(data) || data.length === 0) {
+                        container.textContent = "沒有資料";
                         return;
                     }
-                    mymessage.textContent = data;
+                    // 產生表格
+                    let table = "<table><thead><tr>";
+                    // 自動產出表頭
+                    const keys = Object.keys(data[0]);
+                    keys.forEach((k) => {
+                        table += `<th>${k}</th>`;
+                    });
+                    table += "</tr></thead><tbody>";
+                    // 每一列資料
+                    data.forEach((row) => {
+                        table += "<tr>";
+                        keys.forEach((k) => {
+                            // 這裡的keys是指表頭的資料
+                            table += `<td>${row[k]}</td>`; // 這裡的row[k]是指每一列的資料
+                        });
+                        table += "</tr>";
+                    });
+                    table += "</tbody></table>";
+                    container.innerHTML = table;
                 } catch (err) {
-                    mymessage.textContent = "載入失敗：" + err.message;
+                    container.textContent = "載入失敗：" + err.message;
                 }
             }
-            loadMessage();
+            loadTable();
+            //loadMessage();
         </script>
     </body>
 </html>
