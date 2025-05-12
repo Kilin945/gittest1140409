@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <title>音樂選單切換展示</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+            /* 全局樣式 - 米色深咖啡風格 */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+                font-family: "Microsoft JhengHei", "PingFang TC", "微軟正黑體", sans-serif;
+            }
+
+            body {
+                background-color: #f8f5e6; /* 米色背景 */
+                color: #442921; /* 深咖啡色文字 */
+                line-height: 1.6;
+                padding: 20px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+
+            /* 標題樣式 */
+            h1 {
+                color: #442921;
+                text-align: center;
+                padding-bottom: 10px;
+                margin-bottom: 0;
+                font-weight: 600;
+                font-size: 28px;
+            }
+
+            /* 標題底部線條 */
+            .title-underline {
+                height: 2px;
+                background-color: #d7ccc8;
+                margin: 0 auto 20px;
+                width: 200px;
+            }
+
+            /* 表格樣式 */
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-top: 15px;
+                box-shadow: 0 3px 10px rgba(165, 136, 107, 0.1);
+                background-color: #fffbf0;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+
+            th,
+            td {
+                border: 1px solid #e0e0e0;
+                padding: 12px 15px;
+                text-align: center;
+            }
+
+            th {
+                background-color: #443834; /* 深咖啡色表頭 */
+                color: #fff8e1; /* 米白色文字 */
+                font-weight: 500;
+                letter-spacing: 0.5px;
+                font-size: 16px;
+            }
+
+            tbody tr {
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            tbody tr:nth-child(even) {
+                background-color: #f9f4e8;
+            }
+
+            tbody tr:hover {
+                background-color: #b8a885; /* 懸停時的顏色 */
+                color: #fff8e1; /* 懸停時的文字顏色 */
+                transition: all 0.2s ease;
+            }
+
+            /* 按鈕容器 */
+            .tab-container {
+                display: flex;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+
+            /* 按鈕樣式 */
+            .tab-btn {
+                margin: 0 10px;
+                padding: 10px 20px;
+                cursor: pointer;
+                background-color: #443834; /* 深咖啡色按鈕 */
+                color: #fff8e1; /* 米白色文字 */
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+                font-weight: 500;
+                transition: all 0.2s ease;
+                min-width: 100px;
+            }
+
+            .tab-btn:hover {
+                background-color: #5d4037;
+            }
+
+            .tab-btn.active {
+                background-color: #2d241f;
+                box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+            }
+
+            /* 容器樣式 */
+            .content-container {
+                background-color: #fffbf0;
+                border-radius: 8px;
+                padding: 20px;
+                box-shadow: 0 2px 15px rgba(165, 136, 107, 0.1);
+                min-height: 300px;
+            }
+
+            .hidden {
+                display: none;
+            }
+
+            .loading {
+                padding: 30px;
+                text-align: center;
+                color: #8d6e63;
+                font-style: italic;
+                font-size: 16px;
+            }
+
+            /* 錯誤訊息樣式 */
+            .error-message {
+                color: #c62828;
+                padding: 15px;
+                text-align: center;
+                background-color: #fbe9e7;
+                border-radius: 6px;
+                margin-top: 15px;
+                border-left: 4px solid #d32f2f;
+            }
+
+            /* 音符樣式 */
+            .music-notes {
+                text-align: center;
+                margin-bottom: 5px;
+            }
+
+            .music-note {
+                color: #442921;
+                font-size: 24px;
+                display: inline-block;
+                margin: 0 10px;
+            }
+
+            /* 響應式設計 */
+            @media (max-width: 768px) {
+                body {
+                    padding: 12px;
+                }
+
+                .tab-btn {
+                    padding: 8px 16px;
+                    font-size: 14px;
+                }
+
+                th,
+                td {
+                    padding: 10px;
+                    font-size: 14px;
+                }
+
+                .content-container {
+                    padding: 15px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="music-notes">
+            <span class="music-note">♪</span>
+            <h1>音樂資料展示</h1>
+            <span class="music-note">♫</span>
+        </div>
+        <div class="title-underline"></div>
+
+        <div class="tab-container">
+            <button class="tab-btn active" onclick="showTab('songs')">歌曲清單</button>
+            <button class="tab-btn" onclick="showTab('artists')">歌手清單</button>
+        </div>
+
+        <div class="content-container">
+            <div id="tableContainer" class="loading">正在載入歌曲清單...</div>
+            <div id="tableContainer2" class="hidden loading">正在載入歌手清單...</div>
+        </div>
+
+        <script>
+            // API URLs
+            const apiUrl2 = "http://localhost:8000/api/hello";
+            const apiCustomer = "http://localhost:8000/api/customers";
+
+            // DOM 元素
+            const container = document.getElementById("tableContainer");
+            const container2 = document.getElementById("tableContainer2");
+            const tabButtons = document.querySelectorAll(".tab-btn");
+
+            // 讀取並顯示表格資料
+            async function loadTable(url, todiv) {
+                try {
+                    // 更新載入狀態
+                    todiv.className = "loading";
+                    if (todiv === container) {
+                        todiv.textContent = "正在載入歌曲清單...";
+                    } else {
+                        todiv.textContent = "正在載入歌手清單...";
+                    }
+
+                    // 獲取數據
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error(`HTTP 錯誤: ${resp.status}`);
+                    const data = await resp.json();
+
+                    // 檢查數據
+                    if (!Array.isArray(data) || data.length === 0) {
+                        todiv.innerHTML = "<div class='error-message'>沒有資料</div>";
+                        return;
+                    }
+
+                    // 產生表格
+                    let table = "<table><thead><tr>";
+
+                    // 自動產出表頭
+                    const keys = Object.keys(data[0]);
+                    keys.forEach((k) => {
+                        let displayName = k;
+
+                        // 修改欄位名稱顯示
+                        if (todiv === container) {
+                            // 歌曲清單的欄位名稱
+                            if (k.toLowerCase() === "song_id") displayName = "歌曲編號";
+                            if (k.toLowerCase() === "song_name") displayName = "歌曲名稱";
+                        } else {
+                            // 歌手清單的欄位名稱
+                            if (k.toLowerCase() === "artist_id") displayName = "歌手編號";
+                            if (k.toLowerCase() === "artist_name") displayName = "歌手名稱";
+                        }
+
+                        table += `<th>${displayName}</th>`;
+                    });
+                    table += "</tr></thead><tbody>";
+
+                    // 每一列資料
+                    data.forEach((row) => {
+                        table += "<tr>";
+                        keys.forEach((k) => {
+                            // 處理可能的 null 或 undefined 值
+                            const value = row[k] !== null && row[k] !== undefined ? row[k] : "";
+                            table += `<td>${value}</td>`;
+                        });
+                        table += "</tr>";
+                    });
+
+                    table += "</tbody></table>";
+                    todiv.innerHTML = table;
+                    todiv.classList.remove("loading");
+                } catch (err) {
+                    todiv.innerHTML = `<div class='error-message'>載入失敗：${err.message}</div>`;
+                    todiv.classList.remove("loading");
+                }
+            }
+
+            // 切換分頁函數
+            function showTab(name) {
+                // 隱藏所有容器
+                container.classList.add("hidden");
+                container2.classList.add("hidden");
+
+                // 移除所有按鈕的 active 類
+                tabButtons.forEach((btn) => {
+                    btn.classList.remove("active");
+                });
+
+                // 顯示選擇的容器並啟用對應按鈕
+                if (name === "songs") {
+                    container.style.display = "block";
+                    container2.style.display = "none";
+                    tabButtons[0].classList.add("active");
+                } else if (name === "artists") {
+                    container.style.display = "none";
+                    container2.style.display = "block";
+                    tabButtons[1].classList.add("active");
+                }
+            }
+
+            // 初始化
+            window.onload = function () {
+                // 載入數據
+                loadTable(apiCustomer, container);
+                loadTable(apiUrl2, container2);
+
+                // 預設顯示歌曲清單
+                showTab("songs");
+
+                // 確保按鈕樣式正確
+                tabButtons[0].classList.add("active");
+            };
+        </script>
+    </body>
+</html>
