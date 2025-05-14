@@ -1,46 +1,292 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <title>小聊天室</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 30px;
-        }
-        #message {
-            border: 1px solid #ccc;
-            height: 300px;
-            overflow-y: scroll;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-    </style>
-</head>
-<body>
-    <h1>簡易聊天室</h1>
-    <div>
-        名字: <input type="text" id="username" placeholder="請輸入你的名字">
-    </div>
-    <div id="message"></div>
-    <input type="text" id="input" placeholder="請輸入訊息...">
-    <button onclick="sendMessage()">送出</button>
-    <script>
-        const messages = document.getElementById('message');
-        const input = document.getElementById('input');
-        const username = document.getElementById('username');
-        function sendMessage() {
-            if(input.value.trim() === '' || username.value.trim() === '') {
-                alert('請輸入名字和訊息！');
-                return;
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Kilin的小聊天室</title>
+        <!-- 添加 Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <style>
+            html {
+                height: 100%;
             }
-            const msg = `<b>${username.value}:</b> ${input.value}`;
-            const div = document.createElement('div');
-            div.innerHTML = msg;
-            messages.appendChild(div);
-            input.value = ''; // 清空輸入框
-            messages.scrollTop = messages.scrollHeight; // 滾動到最底部
-        }
-    </script>
-</body>
+
+            body {
+                background-color: #fff8dc;/* 米色背景 */
+                margin: 0;
+                padding: 0;
+                min-height: 100%;
+                font-family: "微軟正黑體", "Microsoft JhengHei", sans-serif;
+                color: #663300;
+            }
+
+            .overlay {
+                min-height: 100vh;
+                padding: 40px 20px;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: rgba(255, 248, 220, 0.85);
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+                position: relative;
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .header h1 {
+                background: none;
+                box-shadow: none;
+                font-size: 38px;
+                color: #5d3a1a;
+                /* 更深的咖啡色 */
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+                border: none;
+                padding: 5px 0;
+                /* 減少上下padding */
+                font-family: "微軟正黑體", "Microsoft JhengHei", sans-serif;
+            }
+            
+            h1 {/* 大標題 */
+                background-color: rgba(255, 222, 121, 0.9);
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);/* 溫暖陰影 */
+                margin: 15px 0;
+                color: #5d3a1a;
+                font-size: 32px;
+                text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+                border-left: 5px solid #ff9900;
+            }
+
+            /* 聊天室元素樣式 */
+            .chat-container {
+                margin: 20px 0;
+            }
+
+            .input-group {
+                background-color: rgba(255, 237, 170, 0.9);
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                margin-bottom: 15px;
+                border-left: 3px solid #ff9900;
+            }
+
+            .input-group label {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 5px;
+                color: #5d3a1a;
+            }
+
+            .input-group input {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ff9900;
+                border-radius: 5px;
+                background-color: rgba(255, 255, 255, 0.9);
+                color: #663300;
+                font-family: "微軟正黑體", "Microsoft JhengHei", sans-serif;
+                font-size: 16px;
+                box-sizing: border-box;
+            }
+
+            .message-box {
+                background-color: rgba(255, 248, 220, 0.9);
+                border: 2px solid #ff9900;
+                border-radius: 8px;
+                height: 300px;
+                overflow-y: auto;/* 滾動條 */
+                padding: 15px;
+                margin-bottom: 15px;
+                box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+            }
+
+            .message-item {
+                padding: 10px;
+                margin-bottom: 8px;
+                border-radius: 8px;
+                background-color: rgba(255, 237, 170, 0.7);
+                border-left: 3px solid #ff9900;
+            }
+
+            .message-item b {
+                color: #5d3a1a;
+            }
+
+            .action-button {
+                background-color: #ff9900;
+                color: #ffffff;
+                border: none;
+                padding: 12px 25px;
+                border-radius: 30px;
+                font-weight: bold;
+                font-size: 18px;
+                cursor: pointer;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .action-button:hover {
+                background-color: #e08700;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            }
+
+            .action-button i {
+                margin-right: 10px;
+            }
+
+            .footer {
+                text-align: center;
+                margin-top: 40px;
+                font-size: 18px;
+                color: #996633;
+                padding: 20px 10px;
+                border-top: 1px solid rgba(255, 153, 0, 0.3);
+            }
+
+            /* 返回首頁按鈕樣式 */
+            .home-button {
+                position: absolute;
+                top: 20px;
+                right: 30px;
+                background-color: #ff9900;
+                color: #ffffff;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 30px;
+                font-weight: bold;
+                font-size: 16px;
+                cursor: pointer;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                text-decoration: none;
+            }
+
+            .home-button:hover {
+                background-color: #e08700;
+                transform: translateY(-2px);
+                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            }
+
+            /* 響應式設計 */
+            @media (max-width: 600px) {
+                .container {
+                    padding: 20px 15px;
+                }
+
+                .header h1 {
+                    font-size: 30px;
+                }
+
+                h1 {
+                    font-size: 26px;
+                    padding: 15px;
+                }
+
+                .action-button {
+                    padding: 10px 20px;
+                    font-size: 16px;
+                }
+
+                .home-button {
+                    padding: 8px 15px;
+                    font-size: 14px;
+                    top: 15px;
+                    right: 15px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="overlay">
+            <div class="container">
+                <div class="header">
+                    <h1>Kilin 的小聊天室</h1>
+                </div>
+
+                <a href="index.html" class="home-button">
+                    <i class="fas fa-home"></i> 返回首頁
+                </a>
+
+                <div class="chat-container">
+                    <div class="input-group">
+                        <label for="username"><i class="fas fa-user"></i> 你的名字：</label>
+                        <input type="text" id="username" placeholder="請輸入你的名字..." />
+                    </div>
+
+                    <div class="message-box" id="message">
+                        <div class="message-item">
+                            <b>系統訊息:</b> 歡迎來到 Kilin 的小聊天室！請輸入你的名字和訊息開始聊天。
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="input"><i class="fas fa-comment"></i> 你的訊息：</label>
+                        <input type="text" id="input" placeholder="請輸入訊息..." />
+                    </div>
+
+                    <button class="action-button" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i> 送出訊息
+                    </button>
+                </div>
+
+                <div class="footer">© 2025 Kilin's Website. All Rights Reserved.</div>
+            </div>
+        </div>
+
+        <script>
+            const messages = document.getElementById('message');
+            const input = document.getElementById('input');
+            const username = document.getElementById('username');
+
+            // 發送訊息函數
+            function sendMessage() {
+                if (input.value.trim() === '' || username.value.trim() === '') {
+                    alert('請輸入名字和訊息！');
+                    return;
+                }
+                
+                // 創建新的訊息元素
+                const msg = `<b>${username.value}:</b> ${input.value}`;
+                const div = document.createElement('div');
+                div.className = 'message-item';
+                div.innerHTML = msg;
+                
+                // 添加到聊天區域
+                messages.appendChild(div);
+                
+                // 清空輸入框並滾動到底部
+                input.value = '';
+                messages.scrollTop = messages.scrollHeight;
+                
+                // 聚焦回輸入框
+                input.focus();
+            }
+
+            // 頁面載入時聚焦名字輸入框
+            window.onload = function() {
+                username.focus();
+            };
+            document.getElementById('input').addEventListener('keypress', function(event) {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            })
+        </script>
+    </body>
 </html>
