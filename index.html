@@ -3,72 +3,12 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Kilin's Page Info</title>
+        <title>Kilin的網站</title>
         <!-- 添加 Font Awesome 圖標庫 -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <!-- 通用樣式 -->
+         <link rel="stylesheet" href="kilin-style.css" />
         <style>
-            html {
-                height: 100%;
-            }
-
-            body {
-                background-color: #fff8dc;/* 米色背景 */
-                margin: 0;
-                padding: 0;
-                min-height: 100%;
-                font-family: "微軟正黑體", "Microsoft JhengHei", sans-serif;
-                color: #663300;
-            }
-
-            .overlay {
-                min-height: 100vh;
-                padding: 40px 20px;
-            }
-
-            .container {
-                max-width: 800px;
-                margin: 0 auto;
-                background-color: rgba(255, 248, 220, 0.85);
-                padding: 30px;
-                border-radius: 15px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-                position: relative;
-            }
-
-            .header {
-                text-align: center;
-                margin-bottom: 30px;
-            }
-
-            .header h1 {
-                background: none;
-                box-shadow: none;
-                font-size: 38px;
-                color: #5d3a1a;
-                /* 更深的咖啡色 */
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-                border: none;
-                padding: 5px 0;
-                /* 減少上下padding */
-                font-family: "微軟正黑體", "Microsoft JhengHei", sans-serif;
-            }
-
-            .section {
-                margin-bottom: 20px;
-            }
-
-            h1 {/* 大標題 */
-                background-color: rgba(255, 222, 121, 0.9);
-                padding: 15px;
-                border-radius: 8px;
-                box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);/* 溫暖陰影 */
-                margin: 15px 0;
-                color: #5d3a1a;
-                font-size: 32px;
-                text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
-                border-left: 5px solid #ff9900;
-            }
-
             .menu-item {/* 菜單項目 */
                 background-color: rgba(255, 237, 170, 0.9);
                 padding: 20px 25px;
@@ -81,13 +21,6 @@
                 min-height: 80px;
                 transition: transform 0.3s ease, box-shadow 0.3s ease;
             }
-
-            .menu-item:hover {/* 滑鼠懸停效果 */
-                transform: translateY(-5px);
-                box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-                background-color: rgba(255, 230, 150, 0.95);
-            }
-
             .menu-item a {
                 color: #996633;
                 text-decoration: none;
@@ -96,27 +29,9 @@
                 width: 100%;
                 height: 100%;
             }
-
-            .icon {
-                font-size: 36px;
-                margin-right: 25px;
-                color: #ff9900;
-                width: 50px;
-                text-align: center;
-            }
-
-            .footer {
-                text-align: center;
-                margin-top: 40px;
-                font-size: 18px;
-                color: #996633;
-                padding: 20px 10px;
-                border-top: 1px solid rgba(255, 153, 0, 0.3);
-            }
-
             /* 點讚按鈕樣式 */
             .like-button {
-                position: absolute;
+                position: absolute;/* 絕對定位 */
                 bottom: 20px;
                 right: 30px;
                 background-color: #ff9900;
@@ -134,17 +49,17 @@
                 align-items: center;
             }
 
-            .like-button:hover {
+            .like-button:hover {/* 滑鼠懸停效果 */
                 background-color: #e08700;
-                transform: translateY(-2px);
+                transform: translateY(-2px);/* 向上移動 */
                 box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
             }
 
-            .like-button.liked {
+            .like-button.liked {/* 點讚後的動畫效果 */
                 animation: pulse 0.3s ease;
             }
 
-            @keyframes pulse {
+            @keyframes pulse {/* 點讚動畫 */
                 0% {
                     transform: scale(1);
                 }
@@ -158,7 +73,7 @@
                 }
             }
 
-            .like-count {
+            .like-count {/* 點讚數字樣式 */
                 background-color: white;
                 color: #5d3a1a;
                 /* 咖啡色文字 */
@@ -171,60 +86,42 @@
                 margin-left: 10px;
                 font-weight: bold;
             }
-
-            @media (max-width: 600px) {
-                .container {
-                    padding: 20px 15px;
-                }
-
-                .header h1 {
-                    font-size: 30px;
-                }
-
-                h1 {
-                    font-size: 26px;
-                    padding: 15px;
-                }
-
-                .menu-item {
-                    padding: 15px 20px;
-                    font-size: 22px;
-                    min-height: 60px;
-                }
-
-                .icon {
-                    font-size: 28px;
-                    margin-right: 15px;
-                    width: 40px;
-                }
-
-                .like-button {
-                    padding: 8px 16px;
-                    font-size: 16px;
-                }
+            .header {
+                /*字體大小*/
+                font-size: 44px;
             }
+            .menu-item a {
+            color: #5d3a1a; /* 修改顏色與參考相符 */
+            text-decoration: none;
+            align-items: center; /* 垂直居中 */
+            font-weight: bold; /* 粗體 */
+            padding: 25px; /* 內邊距與參考相符 */
+            border-radius: 8px; /* 圓角與參考相符 */
+            transition: all 0.3s ease; /* 添加過渡效果 */
+        }
         </style>
+
     </head>
 
     <body>
         <div class="overlay">
             <div class="container">
                 <div class="header">
-                    <h1>阿其 的網站目錄</h1>
+                    <h1>Kilin 的網站目錄</h1>
                 </div>
 
                 <div class="section">
                     <div class="menu-item">
                         <a href="IntroduceMyself.html">
                             <i class="fas fa-user icon"></i>
-                            <span>阿其的自我介紹</span>
+                            <span>自我介紹</span>
                         </a>
                     </div>
 
                     <div class="menu-item">
                         <a href="TESTTALK.html">
                             <i class="fas fa-comments icon"></i>
-                            <span>簡單小聊天室</span>
+                            <span>Kilin 的小聊天室</span>
                         </a>
                     </div>
 
@@ -236,9 +133,9 @@
                     </div>
 
                     <div class="menu-item">
-                        <a href="TESTVIDEO.html">
+                        <a href="demoAPI.html">
                             <i class="fas fa-music icon"></i>
-                            <span>來聽聽音樂吧~~</span>
+                            <span>進入音樂選單~~</span>
                         </a>
                     </div>
                 </div>
