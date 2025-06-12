@@ -4,13 +4,19 @@
     <meta charset="UTF-8">
     <title></title>
 </head>
-<body>
+<body> 
+    <button onclick="getdemo()">getDemo</button>
+    
     <script>
-    fetch(`http://localhost:8000/postdemo`, {
-        method: 'POST',
-        mode: 'cors', // ✅ 很關鍵
-        body: 'Hello '
-    })
+        alert("歡迎光臨")
+        fetch(`http://localhost:8000/postdemo`, {
+            method: 'POST',
+            mode: 'cors', // ✅ 很關鍵
+            body: 'Hello World!!!!!!!!!!!!!!!!!!!!!!!!'
+        })
+        function getdemo(){
+            fetch("http://localhost:8000/getdemo").then(msg =>msg.text()).then(text => alert(text))
+        }
     </script>
 </body>
 </html>

@@ -1,0 +1,199 @@
+/* 版面配置元件 */
+
+/* 主要內容區 */
+.content {
+    flex: 1;
+    padding: var(--spacing-lg);
+}
+
+/* 頁面標題區 */
+.page-header {
+    background: var(--claude-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--claude-border);
+    border-radius: var(--border-radius);
+    padding: 40px;
+    margin-bottom: 30px;
+    text-align: center;
+    box-shadow: var(--claude-shadow);
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.page-title h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--claude-text);
+    letter-spacing: -0.02em;
+}
+
+.page-title i {
+    font-size: 2.5rem;
+    color: var(--claude-primary);
+}
+
+.page-subtitle {
+    font-size: 1.1rem;
+    color: var(--claude-text-secondary);
+    opacity: 0.8;
+}
+
+/* 卡片元件 */
+.claude-card {
+    background: var(--claude-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--claude-border);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: var(--claude-shadow);
+    transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.claude-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--claude-shadow-strong);
+}
+
+/* 玻璃效果 */
+.glass-effect {
+    background: var(--claude-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 網格系統 */
+.claude-grid {
+    display: grid;
+    gap: var(--spacing-lg);
+}
+
+.claude-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.claude-grid-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.claude-grid-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+/* 彈性盒子 */
+.claude-flex {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.claude-flex-center {
+    align-items: center;
+    justify-content: center;
+}
+
+.claude-flex-between {
+    justify-content: space-between;
+}
+
+/* 載入動畫 */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(10, 15, 13, 0.95);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-speed) ease;
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 107, 53, 0.2);
+    border-left: 4px solid var(--claude-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 間距工具類 */
+.mt-10 {
+    margin-top: 10px;
+}
+.mt-20 {
+    margin-top: 20px;
+}
+.mt-30 {
+    margin-top: 30px;
+}
+.mb-10 {
+    margin-bottom: 10px;
+}
+.mb-20 {
+    margin-bottom: 20px;
+}
+.mb-30 {
+    margin-bottom: 30px;
+}
+.p-10 {
+    padding: 10px;
+}
+.p-20 {
+    padding: 20px;
+}
+.p-30 {
+    padding: 30px;
+}
+
+/* 文字對齊 */
+.text-center {
+    text-align: center;
+}
+.text-left {
+    text-align: left;
+}
+.text-right {
+    text-align: right;
+}
+
+/* 響應式 */
+@media (max-width: 768px) {
+    .claude-grid-2,
+    .claude-grid-3,
+    .claude-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .page-header {
+        padding: 20px;
+    }
+
+    .page-title h1 {
+        font-size: 1.8rem;
+    }
+}

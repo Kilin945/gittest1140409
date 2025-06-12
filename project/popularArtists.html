@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>最受歡迎歌手 - Kilin 音樂庫</title>
+        <!-- Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="main.css" />
+    </head>
+    <body>
+        <div class="overlay">
+            <div class="container">
+                <!-- 標題區域 -->
+                <div class="header">
+                    <h1>
+                        <i class="fas fa-star"></i>
+                        最受歡迎歌手
+                    </h1>
+                </div>
+
+                <!-- 錯誤訊息 -->
+                <div class="kilin-notification error" id="errorMessage" style="display: none">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>載入失敗</strong><br />
+                    無法取得歌手資料，請檢查網路連線或稍後再試。
+                </div>
+
+                <!-- 歌手排行榜 -->
+                <div id="artistsGrid" style="display: none">
+                    <div class="content-box">
+                        <h2>歌手排行榜</h2>
+                        <div class="artists-list" id="artistsContainer">
+                            <!-- 歌手項目將由 JavaScript 動態填入 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // 載入最受歡迎歌手資料
+            async function loadPopularArtists() {
+                console.log("=== 開始載入最受歡迎歌手資料 ===");
+                try {
+                    const apiUrl = "http://localhost:8000/api/popularartists";
+                    console.log("準備呼叫 API:", apiUrl);
+                    const response = await fetch(apiUrl);
+                    console.log("Response URL:", response.url);
+                    console.log("Response status:", response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`載入失敗: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log("收到的資料", data);
+
+                    if (data.length === 0) {
+                        document.getElementById("artistsGrid").style.display = "block";
+                        return;
+                    }
+
+                    displayPopularArtistsGrid(data);
+                    document.getElementById("artistsGrid").style.display = "block";
+                } catch (error) {
+                    console.error("載入最受歡迎歌手失敗:", error);
+                    document.getElementById("artistsGrid").style.display = "block";
+                }
+            }
+
+            // 顯示最受歡迎歌手
+
+            function displayPopularArtistsGrid(data) {
+                console.log("收到的資料:", data);
+                console.log("第一筆資料:", data[0]);
+                const artistsContainer = document.getElementById("artistsContainer");
+
+                const popularArtistsHTML = data
+                    .map((artist, index) => {
+                        const rank = index + 1;
+                        const artistTitle = artist.歌手名稱 || "未知歌手";
+                        const sumOfSongs = artist.歌曲總數 || "未知歌曲總數";
+                        const rankClass = rank <= 3 ? "artist-rank top-3" : "artist-rank";
+
+                        return `
+                            <div class="content-box artist-item">
+                                <div class="${rankClass}">${rank}</div>
+                                <div class="artist-info">
+                                    <div class="artist-display">${artistTitle}</div>
+                                </div>
+                            </div>
+                        `;
+                    })
+                    .join("");
+
+                artistsContainer.innerHTML = popularArtistsHTML;
+            }
+
+            loadPopularArtists();
+        </script>
+    </body>
+</html>

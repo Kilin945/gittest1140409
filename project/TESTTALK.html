@@ -1,15 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
-    
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Kilin的小聊天室</title>
-        <!-- 添加 Font Awesome 圖標庫 -->
+        <!-- Font Awesome 圖標庫 -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-        <!-- Kilin 通用樣式 -->
-        <link rel="stylesheet" href="kilin-style.css" />
 
+        <link rel="stylesheet" href="main.css" />
     </head>
 
     <body>
@@ -19,9 +17,7 @@
                     <h1>Kilin 的小聊天室</h1>
                 </div>
 
-                <a href="index.html" class="home-button">
-                    <i class="fas fa-home"></i> 返回首頁
-                </a>
+                <a href="index.html" class="home-button"> <i class="fas fa-home"></i> 返回首頁 </a>
 
                 <div class="chat-container">
                     <div class="input-group">
@@ -49,26 +45,29 @@
         </div>
 
         <script>
-            const messages = document.getElementById('messages');
-            const input = document.getElementById('input');
-            const username = document.getElementById('username');
-            
-            const apiBase = 'http://localhost:8000'; // ✅ <--- 請改成你的 ngrok 網址
-            
+            const messages = document.getElementById("messages");
+            const input = document.getElementById("input");
+            const username = document.getElementById("username");
+
+            const apiBase = "http://localhost:8000"; // ✅ <--- 請改成你的 ngrok 網址
+
             // 發送訊息函數
             function sendMessage() {
-                const name = username.value.trim();// 取得名字
-                const text = input.value.trim();// 取得訊息
+                const name = username.value.trim(); // 取得名字
+                const text = input.value.trim(); // 取得訊息
 
-                if(!name || !text) { return alert('請輸入名字和訊息！'); }
-                input.value = ''; // 清空輸入框,不要在發送請求的後面
+                if (!name || !text) {
+                    return alert("請輸入名字和訊息！");
+                }
+                input.value = ""; // 清空輸入框,不要在發送請求的後面
 
                 fetch(`${apiBase}/chat/send`, {
-                    method: 'POST',
-                    mode: 'cors', // ✅ 很關鍵
-                    headers: { 'Content-Type': 'application/json' }, // 設定請求標頭
-                    body: JSON.stringify({ name: name, message: text }) // 將資料轉換為 JSON 格式
-                }).then(() => { // 發送請求
+                    method: "POST",
+                    mode: "cors", // ✅ 很關鍵
+                    headers: { "Content-Type": "application/json" }, // 設定請求標頭
+                    body: JSON.stringify({ name: name, message: text }), // 將資料轉換為 JSON 格式
+                }).then(() => {
+                    // 發送請求
                     //input.value = '';
                     loadMessages(); // 即時刷新
                 });
@@ -76,36 +75,38 @@
 
             //撈取訊息
             async function loadMessages() {
-                try{
+                try {
                     const resp = await fetch(`${apiBase}/chat/messages`, {
-                        method: 'GET', // 或 POST 之類
+                        method: "GET", // 或 POST 之類
                         headers: {
-                            'ngrok-skip-browser-warning': 'true'
-                        }
+                            "ngrok-skip-browser-warning": "true",
+                        },
                     });
                     const data = await resp.json();
-                    messages.innerHTML = ''; // 清空訊息區域
-                    data.forEach (msg => {// 將訊息添加到訊息區域
-                        const div = document.createElement('div');// 創建新的訊息元素
-                        div.innerHTML = `<b>${msg.name}</b> (${msg.time}) : ${msg.message}`;// 創建新的訊息元素
-                        messages.appendChild(div);// 添加訊息到訊息區域
+                    messages.innerHTML = ""; // 清空訊息區域
+                    data.forEach((msg) => {
+                        // 將訊息添加到訊息區域
+                        const div = document.createElement("div"); // 創建新的訊息元素
+                        div.innerHTML = `<b>${msg.name}</b> (${msg.time}) : ${msg.message}`; // 創建新的訊息元素
+                        messages.appendChild(div); // 添加訊息到訊息區域
                     });
                     messages.scrollTop = messages.scrollHeight; // 滾動到最底部
-                }catch (err) {
-                    messages.innerHTML = '<i>載入失敗</i>';
-                    console.error("載入訊息錯誤：", err); 0
+                } catch (err) {
+                    messages.innerHTML = "<i>載入失敗</i>";
+                    console.error("載入訊息錯誤：", err);
+                    0;
                 }
             }
             // 每 1 秒刷新
             setInterval(loadMessages, 500);
             loadMessages();
-        
+
             // 監聽 Enter 鍵
-            document.getElementById('input').addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
+            document.getElementById("input").addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
                     sendMessage();
                 }
-            })
+            });
         </script>
     </body>
 </html>

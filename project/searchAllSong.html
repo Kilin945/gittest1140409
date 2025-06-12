@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <title>查詢所有歌曲 - Kilin 音樂庫</title>
+        <!-- 載入Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="main.css" />
+    </head>
+    <body>
+        <div class="overlay">
+            <div class="container">
+                <!-- 標題區域 -->
+                <div class="page-header">
+                    <h1>
+                        <i class="fa-solid fa-music"></i>
+                        查詢所有歌曲
+                    </h1>
+                </div>
+                <!-- 內容區域 -->
+                <div class="claude-card">
+                    <!-- 表格容器 -->
+                    <div id="tableContainer" class="table-container">載入中...</div>
+                    <!-- 分頁控制 -->
+                    <div class="pagination-container" id="paginationContainer" style="display: none">
+                        <div class="pagination-info">
+                            顯示第 <span id="startItem">1</span> - <span id="endItem">10</span> 筆，共
+                            <span id="totalItems">0</span> 筆
+                        </div>
+                        <div class="pagination-controls">
+                            <!-- 上一頁按鈕 -->
+                            <button class="pagination-btn" id="prevBtn">
+                                <i class="fas fa-chevron-left"></i>
+                                上一頁
+                            </button>
+                            <!-- 分頁數字 -->
+                            <div class="page-numbers" id="pageNumbers"></div>
+                            <!-- 下一頁按鈕 -->
+                            <button class="pagination-btn" id="nextBtn">
+                                下一頁
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script>
+            // API 端點
+            const apiUrl = "http://localhost:8000/api/songs";
+
+            // 分頁設定
+            let allData = []; //儲存所有資料
+            let currentPage = 1; //當前頁面編號
+            const itemsPerPage = 10; //每頁顯示的資料數量
+            let totalPages = 0; //總頁數
+
+            // 載入資料
+            async function loadData() {
+                const container = document.getElementById("tableContainer"); // 表格容器 tableContainer
+                try {
+                    container.innerHTML = "載入中..."; // 顯示載入訊息
+
+                    const resp = await fetch(apiUrl); // 發送 HTTP 請求到API
+                    console.log(`API 回應狀態: ${resp.status}`);
+
+                    if (!resp.ok) {
+                        throw new Error(`HTTP 錯誤: ${resp.status}`);
+                    }
+
+                    const data = await resp.json(); // 將回應轉為JSON格式
+                    console.log("收到的資料:", data);
+
+                    if (!Array.isArray(data)) {
+                        throw new Error("資料格式不是陣列");
+                    }
+                    if (data.length === 0) {
+                        container.innerHTML = "沒有資料";
+                        return;
+                    }
+
+                    allData = data; // 將資料儲存到全域變數
+                    totalPages = Math.ceil(allData.length / itemsPerPage); // 計算總頁數
+
+                    displayPage(currentPage); // 顯示第一頁資料
+
+                    document.getElementById("paginationContainer").style.display = "flex"; // 顯示分頁控制
+
+                    // 綁定按鈕事件
+                    setTimeout(() => {
+                        bindPaginationEvents();
+                    }, 10);
+                } catch (err) {
+                    console.error("載入錯誤:", err);
+                    container.innerHTML = "載入失敗：" + err.message;
+                }
+            }
+
+            // 顯示特定頁面的資料
+            function displayPage(page) {
+                const container = document.getElementById("tableContainer"); //取得表格容器
+                const start = (page - 1) * itemsPerPage; // 計算起始資料索引：例如第2頁 = (2-1) * 10 = 10
+                const end = start + itemsPerPage; // 計算結束索引：10 + 10 = 20
+                const pageData = allData.slice(start, end); // 從全部資料中切出當前頁面的資料
+
+                if (pageData.length === 0) {
+                    container.innerHTML = "沒有資料";
+                    return;
+                }
+
+                // 產生表格
+                let table = "<table><thead><tr>";
+
+                // 自動產出表頭
+                const keys = Object.keys(pageData[0]);
+                keys.forEach((k) => {
+                    table += `<th>${k}</th>`;
+                });
+                table += "</tr></thead><tbody>";
+
+                // 每一列資料
+                pageData.forEach((row) => {
+                    table += "<tr>";
+                    keys.forEach((k) => {
+                        table += `<td>${row[k] || ""}</td>`;
+                    });
+                    table += "</tr>";
+                });
+                table += "</tbody></table>";
+
+                container.innerHTML = table;
+
+                // 更新分頁資訊
+                updatePaginationInfo();
+            }
+
+            // 更新分頁資訊
+            function updatePaginationInfo() {
+                // 計算顯示範圍
+                const start = (currentPage - 1) * itemsPerPage + 1; // 起始筆數：第2頁 = (2-1)*10+1 = 11
+                const end = Math.min(currentPage * itemsPerPage, allData.length); // 結束筆數，不超過總筆數
+
+                // 更新顯示文字
+                document.getElementById("startItem").textContent = start;
+                document.getElementById("endItem").textContent = end;
+                document.getElementById("totalItems").textContent = allData.length;
+
+                // 更新按鈕狀態
+                const prevBtn = document.getElementById("prevBtn");
+                const nextBtn = document.getElementById("nextBtn");
+
+                // 先移除所有 disabled 相關的類別
+                prevBtn.classList.remove("disabled");
+                nextBtn.classList.remove("disabled");
+                console.log("移除後 prevBtn.className:", prevBtn.className);
+                console.log("移除後 nextBtn.className:", nextBtn.className);
+                // 根據條件添加 disabled 類別
+                prevBtn.disabled = currentPage === 1;
+                nextBtn.disabled = currentPage === totalPages;
+
+                // 更新頁碼
+                updatePageNumbers();
+            }
+
+            // 更新頁碼顯示
+            function updatePageNumbers() {
+                const pageNumbersContainer = document.getElementById("pageNumbers"); // 取得頁碼容器
+                pageNumbersContainer.innerHTML = "";
+
+                // 計算要顯示的頁碼範圍
+                let startPage = Math.max(1, currentPage - 2); // 最少從第1頁開始，或當前頁面-2
+                let endPage = Math.min(totalPages, currentPage + 2); // 最多到最後一頁，或當前頁面+2
+
+                // 如果總頁數少於5頁，顯示所有頁碼
+                if (totalPages <= 5) {
+                    startPage = 1;
+                    endPage = totalPages;
+                }
+
+                // 第一頁
+                if (startPage > 1) {
+                    addPageNumber(1);
+                    if (startPage > 2) {
+                        // 如果中間有間隔，加入 "..."
+                        pageNumbersContainer.innerHTML += '<span style="color: var(--claude-text-muted);">...</span>';
+                    }
+                }
+
+                // 中間頁碼
+                for (let i = startPage; i <= endPage; i++) {
+                    addPageNumber(i); // 為每一頁建立按鈕
+                }
+
+                // 如果結束頁不是最後一頁，顯示最後一頁
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        // 如果中間有間隔，加入 "..."
+                        pageNumbersContainer.innerHTML += '<span style="color: var(--claude-text-muted);">...</span>';
+                    }
+                    addPageNumber(totalPages); // 加入最後一頁按鈕
+                }
+            }
+
+            // 添加頁碼按鈕
+            function addPageNumber(pageNum) {
+                const pageNumbersContainer = document.getElementById("pageNumbers");
+                const pageBtn = document.createElement("div");
+                pageBtn.className = "page-num";
+                if (pageNum === currentPage) {
+                    pageBtn.classList.add("active");
+                }
+                pageBtn.textContent = pageNum; // 設定按鈕顯示的數字
+                pageBtn.onclick = () => goToPage(pageNum); //設定點擊事件
+                pageNumbersContainer.appendChild(pageBtn); //將按鈕加入容器
+            }
+            // 切換頁面
+            function changePage(direction) {
+                console.log("changePage 被呼叫, direction:", direction);
+                console.log("當前頁面:", currentPage, "總頁數:", totalPages);
+
+                const newPage = currentPage + direction;
+
+                if (newPage >= 1 && newPage <= totalPages) {
+                    currentPage = newPage;
+                    console.log("切換到頁面:", currentPage);
+                    displayPage(currentPage);
+                } else {
+                    console.log("頁面超出範圍, newPage:", newPage);
+                }
+            }
+
+            // 跳到指定頁面
+            function goToPage(pageNum) {
+                if (pageNum >= 1 && pageNum <= totalPages) {
+                    currentPage = pageNum;
+                    displayPage(currentPage);
+                }
+            }
+            // 綁定分頁事件
+            function bindPaginationEvents() {
+                document.getElementById("prevBtn").addEventListener("click", function (e) {
+                    //檢查按鈕是否被禁用
+                    if (this.classList.contains("disabled")) {
+                        e.preventDefault();
+                        return;
+                    }
+                    console.log("上一頁按鈕被點擊");
+                    changePage(-1);
+                });
+
+                document.getElementById("nextBtn").addEventListener("click", function (e) {
+                    if (this.classList.contains("disabled")) {
+                        e.preventDefault();
+                        return;
+                    }
+                    console.log("下一頁按鈕被點擊");
+                    changePage(1);
+                });
+            }
+            // 初始載入
+            loadData();
+        </script>
+    </body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8" />
+        <title>新增專輯</title>
+        <!-- Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+        <link rel="stylesheet" href="main.css" />
+    </head>
+    <body>
+        <h2>新增專輯</h2>
+        <label for="artist_id">請選擇歌手</label>
+        <select id="artist_id">
+            <option value="">請選擇歌手</option>
+        </select>
+
+        <label for="release_date">專輯出版日期：</label>
+        <input type="date" id="release_date" placeholder="請輸入專輯出版日期" />
+
+        <label for="album_name">專輯名稱：</label>
+        <input type="text" id="album_name" placeholder="請輸入專輯名稱" required />
+
+        <button>新增專輯</button>
+        <script>
+            console.log("Album Script 開始執行");
+            const apiArtists = "http://localhost:8000/api/artists";
+            const apiAlbums = "http://localhost:8000/api/albums";
+
+            async function artistNameAdd() {
+                console.log("載入歌手清單");
+                try {
+                    const resp = await fetch(apiArtists);
+                    console.log("API回應狀態:", resp.status);
+
+                    if (!resp.ok) throw new Error(`HTTP錯誤: ${resp.status}`);
+                    const data = await resp.json();
+
+                    const artistSelect = document.getElementById("artist_id"); //取得DOM元素
+
+                    if (!Array.isArray(data) || data.length === 0) {
+                        artistSelect.innerHTML = '<option value="">沒有歌手資料</option>';
+                        return;
+                    }
+
+                    // 清空現有選項（保留預設選項）
+                    artistSelect.innerHTML = '<option value="">請選擇歌手</option>';
+
+                    //每一列歌手資料
+                    data.forEach((row) => {
+                        let id = row["artist_id"];
+                        let name = row["artist_name"];
+                        let op = document.createElement("option");
+                        op.value = id;
+                        op.textContent = name;
+                        artistSelect.appendChild(op);
+                        //artist_id.append(op);
+                    });
+                } catch (err) {
+                    console.log(err);
+                    document.getElementById("artist_id").innerHTML = '<option value="">載入失敗</option>';
+                }
+            }
+            window.insertpost = async function () {
+                // 取得所有欄位的值
+                const album_name = document.getElementById("album_name").value.trim();
+                const artist_id = document.getElementById("artist_id").value;
+                const release_date = document.getElementById("release_date").value;
+
+                // 檢查必填欄位
+                if (!album_name || !artist_id) {
+                    alert("請選擇歌手並輸入專輯名稱！");
+                    return;
+                }
+
+                const requestData = {
+                    table: "albums",
+                    album_name: album_name,
+                    artist_id: artist_id,
+                };
+
+                // 只有填寫日期時才加入
+                if (release_date) {
+                    requestData.release_date = release_date;
+                }
+
+                console.log("提交資料:", requestData);
+
+                try {
+                    const response = await fetch("http://localhost:8000/api/2/insert", {
+                        method: "POST",
+                        mode: "cors",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(requestData),
+                    });
+                    console.log("API回應:", response);
+                    if (response.ok) {
+                        alert("專輯新增成功！");
+                        document.getElementById("album_name").value = "";
+                        document.getElementById("artist_id").value = "";
+                        document.getElementById("release_date").value = "";
+                        console.log("表單已清空");
+                    } else {
+                        alert("新增失敗，狀態碼" + response.status);
+                    }
+                } catch (error) {
+                    console.error("新增專輯失敗:", error);
+                    alert("新增專輯失敗: " + error.message);
+                }
+            };
+
+            console.log("綁定按鈕事件");
+            const btn = document.querySelector("button");
+            console.log("找到按鈕", btn);
+            if (btn) {
+                btn.addEventListener("click", function () {
+                    console.log("按鈕被點擊");
+                    window.insertpost();
+                });
+                console.log("按鈕事件綁定成功");
+            }
+
+            artistNameAdd();
+            console.log("Album Script 結束執行");
+        </script>
+    </body>
+</html>

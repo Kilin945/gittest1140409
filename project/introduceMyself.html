@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Kilin的自我介紹</title>
+        <!-- Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="main.css" />
+        <style>
+            /* 頁面特定樣式 */
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            .overlay {
+                width: 100%;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+
+            .container {
+                background: var(--claude-card);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--claude-border);
+                border-radius: var(--border-radius);
+                padding: 60px 40px 100px;
+                box-shadow: var(--claude-shadow-strong);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .container::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(
+                    135deg,
+                    rgba(255, 107, 53, 0.03) 0%,
+                    transparent 50%,
+                    rgba(255, 140, 107, 0.02) 100%
+                );
+                z-index: 0;
+            }
+
+            /* 標題樣式 */
+            .header {
+                text-align: center;
+                margin-bottom: 50px;
+                position: relative;
+                z-index: 1;
+            }
+
+            .header h1 {
+                font-size: 3.5rem;
+                font-weight: 700;
+                color: var(--claude-text);
+                letter-spacing: -0.02em;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+            }
+
+            .header h1::before {
+                content: "👋";
+                font-size: 3rem;
+                animation: wave 2s ease-in-out infinite;
+            }
+
+            @keyframes wave {
+                0%,
+                100% {
+                    transform: rotate(0deg);
+                }
+                25% {
+                    transform: rotate(-20deg);
+                }
+                75% {
+                    transform: rotate(10deg);
+                }
+            }
+
+            /* 區塊樣式 */
+            .section {
+                margin-bottom: 50px;
+                position: relative;
+                z-index: 1;
+                animation: fadeIn 0.8s ease-out forwards;
+                opacity: 0;
+            }
+
+            .section:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+            .section:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+
+            .section h1 {
+                font-size: 1.8rem;
+                color: var(--claude-primary);
+                margin-bottom: 25px;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid rgba(255, 107, 53, 0.2);
+            }
+
+            .section h1::before {
+                content: "";
+                width: 4px;
+                height: 24px;
+                background: var(--claude-primary);
+                border-radius: 2px;
+            }
+
+            /* 個人簡介項目 */
+            .intro-item {
+                background: var(--claude-card);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--claude-border);
+                border-radius: var(--border-radius);
+                padding: 30px;
+                font-size: 1.3rem;
+                color: var(--claude-text);
+                font-weight: 600;
+                transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--claude-shadow);
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .intro-item::before {
+                content: "";
+                position: absolute;
+                top: -50%;
+                left: -50%;
+                width: 200%;
+                height: 200%;
+                background: radial-gradient(circle, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+                animation: rotate 20s linear infinite;
+            }
+
+            @keyframes rotate {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+
+            .intro-item:hover {
+                transform: translateY(-3px);
+                box-shadow: var(--claude-shadow-strong);
+                border-color: var(--claude-primary);
+            }
+
+            /* 動物項目樣式 */
+            .animal-item {
+                background: var(--claude-card);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--claude-border);
+                border-radius: var(--border-radius);
+                padding: 25px 30px;
+                margin: 20px 0;
+                display: flex;
+                align-items: center;
+                min-height: 100px;
+                transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--claude-shadow);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .animal-item::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 4px;
+                height: 100%;
+                background: var(--claude-primary);
+                transform: scaleY(0);
+                transition: transform var(--transition-speed) ease;
+            }
+
+            .animal-item:hover {
+                transform: translateX(10px) translateY(-2px);
+                box-shadow: var(--claude-shadow-strong);
+                background: var(--claude-card-hover);
+                border-color: var(--claude-primary);
+            }
+
+            .animal-item:hover::before {
+                transform: scaleY(1);
+            }
+
+            .animal-img {
+                width: 80px;
+                height: 80px;
+                object-fit: cover;
+                border-radius: 50%;
+                border: 3px solid var(--claude-primary);
+                box-shadow: var(--claude-shadow);
+                margin-right: 25px;
+                transition: transform var(--transition-speed) ease;
+                position: relative;
+                z-index: 1;
+            }
+
+            .animal-img:hover {
+                transform: scale(1.15) rotate(5deg);
+                box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+            }
+
+            .animal-item span {
+                font-size: 1.2rem;
+                color: var(--claude-text);
+                font-weight: 600;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* 特殊項目 */
+            .special-item {
+                background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 140, 107, 0.05) 100%);
+                border: 2px solid var(--claude-primary);
+            }
+
+            .special-item span {
+                color: var(--claude-accent);
+            }
+
+            /* 返回首頁按鈕 */
+            .bottom-home-button {
+                position: fixed;
+                bottom: 30px;
+                right: 30px;
+                background: linear-gradient(135deg, var(--claude-primary) 0%, var(--claude-primary-hover) 100%);
+                color: var(--claude-text);
+                border: none;
+                padding: 14px 28px;
+                border-radius: 50px;
+                font-weight: 600;
+                font-size: 16px;
+                cursor: pointer;
+                box-shadow: var(--claude-shadow);
+                transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                z-index: 100;
+                overflow: hidden;
+            }
+
+            .bottom-home-button::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.6s;
+            }
+
+            .bottom-home-button:hover::before {
+                left: 100%;
+            }
+
+            .bottom-home-button:hover {
+                transform: translateY(-3px);
+                box-shadow: var(--claude-shadow-strong);
+            }
+
+            .bottom-home-button i {
+                font-size: 18px;
+            }
+
+            /* 頁尾 */
+            .footer {
+                text-align: center;
+                color: var(--claude-text-muted);
+                font-size: 0.9rem;
+                padding: 20px 0;
+                border-top: 1px solid rgba(255, 107, 53, 0.2);
+                margin-top: 50px;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* 裝飾元素 */
+            .floating-emoji {
+                position: absolute;
+                font-size: 2rem;
+                opacity: 0.1;
+                animation: float 10s ease-in-out infinite;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            @keyframes float {
+                0%,
+                100% {
+                    transform: translateY(0) rotate(0deg);
+                }
+                50% {
+                    transform: translateY(-20px) rotate(10deg);
+                }
+            }
+
+            .emoji-1 {
+                top: 10%;
+                left: 10%;
+                animation-delay: 0s;
+            }
+            .emoji-2 {
+                top: 20%;
+                right: 15%;
+                animation-delay: 2s;
+            }
+            .emoji-3 {
+                bottom: 30%;
+                left: 20%;
+                animation-delay: 4s;
+            }
+            .emoji-4 {
+                bottom: 20%;
+                right: 10%;
+                animation-delay: 6s;
+            }
+
+            /* 響應式設計 */
+            @media (max-width: 768px) {
+                .container {
+                    padding: 40px 25px 100px;
+                }
+
+                .header h1 {
+                    font-size: 2.5rem;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+
+                .header h1::before {
+                    font-size: 2.5rem;
+                }
+
+                .section h1 {
+                    font-size: 1.5rem;
+                }
+
+                .intro-item {
+                    font-size: 1.1rem;
+                    padding: 25px 20px;
+                }
+
+                .animal-item {
+                    padding: 20px;
+                    flex-direction: column;
+                    text-align: center;
+                }
+
+                .animal-img {
+                    margin-right: 0;
+                    margin-bottom: 15px;
+                }
+
+                .bottom-home-button {
+                    bottom: 20px;
+                    right: 20px;
+                    padding: 12px 24px;
+                    font-size: 14px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .header h1 {
+                    font-size: 2rem;
+                }
+
+                .animal-img {
+                    width: 70px;
+                    height: 70px;
+                }
+
+                .animal-item span {
+                    font-size: 1rem;
+                }
+            }
+
+            /* 動畫效果 */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* 滑鼠游標特效 */
+            .animal-item {
+                cursor: pointer;
+            }
+
+            /* 添加心跳動畫給最後一個項目 */
+            .special-item:hover .animal-img {
+                animation: heartbeat 1s ease-in-out infinite;
+            }
+
+            @keyframes heartbeat {
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.1);
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="overlay">
+            <div class="container">
+                <!-- 浮動裝飾元素 -->
+                <div class="floating-emoji emoji-1">🎵</div>
+                <div class="floating-emoji emoji-2">✨</div>
+                <div class="floating-emoji emoji-3">🌟</div>
+                <div class="floating-emoji emoji-4">💫</div>
+
+                <div class="header">
+                    <h1>自我介紹</h1>
+                </div>
+
+                <div class="section">
+                    <h1>個人簡介</h1>
+                    <div class="intro-item">我是葉其霖，綽號是阿其，也可以叫我 Kilin</div>
+                </div>
+
+                <div class="section">
+                    <h1>喜歡的小玩偶</h1>
+
+                    <div class="animal-item">
+                        <img src="project/picture/卡皮巴拉.jpg" alt="卡皮巴拉" class="animal-img" />
+                        <span>卡皮巴拉</span>
+                    </div>
+
+                    <div class="animal-item">
+                        <img src="project/picture/北極熊.jpg" alt="北極熊" class="animal-img" />
+                        <span>北極熊</span>
+                    </div>
+
+                    <div class="animal-item">
+                        <img src="project/picture/拉布布.jpg" alt="拉布布" class="animal-img" />
+                        <span>拉布布</span>
+                    </div>
+
+                    <div class="animal-item special-item">
+                        <img src="project/picture/刺蝟.jpg" alt="刺蝟" class="animal-img" />
+                        <span>他們都在我的床頭櫃上陪我 💝</span>
+                    </div>
+                </div>
+
+                <div class="footer">© 2025 Kilin's Website. All Rights Reserved.</div>
+            </div>
+        </div>
+
+        <!-- 返回首頁按鈕 -->
+        <a href="index.html" class="bottom-home-button">
+            <i class="fas fa-home"></i>
+            返回首頁
+        </a>
+
+        <script>
+            // 為動物項目添加點擊效果
+            document.querySelectorAll(".animal-item").forEach((item) => {
+                item.addEventListener("click", function () {
+                    // 創建漣漪效果
+                    const ripple = document.createElement("div");
+                    ripple.style.cssText = `
+                    position: absolute;
+                    border-radius: 50%;
+                    background: rgba(255, 107, 53, 0.3);
+                    width: 0;
+                    height: 0;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    animation: rippleEffect 0.6s ease-out;
+                    pointer-events: none;
+                `;
+
+                    const style = document.createElement("style");
+                    style.textContent = `
+                    @keyframes rippleEffect {
+                        to {
+                            width: 100%;
+                            height: 100%;
+                            opacity: 0;
+                        }
+                    }
+                `;
+
+                    if (!document.querySelector("#rippleStyle")) {
+                        style.id = "rippleStyle";
+                        document.head.appendChild(style);
+                    }
+
+                    this.style.position = "relative";
+                    this.appendChild(ripple);
+
+                    setTimeout(() => ripple.remove(), 600);
+                });
+            });
+
+            // 圖片載入動畫
+            document.querySelectorAll(".animal-img").forEach((img) => {
+                img.addEventListener("load", function () {
+                    this.style.animation = "fadeIn 0.5s ease-out";
+                });
+            });
+        </script>
+    </body>
+</html>

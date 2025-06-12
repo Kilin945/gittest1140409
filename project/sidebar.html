@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Kilin 音樂資料庫管理系統</title>
+        <!-- Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="main.css" />
+    </head>
+
+    <body>
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>音樂選單系統</h2>
+                <div class="sidebar-subtitle">Music Database System</div>
+                <div class="decorative-line"></div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-item">
+                    <a href="index.html" class="nav-link">返回首頁</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertSongs.html" class="nav-link">新增歌曲</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertPlaylists.html" class="nav-link">建立播放清單</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertPlaylistSongs.html" class="nav-link">建立播放清單歌曲</a>
+                </div>
+
+                <div class="nav-section-title">個人功能</div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=searchAllSong.html" class="nav-link">查詢歌曲</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=musicCharts.html" class="nav-link">音樂排行榜</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=popularArtists.html" class="nav-link">最受歡迎歌手</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=updateUser.html" class="nav-link">個人設定</a>
+                </div>
+
+                <div class="nav-section-title">資料管理</div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertArtists.html" class="nav-link">新增歌手</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertAlbums.html" class="nav-link">新增專輯</a>
+                </div>
+
+                <div class="nav-section-title">管理員功能</div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertUsers.html" class="nav-link">新增使用者</a>
+                </div>
+            </nav>
+        </div>
+
+        <div class="content" id="mainContent">
+            <div class="content-header">
+                <h1 class="welcome-title">歡迎來到 Kilin 音樂世界</h1>
+                <p class="welcome-subtitle">管理您的音樂收藏</p>
+            </div>
+
+            <div class="content-body">
+                <div id="pageContent">
+                    <div class="welcome-content">
+                        <div class="feature-grid">
+                            <div class="feature-card">
+                                <h3>查詢歌曲</h3>
+                                <p>查詢所有歌曲、瀏覽排行榜和最受歡迎歌手</p>
+                            </div>
+
+                            <div class="feature-card">
+                                <h3>個人播放清單</h3>
+                                <p>建立和管理您的專屬播放清單</p>
+                            </div>
+
+                            <div class="feature-card">
+                                <h3>資料管理</h3>
+                                <p>新增歌手、歌曲和專輯資訊</p>
+                            </div>
+
+                            <div class="feature-card">
+                                <h3>個人設定</h3>
+                                <p>管理您的個人資料</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function toggleSidebar() {
+                document.getElementById("sidebar").classList.toggle("active");
+            }
+
+            function getQueryParam(name) {
+                const params = new URLSearchParams(window.location.search);
+                return params.get(name);
+            }
+
+            async function loadPage(fileName) {
+                try {
+                    const response = await fetch(fileName);
+                    if (!response.ok) throw new Error("載入失敗");
+                    const html = await response.text();
+
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+
+                    const pageArea = document.getElementById("pageContent");
+                    pageArea.innerHTML = "";
+
+                    // 移除舊 script（標記為 data-dynamic 的）
+                    document.querySelectorAll("script[data-dynamic]").forEach((s) => s.remove());
+
+                    // 插入非 script 元素
+                    Array.from(doc.body.childNodes).forEach((node) => {
+                        if (node.tagName !== "SCRIPT") {
+                            pageArea.appendChild(document.importNode(node, true));
+                        }
+                    });
+
+                    // 使用 setTimeout 延遲執行 scripts
+                    setTimeout(() => {
+                        const scripts = doc.querySelectorAll("script");
+                        scripts.forEach((oldScript) => {
+                            const newScript = document.createElement("script");
+                            newScript.setAttribute("data-dynamic", "true");
+
+                            // 包裝原本的 script 內容，加入延遲
+                            if (oldScript.src) {
+                                newScript.src = oldScript.src;
+                            } else {
+                                // 在 script 內容前加入延遲
+                                newScript.textContent = `
+                        setTimeout(function() {
+                            ${oldScript.textContent}
+                        }, 100);
+                    `;
+                            }
+
+                            document.body.appendChild(newScript);
+                        });
+                    }, 50);
+
+                    if (window.innerWidth <= 768) toggleSidebar();
+                } catch (err) {
+                    const pageContent = document.getElementById("pageContent");
+                    pageContent.innerHTML = `<p style="color:red;">⚠ 無法載入 ${fileName}：${err.message}</p>`;
+                }
+            }
+
+            window.addEventListener("DOMContentLoaded", () => {
+                const target = getQueryParam("target");
+                if (target) {
+                    loadPage(target);
+                }
+            });
+        </script>
+    </body>
+</html>

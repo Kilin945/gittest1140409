@@ -1,0 +1,37 @@
+/* Claude 4 風格 - CSS 變數定義 */
+:root {
+    /* 色彩系統 */
+    --claude-bg: #0a0f0d;
+    --claude-bg-secondary: #0f1512;
+    --claude-primary: #ff6b35;
+    --claude-primary-hover: #e55a2e;
+    --claude-accent: #ff8c6b;
+    --claude-text: #ffffff;
+    --claude-text-secondary: #e5e7eb;
+    --claude-text-muted: #9ca3af;
+    --claude-card: rgba(255, 107, 53, 0.08);
+    --claude-card-hover: rgba(255, 107, 53, 0.12);
+    --claude-border: rgba(255, 107, 53, 0.3);
+    --claude-shadow: 0 4px 20px rgba(255, 107, 53, 0.15);
+    --claude-shadow-strong: 0 8px 32px rgba(255, 107, 53, 0.25);
+    --claude-glass: rgba(255, 255, 255, 0.05);
+
+    /* 狀態色彩 */
+    --claude-success: #22c55e;
+    --claude-danger: #ef4444;
+    --claude-warning: #f59e0b;
+    --claude-info: #3b82f6;
+
+    /* 版面設定 */
+    --sidebar-width: 300px;
+    --transition-speed: 0.4s;
+    --border-radius: 16px;
+    --font-family: "Inter", "Segoe UI", "微軟正黑體", sans-serif;
+
+    /* 間距系統 */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+}

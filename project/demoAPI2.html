@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <title>音樂選單系統</title>
+        <!-- Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="css/main.css" />
+    </head>
+
+    <body>
+        <div class="page-title">
+            <h1>資料操作</h1>
+        </div>
+        <div>
+            <button class="tab-btn" onclick="loadTable(apiArtists, container)">歌手清單</button>
+            <button class="tab-btn" onclick="loadTable(apiSongs, container)">歌曲清單</button>
+            <button class="tab-btn" onclick="loadTable(apiAlbums, container)">專輯清單</button>
+            <button class="tab-btn" onclick="loadTable(apiUsers, container)">使用者清單</button>
+            <button class="tab-btn" onclick="loadTable(apiPlaylists, container)">播放清單</button>
+            <button class="tab-btn" onclick="loadTable(apiPlaylistSongs, container)">播放歌曲清單</button>
+        </div>
+        <div>
+            <div id="tableContainer">請點選上方按鈕查詢資料</div>
+        </div>
+
+        <script>
+            //url要改
+            const apiArtists = "http://localhost:8000/api/artists";
+            const apiSongs = "http://localhost:8000/api/songs";
+            const apiAlbums = "http://localhost:8000/api/albums";
+            const apiUsers = "http://localhost:8000/api/users";
+            const apiPlaylists = "http://localhost:8000/api/playlists";
+            const apiPlaylistSongs = "http://localhost:8000/api/playlist_songs";
+
+            const container = document.getElementById("tableContainer"); // 取得顯示表格的容器
+            let currenturl = "";
+            let currenttodiv = container;
+
+            //1. 讀取資料fetch        固定url -> 不固定
+            //2. 產生table html  (jsondata+table混合產生)
+            //3. 顯示table到指定div   固定element -> 不固定
+            async function loadTable(url, todiv) {
+                currenturl = url;
+                currenttodiv = todiv;
+                try {
+                    let tablename = "";
+                    switch (url) {
+                        case apiArtists:
+                            tablename = "artists";
+                            break;
+                        case apiSongs:
+                            tablename = "songs";
+                            break;
+                        case apiAlbums:
+                            tablename = "albums";
+                            break;
+                        case apiUsers:
+                            tablename = "users";
+                            break;
+                        case apiPlaylists:
+                            tablename = "playlists";
+                            break;
+                        case apiPlaylistSongs:
+                            tablename = "playlist_songs";
+                            break;
+                    }
+                    const resp = await fetch(url);
+                    if (!resp.ok) throw new Error(`HTTP 錯誤: ${resp.status}`);
+                    const data = await resp.json();
+                    if (!Array.isArray(data) || data.length === 0) {
+                        todiv.textContent = "沒有資料";
+                        return;
+                    }
+                    // 產生表格
+                    let table = `<table><thead><tr>`;
+
+                    // 自動產出表頭
+                    table += `<th>操作</th>`; // 表頭操作欄位
+                    const keys = Object.keys(data[0]);
+                    keys.forEach((k) => {
+                        table += `<th>${k}</th>`;
+                    });
+                    table += `</tr></thead><tbody>`;
+                    // 每一列資料
+                    //{table:artists,artist_id:1,....}
+                    data.forEach((row) => {
+                        //console.log({ ...row, state: -1 });
+                        const x = JSON.stringify({ ...row, state: -1, table: tablename });
+                        console.log(x);
+                        table += `<tr>`;
+                        table += `<td><button onclick='updaterow(${x})'>刪除</button></td>`;
+                        keys.forEach((k) => {
+                            table += `<td>${row[k]}</td>`;
+                            // key : value  k : row[k]
+                        });
+                        table += `</tr>`;
+                    });
+                    table += `</tbody></table>`;
+                    todiv.innerHTML = table;
+                } catch (err) {
+                    todiv.textContent = "載入失敗：" + err.message;
+                }
+            }
+            function updaterow(returnbody) {
+                console.log(returnbody);
+                fetch(`http://localhost:8000/api/2/update`, {
+                    method: "POST",
+                    mode: "cors",
+                    body: JSON.stringify(returnbody),
+                });
+                loadTable(currenturl, currenttodiv);
+            }
+        </script>
+    </body>
+</html>

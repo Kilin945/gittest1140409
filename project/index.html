@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Kilin的網站</title>
+        <!-- Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="main.css" />
+        <style>
+            /* 覆蓋主要容器樣式 */
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                padding: 20px;
+            }
+
+            .overlay {
+                width: 100%;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+
+            .container {
+                background: var(--claude-card);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--claude-border);
+                border-radius: var(--border-radius);
+                padding: 60px 40px;
+                box-shadow: var(--claude-shadow-strong);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .container::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(
+                    135deg,
+                    rgba(255, 107, 53, 0.03) 0%,
+                    transparent 50%,
+                    rgba(255, 140, 107, 0.02) 100%
+                );
+                z-index: 0;
+            }
+
+            /* 標題樣式 */
+            .header {
+                text-align: center;
+                margin-bottom: 50px;
+                position: relative;
+                z-index: 1;
+            }
+
+            .header h1 {
+                font-size: 3.5rem;
+                font-weight: 700;
+                color: var(--claude-text);
+                letter-spacing: -0.02em;
+                margin-bottom: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+            }
+
+            .header h1::before {
+                content: "🌟";
+                font-size: 3rem;
+                animation: pulse 3s ease-in-out infinite;
+            }
+
+            /* 主要內容區域 */
+            .section {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+                gap: 25px;
+                margin-bottom: 60px;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* 選單項目 */
+            .menu-item {
+                background: var(--claude-card);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--claude-border);
+                border-radius: var(--border-radius);
+                padding: 0;
+                min-height: 120px;
+                transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: var(--claude-shadow);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .menu-item::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 4px;
+                height: 100%;
+                background: var(--claude-primary);
+                transform: scaleY(0);
+                transition: transform var(--transition-speed) ease;
+            }
+
+            .menu-item:hover {
+                transform: translateY(-5px) scale(1.02);
+                box-shadow: var(--claude-shadow-strong);
+                background: var(--claude-card-hover);
+                border-color: var(--claude-primary);
+            }
+
+            .menu-item:hover::before {
+                transform: scaleY(1);
+            }
+
+            .menu-item a {
+                color: var(--claude-text);
+                text-decoration: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 20px;
+                width: 100%;
+                height: 100%;
+                padding: 35px 30px;
+                font-size: 1.4rem;
+                font-weight: 600;
+                transition: all var(--transition-speed) ease;
+                position: relative;
+                z-index: 1;
+            }
+
+            .menu-item:hover a {
+                color: var(--claude-accent);
+            }
+
+            .menu-item .icon {
+                font-size: 2rem;
+                color: var(--claude-primary);
+                transition: all var(--transition-speed) ease;
+            }
+
+            .menu-item:hover .icon {
+                transform: scale(1.2) rotate(5deg);
+                color: var(--claude-accent);
+            }
+
+            /* 頁尾 */
+            .footer {
+                text-align: center;
+                color: var(--claude-text-muted);
+                font-size: 0.9rem;
+                padding: 20px 0;
+                border-top: 1px solid rgba(255, 107, 53, 0.2);
+                margin-top: 40px;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* 點讚按鈕 */
+            .like-button {
+                position: absolute;
+                bottom: 30px;
+                right: 30px;
+                background: linear-gradient(135deg, var(--claude-primary) 0%, var(--claude-primary-hover) 100%);
+                color: var(--claude-text);
+                border: none;
+                padding: 14px 28px;
+                border-radius: 50px;
+                font-weight: 600;
+                font-size: 16px;
+                cursor: pointer;
+                box-shadow: var(--claude-shadow);
+                transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                z-index: 10;
+                overflow: hidden;
+            }
+
+            .like-button::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.6s;
+            }
+
+            .like-button:hover::before {
+                left: 100%;
+            }
+
+            .like-button:hover {
+                transform: translateY(-3px);
+                box-shadow: var(--claude-shadow-strong);
+            }
+
+            .like-button.liked {
+                animation: likeAnimation 0.4s ease;
+            }
+
+            @keyframes likeAnimation {
+                0% {
+                    transform: scale(1) rotate(0deg);
+                }
+                25% {
+                    transform: scale(1.1) rotate(-5deg);
+                }
+                50% {
+                    transform: scale(1.2) rotate(5deg);
+                }
+                75% {
+                    transform: scale(1.1) rotate(-3deg);
+                }
+                100% {
+                    transform: scale(1) rotate(0deg);
+                }
+            }
+
+            .like-count {
+                background: rgba(255, 255, 255, 0.2);
+                color: var(--claude-text);
+                border-radius: 20px;
+                padding: 4px 12px;
+                font-weight: 700;
+                font-size: 14px;
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            /* 裝飾元素 */
+            .decorative-element {
+                position: absolute;
+                width: 300px;
+                height: 300px;
+                border-radius: 50%;
+                background: radial-gradient(circle, rgba(255, 107, 53, 0.1) 0%, transparent 70%);
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            .decorative-element.top-left {
+                top: -150px;
+                left: -150px;
+            }
+
+            .decorative-element.bottom-right {
+                bottom: -150px;
+                right: -150px;
+            }
+
+            /* 響應式設計 */
+            @media (max-width: 768px) {
+                .container {
+                    padding: 40px 25px 80px;
+                }
+
+                .header h1 {
+                    font-size: 2.5rem;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+
+                .header h1::before {
+                    font-size: 2.5rem;
+                }
+
+                .section {
+                    grid-template-columns: 1fr;
+                    gap: 20px;
+                }
+
+                .menu-item a {
+                    font-size: 1.2rem;
+                    padding: 25px 20px;
+                }
+
+                .like-button {
+                    bottom: 20px;
+                    right: 20px;
+                    padding: 12px 24px;
+                    font-size: 14px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .header h1 {
+                    font-size: 2rem;
+                }
+
+                .menu-item a {
+                    font-size: 1.1rem;
+                    gap: 15px;
+                }
+
+                .menu-item .icon {
+                    font-size: 1.5rem;
+                }
+            }
+
+            /* 動畫效果 */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .container > * {
+                animation: fadeIn 0.8s ease-out forwards;
+            }
+
+            .header {
+                animation-delay: 0.1s;
+            }
+
+            .section {
+                animation-delay: 0.3s;
+            }
+
+            .footer {
+                animation-delay: 0.5s;
+            }
+
+            .like-button {
+                animation-delay: 0.7s;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="overlay">
+            <div class="container">
+                <!-- 裝飾元素 -->
+                <div class="decorative-element top-left"></div>
+                <div class="decorative-element bottom-right"></div>
+
+                <div class="header">
+                    <h1>Kilin 的網站目錄</h1>
+                </div>
+
+                <div class="section">
+                    <div class="menu-item">
+                        <a href="IntroduceMyself.html">
+                            <i class="fas fa-user icon"></i>
+                            <span>自我介紹</span>
+                        </a>
+                    </div>
+
+                    <div class="menu-item">
+                        <a href="TESTTALK.html">
+                            <i class="fas fa-comments icon"></i>
+                            <span>Kilin 的小聊天室</span>
+                        </a>
+                    </div>
+
+                    <div class="menu-item">
+                        <a href="TESTGAME1.html">
+                            <i class="fas fa-gamepad icon"></i>
+                            <span>小遊戲</span>
+                        </a>
+                    </div>
+
+                    <div class="menu-item">
+                        <a href="sidebar.html">
+                            <i class="fas fa-music icon"></i>
+                            <span>進入音樂選單</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="footer">© 2025 Kilin's Website. All Rights Reserved.</div>
+
+                <!-- 點讚按鈕 -->
+                <button class="like-button" onclick="addLike()">
+                    <i class="fas fa-heart"></i>
+                    幫網站點個讚吧
+                    <span class="like-count" id="likeCount">0</span>
+                </button>
+            </div>
+        </div>
+
+        <script>
+            // 讀取localStorage中的點讚數
+            function loadLikes() {
+                const likes = localStorage.getItem("websiteLikes");
+                return likes ? parseInt(likes) : 0;
+            }
+
+            // 顯示點讚數
+            function displayLikes() {
+                document.getElementById("likeCount").textContent = loadLikes();
+            }
+
+            // 添加點讚
+            function addLike() {
+                const currentLikes = loadLikes();
+                const newLikes = currentLikes + 1;
+                localStorage.setItem("websiteLikes", newLikes);
+                document.getElementById("likeCount").textContent = newLikes;
+
+                // 添加點讚動畫效果
+                const likeButton = document.querySelector(".like-button");
+                likeButton.classList.add("liked");
+                setTimeout(() => {
+                    likeButton.classList.remove("liked");
+                }, 400);
+
+                // 創建愛心飄動效果
+                createFloatingHeart();
+            }
+
+            // 創建飄動的愛心效果
+            function createFloatingHeart() {
+                const heart = document.createElement("div");
+                heart.innerHTML = "❤️";
+                heart.style.cssText = `
+                position: fixed;
+                bottom: 50px;
+                right: 60px;
+                font-size: 24px;
+                z-index: 1000;
+                pointer-events: none;
+                animation: floatUp 2s ease-out forwards;
+            `;
+
+                // 添加飄動動畫
+                const style = document.createElement("style");
+                style.textContent = `
+                @keyframes floatUp {
+                    0% {
+                        transform: translateY(0) scale(1);
+                        opacity: 1;
+                    }
+                    100% {
+                        transform: translateY(-100px) scale(0.5);
+                        opacity: 0;
+                    }
+                }
+            `;
+                document.head.appendChild(style);
+
+                document.body.appendChild(heart);
+
+                // 動畫結束後移除元素
+                setTimeout(() => {
+                    heart.remove();
+                }, 2000);
+            }
+
+            // 頁面加載時顯示點讚數
+            window.onload = displayLikes;
+        </script>
+    </body>
+</html>

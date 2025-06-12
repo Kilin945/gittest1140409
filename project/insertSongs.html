@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8" />
+        <title>新增歌曲</title>
+        <!-- Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <link rel="stylesheet" href="main.css" />
+        <style>
+            .disabled-select {
+                background-color: #f5f5f5;
+                color: #999;
+                cursor: not-allowed;
+            }
+
+            .required {
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>🎵 新增歌曲</h2>
+
+        <label for="artist_id">請選擇歌手</label>
+        <select id="artist_id" required>
+            <option value="">請選擇歌手</option>
+        </select>
+
+        <label for="album_id">請選擇專輯</label>
+        <select id="album_id" disabled class="disabled-select">
+            <option value="">請先選擇歌手</option>
+        </select>
+
+        <label for="category">歌曲類別</label>
+        <select id="category">
+            <option value="">請選擇歌曲類別</option>
+            <option value="抒情">抒情歌</option>
+            <option value="搖滾">搖滾樂</option>
+            <option value="流行">流行歌</option>
+            <option value="民謠">民謠</option>
+            <option value="嘻哈">嘻哈</option>
+            <option value="電子">電子音樂</option>
+            <option value="古典">古典</option>
+            <option value="其他">其他</option>
+        </select>
+
+        <label for="ytlink">YouTube 連結</label>
+        <input type="url" id="ytlink" placeholder="https://www.youtube.com/watch?v=..." />
+
+        <label for="song_name">歌曲名稱 <span class="required">*</span></label>
+        <input type="text" id="song_name" placeholder="請輸入歌曲名稱" required />
+        <button>新增歌曲</button>
+
+        <script>
+            console.log("Insert Songs Script 開始執行");
+            const apiArtists = "http://localhost:8000/api/artists";
+            const apiAlbums = "http://localhost:8000/api/albums";
+            let allAlbumsData = [];
+
+            async function artistNameAdd() {
+                try {
+                    console.log("🔄 開始載入歌手資料...");
+                    const response = await fetch(apiArtists);
+
+                    if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
+                    const data = await response.json();
+
+                    const artistSelect = document.getElementById("artist_id");
+
+                    if (!artistSelect) {
+                        console.error("找不到 artist_id 元素");
+                        return;
+                    }
+
+                    if (!Array.isArray(data) || data.length === 0) {
+                        artistSelect.innerHTML = '<option value="">沒有歌手資料</option>';
+                        return;
+                    }
+
+                    artistSelect.innerHTML = '<option value="">請選擇歌手</option>';
+
+                    data.forEach((row) => {
+                        let id = row["artist_id"];
+                        let name = row["artist_name"];
+                        let op = document.createElement("option");
+                        op.value = id;
+                        op.textContent = name;
+                        artistSelect.appendChild(op);
+                    });
+
+                    console.log("✅ 歌手資料載入成功，共", data.length, "位歌手");
+                } catch (err) {
+                    console.error("❌ 載入歌手失敗", err);
+                    const artistSelect = document.getElementById("artist_id");
+                    if (artistSelect) {
+                        artistSelect.innerHTML = '<option value="">載入失敗</option>';
+                    }
+                }
+            }
+
+            // 載入所有專輯清單（儲存到全域變數）
+            async function albumNameAdd() {
+                try {
+                    console.log("🔄 開始載入專輯資料...");
+                    const response = await fetch(apiAlbums);
+                    if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
+                    const data = await response.json();
+
+                    if (!Array.isArray(data)) {
+                        console.error("專輯資料格式錯誤");
+                        return;
+                    }
+
+                    // 儲存所有專輯資料到全域變數
+                    allAlbumsData = data;
+
+                    console.log("✅ 專輯資料載入成功，共", data.length, "張專輯");
+                    console.log("📋 專輯資料:", data);
+                } catch (err) {
+                    console.error("❌ 載入專輯失敗", err);
+                    allAlbumsData = [];
+                }
+            }
+
+            // 🎯 關鍵功能：當歌手選擇改變時觸發
+            function onArtistChange() {
+                console.log("onArtistChange 被觸發");
+                console.log("allAlbumsData 長度:", allAlbumsData.length);
+
+                const artistSelect = document.getElementById("artist_id");
+                const albumSelect = document.getElementById("album_id");
+                const selectedArtistId = artistSelect.value;
+                const selectedArtistName = artistSelect.selectedOptions[0]?.textContent || "未知歌手";
+
+                console.log("🎤 歌手選擇改變:", selectedArtistId, "-", selectedArtistName);
+
+                if (!selectedArtistId) {
+                    // 沒有選擇歌手，禁用專輯選單
+                    albumSelect.disabled = true;
+                    albumSelect.className = "disabled-select";
+                    albumSelect.innerHTML = '<option value="">請先選擇歌手</option>';
+                    console.log("🔒 專輯選單已禁用");
+                    return;
+                }
+
+                // 啟用專輯選單
+                albumSelect.disabled = false;
+                albumSelect.className = "";
+
+                // 篩選該歌手的專輯
+                const artistAlbums = allAlbumsData.filter((album) => album.artist_id == selectedArtistId);
+
+                console.log(
+                    `💿 找到 ${artistAlbums.length} 張專輯屬於歌手「${selectedArtistName}」(ID: ${selectedArtistId})`
+                );
+
+                // 重新建立專輯選單
+                albumSelect.innerHTML = `<option value="">選擇${selectedArtistName}的專輯（可留空）</option>`;
+
+                if (artistAlbums.length === 0) {
+                    // 該歌手沒有專輯
+                    const option = document.createElement("option");
+                    option.value = "";
+                    option.textContent = `${selectedArtistName} 尚無專輯資料，將分類到「未分類」`;
+                    option.disabled = true;
+                    option.style.fontStyle = "italic";
+                    option.style.color = "#888";
+                    albumSelect.appendChild(option);
+
+                    console.log(`📝 ${selectedArtistName} 沒有專輯，歌曲將分類到「未分類」`);
+                } else {
+                    // 加入該歌手的專輯，按發行日期排序
+                    artistAlbums
+                        .sort((a, b) => {
+                            const dateA = new Date(a.release_date || "1900-01-01");
+                            const dateB = new Date(b.release_date || "1900-01-01");
+                            return dateB - dateA; // 新專輯在前
+                        })
+                        .forEach((album) => {
+                            const option = document.createElement("option");
+                            option.value = album.album_id;
+
+                            // 格式化發行日期
+                            const releaseYear = album.release_date
+                                ? new Date(album.release_date).getFullYear()
+                                : "年份未知";
+
+                            option.textContent = `${album.album_name} (${releaseYear})`;
+
+                            // 如果是最新專輯，加上標記
+                            if (artistAlbums.indexOf(album) === 0 && artistAlbums.length > 1) {
+                                option.textContent += " 🆕";
+                                option.style.fontWeight = "bold";
+                            }
+
+                            albumSelect.appendChild(option);
+                        });
+
+                    console.log(
+                        `📋 已載入 ${selectedArtistName} 的專輯清單:`,
+                        artistAlbums.map((a) => a.album_name).join(", ")
+                    );
+                }
+            }
+
+            // 新增歌曲
+            async function insertpost() {
+                try {
+                    const song_name = document.getElementById("song_name").value.trim();
+                    const artist_id = document.getElementById("artist_id").value;
+                    const album_id = document.getElementById("album_id").value;
+                    const category = document.getElementById("category").value;
+                    const ytlink = document.getElementById("ytlink").value.trim();
+
+                    console.log("=== 欄位值檢查 ===");
+                    console.log("song_name:", `'${song_name}'`);
+                    console.log("artist_id:", `'${artist_id}'`);
+                    console.log("album_id:", `'${album_id}'`);
+                    console.log("category:", `'${category}'`);
+                    console.log("ytlink:", `'${ytlink}'`);
+
+                    // 檢查必填欄位
+                    if (!song_name) {
+                        alert("請輸入歌曲名稱！");
+                        document.getElementById("song_name").focus();
+                        return;
+                    }
+
+                    if (!artist_id || artist_id === "") {
+                        alert("請選擇歌手！");
+                        document.getElementById("artist_id").focus();
+                        return;
+                    }
+
+                    // 🔒 額外驗證：如果有選擇專輯，確保專輯屬於所選歌手
+                    if (album_id) {
+                        const selectedAlbum = allAlbumsData.find(
+                            (album) => album.album_id == album_id && album.artist_id == artist_id
+                        );
+
+                        if (!selectedAlbum) {
+                            alert("所選專輯不屬於該歌手，請重新選擇！");
+                            console.error("FK 驗證失敗: 專輯不屬於該歌手");
+                            return;
+                        }
+
+                        console.log("✅ FK 驗證通過: 專輯屬於該歌手");
+                    }
+
+                    const requestData = {
+                        table: "songs",
+                        artist_id: artist_id,
+                        song_name: song_name,
+                        music_category: category || "",
+                        youtube_link: ytlink || "",
+                    };
+
+                    // 專輯ID檢查
+                    if (album_id && album_id !== "") requestData.album_id = album_id;
+
+                    console.log("📤 提交資料:", requestData);
+
+                    const response = await fetch("http://localhost:8000/api/2/insert", {
+                        method: "POST",
+                        mode: "cors",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(requestData),
+                    });
+
+                    if (response.ok) {
+                        const selectedArtistName = document.getElementById("artist_id").selectedOptions[0].textContent;
+                        const selectedAlbumOption = document.getElementById("album_id").selectedOptions[0];
+                        const selectedAlbumName =
+                            selectedAlbumOption && selectedAlbumOption.value
+                                ? selectedAlbumOption.textContent
+                                : "未分類";
+
+                        // 創建成功訊息
+                        const successMessage = `✅ 歌曲新增成功！
+                            🎤 歌手: ${selectedArtistName}
+                            💿 專輯: ${selectedAlbumName}
+                            🎵 歌曲: ${song_name}
+                            🎭 類型: ${category || "未分類"}`;
+
+                        alert(successMessage);
+
+                        // 清空輸入欄位
+                        document.getElementById("song_name").value = "";
+                        document.getElementById("artist_id").value = "";
+                        document.getElementById("category").value = "";
+                        document.getElementById("ytlink").value = "";
+                        document.getElementById("song_name").focus();
+                    } else {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || `HTTP ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error("錯誤處理:", error);
+                    alert("❌ 新增歌曲失敗: " + error.message);
+                    return;
+                }
+            }
+
+            console.log("初始化頁面資料");
+
+            // 主要載入
+            artistNameAdd();
+            albumNameAdd();
+
+            // 備用載入機制
+            setTimeout(() => {
+                const artistSelect = document.getElementById("artist_id");
+                if (artistSelect) {
+                    artistSelect.addEventListener("change", onArtistChange);
+                    console.log("✅ 事件監聽器已綁定");
+                } else {
+                    console.error("❌ 找不到 artist_id 元素");
+                }
+            }, 100);
+
+            const btn = document.querySelector("button");
+            if (btn) {
+                btn.addEventListener("click", function () {
+                    console.log("點擊新增歌曲按鈕");
+                    insertpost();
+                });
+                console.log("✅ 新增歌曲按鈕事件綁定成功");
+            } else {
+                console.error("❌ 找不到新增歌曲按鈕");
+            }
+        </script>
+    </body>
+</html>

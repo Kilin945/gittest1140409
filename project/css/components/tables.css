@@ -1,0 +1,102 @@
+/* 表格元件樣式 */
+
+/* 表格容器 */
+.table-container {
+    background: var(--claude-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--claude-border);
+    border-radius: var(--border-radius);
+    padding: 30px;
+    box-shadow: var(--claude-shadow);
+    overflow: hidden;
+}
+
+/* 表格包裝器 */
+.table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--border-radius);
+}
+
+/* Claude 風格表格 */
+.claude-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--claude-bg-secondary);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
+}
+
+/* 表頭 */
+.claude-table thead {
+    background: linear-gradient(135deg, var(--claude-primary) 0%, var(--claude-primary-hover) 100%);
+    color: var(--claude-text);
+}
+
+.claude-table th {
+    padding: 18px 24px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.claude-table th:last-child {
+    border-right: none;
+}
+
+/* 表格內容 */
+.claude-table tbody tr {
+    transition: all var(--transition-speed) ease;
+    border-bottom: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+.claude-table tbody tr:hover {
+    background: var(--claude-card);
+    transform: scale(1.001);
+}
+
+.claude-table tbody tr:nth-child(even) {
+    background: rgba(255, 107, 53, 0.02);
+}
+
+.claude-table td {
+    padding: 16px 24px;
+    color: var(--claude-text-secondary);
+    border-right: 1px solid rgba(255, 107, 53, 0.05);
+    font-size: 14px;
+}
+
+.claude-table td:last-child {
+    border-right: none;
+}
+
+/* 表格置中 */
+.claude-table.text-center th,
+.claude-table.text-center td {
+    text-align: center;
+}
+
+/* 緊湊型表格 */
+.claude-table.compact th,
+.claude-table.compact td {
+    padding: 10px 16px;
+}
+
+/* 響應式表格 */
+@media (max-width: 768px) {
+    .table-container {
+        padding: 15px;
+    }
+
+    .claude-table {
+        font-size: 12px;
+    }
+
+    .claude-table th,
+    .claude-table td {
+        padding: 10px 12px;
+    }
+}

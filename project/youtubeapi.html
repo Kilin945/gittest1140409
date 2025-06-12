@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>YouTube 播放清單 Demo</title>
+    </head>
+
+    <body>
+        <h1>📺 YouTube 播放清單 API 測試</h1>
+
+        <button onclick="handleAuthClick()">🔐 登入 Google</button>
+        <button onclick="listPlaylists()">📂 讀取我的播放清單</button>
+
+        <ul id="playlistList"></ul>
+
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script src="https://apis.google.com/js/api.js" async defer></script>
+
+        <script>
+            //定義google OAuth 客戶端ID
+            const CLIENT_ID = "407957494432-1u5v186r9hnd126pgfirfcuu8nn2ccuh.apps.googleusercontent.com";
+            //定義權限範圍:只讀youtube資料
+            const SCOPES = "https://www.googleapis.com/auth/youtube.readonly";
+            //定義youtube api v3的探索文件url
+            const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest";
+
+            let tokenClient; //儲存OAuth token的客戶端
+            let gapiInited = false;
+            let gisInited = false;
+            //載入google api
+            function gapiLoaded() {
+                gapi.load("client", async () => {
+                    await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
+                    gapiInited = true;
+                });
+            }
+            //載入google OAuth客戶端
+            function gisLoaded() {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: SCOPES,
+                    callback: (tokenResponse) => {
+                        gapi.client.setToken(tokenResponse);
+                        alert("✅ 登入成功！");
+                    },
+                });
+                gisInited = true;
+            }
+
+            function handleAuthClick() {
+                if (!gapiInited || !gisInited) {
+                    alert("尚未初始化，請稍候");
+                    return;
+                }
+                tokenClient.requestAccessToken(); //觸發登入流程
+            }
+
+            async function listPlaylists() {
+                //讀取我的播放清單
+                const response = await gapi.client.youtube.playlists.list({
+                    part: "snippet,contentDetails", //請求snippet,contentDetails資訊
+                    mine: true, //請求我的播放清單
+                    maxResults: 10, //請求10個播放清單
+                });
+
+                const playlists = response.result.items; //取得播放清單資料
+                const list = document.getElementById("playlistList"); //取得DOM元素
+                list.innerHTML = "";
+
+                if (!playlists || playlists.length === 0) {
+                    list.innerHTML = "<li>🙁 找不到任何播放清單</li>";
+                    return;
+                }
+
+                playlists.forEach((pl) => {
+                    //遍歷每個播放清單
+                    const li = document.createElement("li");
+                    const title = pl.snippet.title; //標題
+                    const thumbnail = pl.snippet.thumbnails.default.url; //縮圖
+                    const id = pl.id; //播放清單ID
+
+                    //建立包含所圖、標題、連結的 HTML
+                    li.innerHTML = `
+                        <img src="${thumbnail}" alt="thumb" />
+                        <strong>${title}</strong><br>
+                        <a href="https://www.youtube.com/playlist?list=${id}" target="_blank">觀看清單</a>
+                        `;
+                    list.appendChild(li); //將清單加入到觀看清單中
+                });
+            }
+
+            // 初始化 script
+            window.onload = () => {
+                const script1 = document.createElement("script"); //頁面載入完成後執行初始化
+                script1.src = "https://apis.google.com/js/api.js";
+                script1.onload = gapiLoaded;
+                document.body.appendChild(script1);
+
+                const script2 = document.createElement("script");
+                script2.src = "https://accounts.google.com/gsi/client";
+                script2.onload = gisLoaded;
+                document.body.appendChild(script2);
+            };
+        </script>
+    </body>
+</html>

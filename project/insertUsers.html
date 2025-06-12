@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8" />
+        <title>新增用戶</title>
+        <link rel="stylesheet" href="main.css" />
+        <style>
+            .form-hint {
+                font-size: 12px;
+                color: #666;
+                margin-top: 5px;
+                font-style: italic;
+            }
+
+            .required {
+                color: red;
+            }
+
+            .usage-time-display {
+                font-size: 11px;
+                color: #999;
+                margin-top: 3px;
+                opacity: 0.7;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>👤 新增用戶</h2>
+
+        <label for="user_name">用戶名稱 <span class="required">*</span></label>
+        <input type="text" id="user_name" placeholder="請輸入用戶名稱" required />
+        <div class="form-hint">用戶名稱不可重複</div>
+
+        <label for="password">密碼 <span class="required">*</span></label>
+        <input type="password" id="password" placeholder="請輸入密碼" required />
+
+        <div class="usage-time-display">💡 使用時間統計：新用戶初始為 00:00:00，系統會自動從登入開始累計使用時間</div>
+
+        <button>新增用戶</button>
+
+        <script>
+            // 新增用戶函數
+            window.insertpost = async function () {
+                // 取得表單資料
+                let userName = document.getElementById("user_name").value.trim();
+                let password = document.getElementById("password").value.trim();
+                let usageTime = "00:00:00"; // 初始使用時間
+                let state = "0";
+                console.log("資料:", { userName, password, usageTime, state });
+
+                if (userName && password) {
+                    await fetch(`http://localhost:8000/api/2/insert`, {
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        method: "POST",
+                        mode: "cors",
+                        body: JSON.stringify({
+                            table: "users",
+                            user_name: userName,
+                            password: password,
+                            usage_time: "00:00:00",
+                            state: state,
+                        }),
+                    })
+                        .then((response) => {
+                            console.log("Status:", response.status);
+                            if (response.ok) {
+                                alert("新增成功！");
+                                document.getElementById("user_name").value = "";
+                                document.getElementById("password").value = "";
+                            } else {
+                                alert("新增失敗，狀態碼：" + response.status);
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Error:", error);
+                            alert("新增失敗，請稍後再試");
+                        });
+                } else {
+                    alert("請輸入資料");
+                }
+            };
+
+            console.log("DOM 載入完成");
+            const btn = document.querySelector("button");
+            console.log("找到按鈕:", btn);
+            if (btn) {
+                btn.addEventListener("click", function () {
+                    console.log("按鈕點擊事件觸發");
+                    window.insertpost();
+                });
+                console.log("事件監聽器已綁定");
+            }
+            console.log("Script 執行完畢");
+        </script>
+    </body>
+</html>

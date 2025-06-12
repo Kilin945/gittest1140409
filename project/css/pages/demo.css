@@ -1,0 +1,139 @@
+/* 播放清單頁面專屬樣式 */
+
+/* 播放清單表格特殊設定 */
+.playlist-table th:nth-child(1),
+.playlist-table td:nth-child(1) {
+    width: 100px;
+    text-align: center;
+}
+
+.playlist-table th:nth-child(2),
+.playlist-table td:nth-child(2) {
+    width: 120px;
+    text-align: center;
+}
+
+.playlist-table th:nth-child(3),
+.playlist-table td:nth-child(3) {
+    min-width: 200px;
+    text-align: left;
+}
+
+.playlist-table th:nth-child(4),
+.playlist-table td:nth-child(4) {
+    width: 100px;
+    text-align: center;
+}
+
+.playlist-table th:nth-child(5),
+.playlist-table td:nth-child(5) {
+    width: 120px;
+    text-align: center;
+}
+
+.playlist-table th:nth-child(6),
+.playlist-table td:nth-child(6) {
+    width: 100px;
+    text-align: center;
+}
+
+/* 操作按鈕組 */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* 刪除狀態樣式 */
+.deleted-row {
+    opacity: 0.6;
+    background: rgba(239, 68, 68, 0.05) !important;
+}
+
+.deleted-row td {
+    text-decoration: line-through;
+    color: var(--claude-text-muted);
+}
+
+/* 公開/私人標籤 */
+.badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-public {
+    background: rgba(34, 197, 94, 0.1);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge-private {
+    background: rgba(59, 130, 246, 0.1);
+    color: #93c5fd;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+/* 狀態標籤 */
+.badge-active {
+    background: rgba(34, 197, 94, 0.1);
+    color: #86efac;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge-deleted {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* 分頁控制 */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    margin-top: 20px;
+    border-top: 1px solid var(--claude-border);
+}
+
+.pagination-info {
+    color: var(--claude-text-secondary);
+    font-size: 14px;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 5px;
+}
+
+.page-num {
+    padding: 8px 12px;
+    background: var(--claude-card);
+    border: 1px solid var(--claude-border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--claude-text);
+    font-size: 14px;
+}
+
+.page-num:hover {
+    background: var(--claude-card-hover);
+    border-color: var(--claude-primary);
+}
+
+.page-num.active {
+    background: var(--claude-primary);
+    color: white;
+    border-color: var(--claude-primary);
+}
