@@ -22,76 +22,6 @@
             --transition-speed: 0.3s;
         }
 
-        /* 卡片容器 */
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            margin-bottom: 60px;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* 卡片樣式 */
-        .feature-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 107, 53, 0.3);
-            border-radius: 12px;
-            padding: 35px 30px;
-            min-height: 120px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        /* 左側橘色邊框動畫 */
-        .feature-card::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 4px;
-            height: 100%;
-            background: #ff6b35;
-            transform: scaleY(0);
-            transition: transform 0.3s ease;
-        }
-
-        /* Hover 效果 */
-        .feature-card:hover {
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #ff6b35;
-        }
-
-        .feature-card:hover::before {
-            transform: scaleY(1);
-        }
-
-        /* 卡片內文字樣式 */
-        .feature-card h3 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            color: #ffffff;
-            margin-bottom: 15px;
-            margin-top: 0;
-        }
-
-        .feature-card p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1rem;
-            line-height: 1.5;
-            margin-bottom: 0;
-        }
-
         /* 導航連結樣式 */
         .nav-link {
             text-decoration: none;
@@ -104,23 +34,143 @@
             color: inherit;
         }
 
+        /* 主要內容區域 */
+        .section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 選單項目 */
+        .menu-item {
+            background: var(--claude-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--claude-border);
+            border-radius: var(--border-radius);
+            padding: 0;
+            min-height: 120px;
+            transition: all var(--transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: var(--claude-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--claude-primary);
+            transform: scaleY(0);
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .menu-item:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: var(--claude-shadow-strong);
+            background: var(--claude-card-hover);
+            border-color: var(--claude-primary);
+        }
+
+        .menu-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .menu-item a {
+            color: var(--claude-text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            height: 100%;
+            padding: 35px 30px;
+            font-size: 1.4rem;
+            font-weight: 600;
+            transition: all var(--transition-speed) ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .menu-item:hover a {
+            color: var(--claude-accent);
+        }
+
+        .menu-item .icon {
+            font-size: 2rem;
+            color: var(--claude-primary);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .menu-item:hover .icon {
+            transform: scale(1.2) rotate(5deg);
+            color: var(--claude-accent);
+        }
+
         /* 響應式設計 */
         @media (max-width: 768px) {
-            .feature-grid {
+            .container {
+                padding: 40px 25px 80px;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .header h1::before {
+                font-size: 2.5rem;
+            }
+
+            .section {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
 
-            .feature-card {
+            .menu-item a {
+                font-size: 1.2rem;
                 padding: 25px 20px;
             }
 
-            .feature-card h3 {
-                font-size: 1.2rem;
+            .like-button {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 2rem;
             }
 
-            .feature-card p {
-                font-size: 0.9rem;
+            .menu-item a {
+                font-size: 1.1rem;
+                gap: 15px;
+            }
+
+            .menu-item .icon {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* 動畫效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
     </style>
@@ -196,34 +246,34 @@
             <div class="content-body">
                 <div id="pageContent">
                     <div class="welcome-content">
-                        <div class="feature-grid">
-                            <a href="sidebar.html?target=searchAllSong.html" class="nav-link">
-                                <div class="feature-card">
-                                    <h3>查詢功能</h3>
-                                    <p>查詢音樂系統的所有歌曲</p>
-                                </div>
-                            </a>
+                        <div class="section">
+                            <div class="menu-item">
+                                <a href="sidebar.html?target=searchAllSong.html">
+                                    <i class="fas fa-search icon"></i>
+                                    <span>查詢功能</span>
+                                </a>
+                            </div>
 
-                            <a href="sidebar.html?target=musicCharts.html" class="nav-link">
-                                <div class="feature-card">
-                                    <h3>音樂排行榜</h3>
-                                    <p>依照播放清單出現最多歌曲的次數排行</p>
-                                </div>
-                            </a>
+                            <div class="menu-item">
+                                <a href="sidebar.html?target=musicCharts.html">
+                                    <i class="fas fa-chart-line icon"></i>
+                                    <span>音樂排行榜</span>
+                                </a>
+                            </div>
 
-                            <a href="sidebar.html?target=popularArtists.html" class="nav-link">
-                                <div class="feature-card">
-                                    <h3>歌手排行榜</h3>
-                                    <p>依照播放清單出現最多歌手的次數排行</p>
-                                </div>
-                            </a>
+                            <div class="menu-item">
+                                <a href="sidebar.html?target=popularArtists.html">
+                                    <i class="fas fa-star icon"></i>
+                                    <span>歌手排行榜</span>
+                                </a>
+                            </div>
 
-                            <a href="http://localhost:5500/project/index.html" class="nav-link">
-                                <div class="feature-card">
-                                    <h3>返回首頁</h3>
-                                    <p>返回至個人首頁</p>
-                                </div>
-                            </a>
+                            <div class="menu-item">
+                                <a href="http://localhost:5500/project/index.html">
+                                    <i class="fas fa-home icon"></i>
+                                    <span>返回首頁</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
