@@ -8,7 +8,122 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <link rel="stylesheet" href="main.css" />
     </head>
+    <style>
+        :root {
+            --claude-card: rgba(255, 255, 255, 0.1);
+            --claude-card-hover: rgba(255, 255, 255, 0.15);
+            --claude-border: rgba(255, 107, 53, 0.3);
+            --claude-primary: #ff6b35;
+            --claude-text: #ffffff;
+            --claude-text-muted: rgba(255, 255, 255, 0.7);
+            --claude-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --claude-shadow-strong: 0 10px 25px rgba(0, 0, 0, 0.3);
+            --border-radius: 12px;
+            --transition-speed: 0.3s;
+        }
 
+        /* 卡片容器 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 卡片樣式 */
+        .feature-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 12px;
+            padding: 35px 30px;
+            min-height: 120px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* 左側橘色邊框動畫 */
+        .feature-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: #ff6b35;
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        /* Hover 效果 */
+        .feature-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ff6b35;
+        }
+
+        .feature-card:hover::before {
+            transform: scaleY(1);
+        }
+
+        /* 卡片內文字樣式 */
+        .feature-card h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 15px;
+            margin-top: 0;
+        }
+
+        .feature-card p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+
+        /* 導航連結樣式 */
+        .nav-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .nav-link:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .feature-card {
+                padding: 25px 20px;
+            }
+
+            .feature-card h3 {
+                font-size: 1.2rem;
+            }
+
+            .feature-card p {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
     <body>
         <div class="sidebar">
             <div class="sidebar-header">
@@ -19,11 +134,43 @@
 
             <nav class="nav-menu">
                 <div class="nav-item">
-                    <a href="index.html" class="nav-link">返回首頁</a>
+                    <a href="sidebar.html" class="nav-link"> 音樂系統首頁 </a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="index.html" class="nav-link">個人首頁</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=searchAllSong.html" class="nav-link">查詢歌曲</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=musicCharts.html" class="nav-link">音樂排行榜</a>
+                </div>
+
+                <div class="nav-section-title">查詢功能</div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=popularArtists.html" class="nav-link">最受歡迎歌手</a>
+                </div>
+
+                <div class="nav-section-title">新增功能</div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertArtists.html" class="nav-link">新增歌手</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertAlbums.html" class="nav-link">新增專輯</a>
                 </div>
 
                 <div class="nav-item">
                     <a href="sidebar.html?target=insertSongs.html" class="nav-link">新增歌曲</a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertUsers.html" class="nav-link">新增使用者</a>
                 </div>
 
                 <div class="nav-item">
@@ -34,38 +181,10 @@
                     <a href="sidebar.html?target=insertPlaylistSongs.html" class="nav-link">建立播放清單歌曲</a>
                 </div>
 
-                <div class="nav-section-title">個人功能</div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=searchAllSong.html" class="nav-link">查詢歌曲</a>
-                </div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=musicCharts.html" class="nav-link">音樂排行榜</a>
-                </div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=popularArtists.html" class="nav-link">最受歡迎歌手</a>
-                </div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=updateUser.html" class="nav-link">個人設定</a>
-                </div>
-
                 <div class="nav-section-title">資料管理</div>
 
                 <div class="nav-item">
-                    <a href="sidebar.html?target=insertArtists.html" class="nav-link">新增歌手</a>
-                </div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=insertAlbums.html" class="nav-link">新增專輯</a>
-                </div>
-
-                <div class="nav-section-title">管理員功能</div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=insertUsers.html" class="nav-link">新增使用者</a>
+                    <a href="sidebar.html?target=updateUser.html" class="nav-link">個人設定</a>
                 </div>
             </nav>
         </div>
@@ -80,25 +199,33 @@
                 <div id="pageContent">
                     <div class="welcome-content">
                         <div class="feature-grid">
-                            <div class="feature-card">
-                                <h3>查詢歌曲</h3>
-                                <p>查詢所有歌曲、瀏覽排行榜和最受歡迎歌手</p>
-                            </div>
+                            <a href="sidebar.html?target=searchAllSong.html" class="nav-link">
+                                <div class="feature-card">
+                                    <h3>查詢功能</h3>
+                                    <p>查詢音樂系統的所有歌曲</p>
+                                </div>
+                            </a>
 
-                            <div class="feature-card">
-                                <h3>個人播放清單</h3>
-                                <p>建立和管理您的專屬播放清單</p>
-                            </div>
+                            <a href="sidebar.html?target=musicCharts.html" class="nav-link">
+                                <div class="feature-card">
+                                    <h3>音樂排行榜</h3>
+                                    <p>依照播放清單出現最多歌曲的次數排行</p>
+                                </div>
+                            </a>
 
-                            <div class="feature-card">
-                                <h3>資料管理</h3>
-                                <p>新增歌手、歌曲和專輯資訊</p>
-                            </div>
+                            <a href="sidebar.html?target=popularArtists.html" class="nav-link">
+                                <div class="feature-card">
+                                    <h3>歌手排行榜</h3>
+                                    <p>依照播放清單出現最多歌手的次數排行</p>
+                                </div>
+                            </a>
 
-                            <div class="feature-card">
-                                <h3>個人設定</h3>
-                                <p>管理您的個人資料</p>
-                            </div>
+                            <a href="http://localhost:5500/project/index.html" class="nav-link">
+                                <div class="feature-card">
+                                    <h3>返回首頁</h3>
+                                    <p>返回至個人首頁</p>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>

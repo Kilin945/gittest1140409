@@ -738,9 +738,12 @@ body {
 
 .feature-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, 1fr); /* 固定 2x2 */
     gap: 30px;
     margin-top: 50px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .feature-card {
@@ -754,6 +757,13 @@ body {
     box-shadow: var(--claude-shadow);
     position: relative;
     overflow: hidden;
+
+    /* 固定尺寸 */
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .feature-card::before {
