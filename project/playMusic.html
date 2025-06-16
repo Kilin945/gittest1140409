@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>🎵 YouTube 音樂播放器</title>
+        <!-- Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    </head>
+    <body>
+        <div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif">
+            <div style="text-align: center; margin-bottom: 30px">
+                <h1><i class="fas fa-music"></i> YouTube 音樂播放器</h1>
+                <p>選擇播放清單，享受音樂時光</p>
+            </div>
+
+            <!-- YouTube 認證區域 -->
+            <div style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px">
+                <h3><i class="fas fa-key"></i> YouTube 認證</h3>
+                <div style="display: flex; gap: 15px; align-items: center; margin: 15px 0">
+                    <!-- 簡化按鈕，移除複雜的狀態控制 -->
+                    <button
+                        onclick="handleAuthClick()"
+                        id="auth-btn"
+                        style="
+                            padding: 10px 20px;
+                            background: #ff6b35;
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                        "
+                    >
+                        <i class="fas fa-sign-in-alt"></i> 登入 Google 帳號
+                    </button>
+                    <button
+                        onclick="handleSignoutClick()"
+                        id="signout-btn"
+                        style="
+                            display: none;
+                            padding: 10px 20px;
+                            background: #666;
+                            color: white;
+                            border: none;
+                            border-radius: 8px;
+                            cursor: pointer;
+                        "
+                    >
+                        <i class="fas fa-sign-out-alt"></i> 登出
+                    </button>
+                    <span id="auth-status" style="color: #666">點擊按鈕登入 Google 帳號</span>
+                </div>
+            </div>
+
+            <!-- 播放清單選擇 -->
+            <div style="border: 1px solid #ccc; padding: 20px; margin-bottom: 20px; border-radius: 8px">
+                <h3><i class="fas fa-list"></i> 選擇播放清單</h3>
+                <select
+                    id="playlist-select"
+                    style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px"
+                >
+                    <option value="">請選擇播放清單...</option>
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 20px">
+                <!-- 左側：播放清單歌曲列表 -->
+                <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px">
+                    <h3><i class="fas fa-headphones"></i> 待播放歌曲</h3>
+                    <div id="songs-list">
+                        <div style="text-align: center; padding: 40px; color: #666">
+                            <i class="fas fa-music" style="font-size: 3em; margin-bottom: 15px; opacity: 0.3"></i>
+                            <p>請先選擇播放清單</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右側：YouTube 播放器 -->
+                <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px">
+                    <h3><i class="fas fa-play-circle"></i> 正在播放</h3>
+
+                    <div
+                        id="current-song-info"
+                        style="
+                            display: none;
+                            background: #f5f5f5;
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin: 10px 0;
+                            border: 1px solid #ddd;
+                        "
+                    >
+                        <div id="current-song-name" style="font-weight: bold; margin-bottom: 5px">歌曲名稱</div>
+                        <div id="current-artist-name" style="color: #666">歌手名稱</div>
+                    </div>
+
+                    <div
+                        id="youtube-player"
+                        style="width: 100%; height: 315px; background: #000; margin: 10px 0; border: 1px solid #ccc"
+                    ></div>
+                    <div style="display: flex; justify-content: center; gap: 15px; margin: 15px 0">
+                        <button
+                            onclick="togglePlayPause()"
+                            id="play-pause-btn"
+                            disabled
+                            style="
+                                padding: 10px 15px;
+                                background: #ff6b35;
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                cursor: pointer;
+                            "
+                        >
+                            <i class="fas fa-play"></i> 播放
+                        </button>
+                    </div>
+
+                    <div
+                        id="player-status"
+                        style="
+                            text-align: center;
+                            padding: 10px;
+                            background: #f5f5f5;
+                            border-radius: 8px;
+                            border: 1px solid #ddd;
+                        "
+                    >
+                        請選擇播放清單開始播放
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Google APIs -->
+        <script src="https://accounts.google.com/gsi/client" async defer></script>
+        <script src="https://apis.google.com/js/api.js" async defer></script>
+        <!-- YouTube API -->
+        <script src="https://www.youtube.com/iframe_api"></script>
+
+        <script>
+            console.log("🎵 YouTube 音樂播放器初始化");
+
+            // API 端點
+            const API_BASE = "http://localhost:8000/api";
+
+            // 定義google OAuth 客戶端ID
+            const CLIENT_ID = "407957494432-1u5v186r9hnd126pgfirfcuu8nn2ccuh.apps.googleusercontent.com";
+            const SCOPES = "https://www.googleapis.com/auth/youtube.readonly";
+            const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest";
+
+            // 全域變數
+            let ytPlayer = null; // YouTube 播放器實例
+            let currentPlaylist = []; // 目前的播放清單（歌曲陣列）
+            let currentSongIndex = -1; // 目前播放歌曲的索引位置（-1 表示未選擇）
+            let allSongsData = []; // 從 API 載入的所有歌曲資料
+            let allArtistsData = []; // 從 API 載入的所有歌手資料
+            let isPlayerReady = false; // YouTube 播放器是否已準備就緒
+
+            // Google API 變數
+            let tokenClient; // OAuth 權杖客戶端實例
+            let gapiInited = false; // Google APIs 客戶端是否已初始化
+            let gisInited = false; // Google Identity Services 是否已初始化
+
+            // YouTube API 準備完成後的回調
+            window.onYouTubeIframeAPIReady = function () {
+                console.log("📺 YouTube API 已準備就緒");
+                initializeYouTubePlayer();
+            };
+
+            // 初始化 YouTube 播放器
+            function initializeYouTubePlayer() {
+                ytPlayer = new YT.Player("youtube-player", {
+                    height: "315",
+                    width: "100%",
+                    playerVars: {
+                        playsinline: 1, // 在 iOS 裝置上內嵌播放（不全螢幕）
+                        controls: 1, // 顯示播放控制按鈕（播放/暫停等）
+                        rel: 0, // 影片結束後不顯示相關影片建議
+                        showinfo: 0, // 不顯示影片標題和上傳者資訊
+                        autoplay: 0, // 不自動播放
+                        origin: window.location.origin, // 設定來源，避免跨域問題
+                    },
+                    events: {
+                        onReady: onPlayerReady, // 播放器準備完成時觸發
+                        onStateChange: onPlayerStateChange, // 播放狀態改變時觸發（播放/暫停/結束等）
+                        onError: onPlayerError, // 播放錯誤時觸發
+                    },
+                });
+            }
+
+            // 播放器準備完成，選歌
+            function onPlayerReady(event) {
+                console.log("✅ YouTube 播放器已準備就緒");
+                isPlayerReady = true;
+                updatePlayerStatus("播放器已準備就緒，請選擇歌曲"); //更新播放器狀態區域的顯示文字
+            }
+
+            // 播放器狀態改變
+            function onPlayerStateChange(event) {
+                const playPauseBtn = document.getElementById("play-pause-btn");
+
+                switch (event.data) {
+                    case YT.PlayerState.ENDED:
+                        console.log("🔚 歌曲播放結束");
+                        updatePlayerStatus("歌曲播放結束");
+                        break;
+                    case YT.PlayerState.PLAYING:
+                        console.log("▶️ 正在播放");
+                        updatePlayerStatus("正在播放");
+                        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> 暫停';
+                        break;
+                    case YT.PlayerState.PAUSED:
+                        console.log("⏸️ 已暫停");
+                        updatePlayerStatus("已暫停");
+                        playPauseBtn.innerHTML = '<i class="fas fa-play"></i> 播放';
+                        break;
+                    case YT.PlayerState.BUFFERING:
+                        console.log("⏳ 緩衝中");
+                        updatePlayerStatus("緩衝中...");
+                        break;
+                }
+            }
+
+            // 播放器錯誤處理
+            function onPlayerError(event) {
+                console.error("❌ YouTube 播放器錯誤:", event.data);
+
+                if (event.data === 150) {
+                    console.log("🔍 影片不能嵌入");
+                } else {
+                    updatePlayerStatus("播放錯誤，停止播放");
+                }
+            }
+
+            // Google API 載入 (參考你的Demo)
+            function gapiLoaded() {
+                console.log("🔄 開始載入 GAPI...");
+                gapi.load("client", async () => {
+                    await gapi.client.init({ discoveryDocs: [DISCOVERY_DOC] });
+                    gapiInited = true;
+                    console.log("✅ GAPI 已載入");
+                });
+            }
+
+            // 修改 gisLoaded 函數
+            function gisLoaded() {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CLIENT_ID,
+                    scope: SCOPES,
+                    ux_mode: "popup",
+                    callback: (tokenResponse) => {
+                        gapi.client.setToken(tokenResponse);
+                        document.getElementById("auth-status").textContent = "✅ 已登入";
+                        document.getElementById("auth-btn").style.display = "none";
+                        document.getElementById("signout-btn").style.display = "inline-block";
+                        console.log("✅ 登入成功！");
+                    },
+                });
+                gisInited = true;
+                console.log("✅ GIS 已載入");
+            }
+
+            // 處理登入
+            function handleAuthClick() {
+                console.log("🔑 點擊登入按鈕");
+
+                // 更新狀態
+                document.getElementById("auth-status").textContent = "⏳ 正在開啟登入視窗...";
+
+                // 檢查API是否準備好
+                if (!gapiInited || !gisInited) {
+                    console.log("⚠️ API 尚未準備好，嘗試等待...");
+                    document.getElementById("auth-status").textContent = "⚠️ API 尚未準備好，請稍候再試";
+
+                    // 給一些時間讓API載入，然後重試
+                    setTimeout(() => {
+                        if (gapiInited && gisInited) {
+                            console.log("✅ API 現在準備好了，重新嘗試登入");
+                            handleAuthClick();
+                        } else {
+                            alert("Google API 載入失敗，請重新整理頁面");
+                        }
+                    }, 2000);
+                    return;
+                }
+
+                if (!tokenClient) {
+                    console.log("❌ tokenClient 未初始化");
+                    document.getElementById("auth-status").textContent = "❌ 登入客戶端未初始化";
+                    alert("登入客戶端未初始化，請重新整理頁面");
+                    return;
+                }
+
+                console.log("🚀 開始 OAuth 認證流程");
+
+                try {
+                    tokenClient.requestAccessToken({ prompt: "consent" });
+                } catch (error) {
+                    console.error("❌ 登入失敗:", error);
+                    document.getElementById("auth-status").textContent = "❌ 登入失敗";
+                    alert("登入失敗: " + error.message);
+                }
+            }
+
+            // 處理登出
+            function handleSignoutClick() {
+                const token = gapi.client.getToken();
+                if (token !== null) {
+                    google.accounts.oauth2.revoke(token.access_token);
+                    gapi.client.setToken("");
+                    document.getElementById("auth-status").textContent = "尚未登入";
+                    document.getElementById("auth-btn").style.display = "inline-block";
+                    document.getElementById("signout-btn").style.display = "none";
+                    console.log("🔓 已登出");
+                }
+            }
+
+            // 檢查影片是否可以嵌入
+            async function checkVideoEmbeddable(videoId) {
+                try {
+                    console.log(`🔍 檢查影片 ${videoId} 是否可嵌入`);
+
+                    const response = await gapi.client.youtube.videos.list({
+                        part: "status",
+                        id: videoId,
+                    });
+
+                    if (response.result.items && response.result.items.length > 0) {
+                        const video = response.result.items[0];
+                        const embeddable = video.status.embeddable;
+
+                        console.log(`📺 影片 ${videoId} 可嵌入狀態: ${embeddable}`);
+                        return embeddable;
+                    }
+
+                    return false;
+                } catch (error) {
+                    console.error(`❌ 檢查影片嵌入狀態失敗:`, error);
+                    return false;
+                }
+            }
+
+            // 搜尋 YouTube 影片
+            async function searchYouTubeVideo(songName, artistName) {
+                try {
+                    console.log(`🔍 搜尋YouTube影片: ${artistName} - ${songName}`);
+
+                    const token = gapi.client.getToken();
+                    if (!token) {
+                        throw new Error("請先登入 Google 帳號");
+                    }
+                    const response = await gapi.client.youtube.search.list({
+                        part: "snippet", // 需要的部分
+                        q: `${artistName} - ${songName}`, // 使用搜尋關鍵字
+                        type: "video",
+                        maxResults: 5,
+                        videoEmbeddable: "true", // 只要可嵌入的
+                        videoSyndicated: "true", // 只要可在外部播放的
+                        videoLicense: "any", // 包含所有授權類型的影片,增加搜尋結果數量
+                        order: "relevance", // 根據相關性排序
+                    });
+
+                    if (response.result.items && response.result.items.length > 0) {
+                        const video = response.result.items[0];
+                        const videoId = video.id.videoId;
+
+                        // 使用 videos API 檢查嵌入狀態
+                        const isEmbeddable = await checkVideoEmbeddable(videoId);
+
+                        if (isEmbeddable) {
+                            const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+                            console.log(`✅ 找到影片:`, {
+                                title: video.snippet.title,
+                                videoId: videoId,
+                                url: videoUrl,
+                            });
+
+                            return {
+                                videoId: videoId,
+                                videoUrl: videoUrl,
+                                title: video.snippet.title,
+                            };
+                        }
+                    }
+                } catch (searchError) {
+                    console.log(`❌ 搜尋失敗:`, searchError);
+                    throw searchError;
+                }
+            }
+
+            // 從MySQL資料庫中取得的YouTube URL
+            function extractVideoId(url) {
+                const regex =
+                    /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+                const match = url.match(regex);
+                return match ? match[1] : null;
+            }
+
+            // 更新歌曲的 YouTube URL 到資料庫
+            async function updateSongYouTubeUrl(songId, youtubeUrl) {
+                try {
+                    console.log(`📝 更新歌曲 ${songId} 的 YouTube URL: ${youtubeUrl}`);
+
+                    const songData = allSongsData.find((s) => s.song_id == songId);
+                    if (!songData) {
+                        throw new Error(`找不到歌曲 ID: ${songId}`);
+                    }
+
+                    const response = await fetch(`${API_BASE}/2/update`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            table: "songs",
+                            song_id: songId,
+                            song_name: songData.song_name,
+                            artist_id: songData.artist_id,
+                            album_id: songData.album_id || "8",
+                            music_category: songData.music_category || "流行歌",
+                            youtube_url: youtubeUrl,
+                            state: 0,
+                        }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP錯誤: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    console.log(`✅ 成功更新歌曲 ${songId} 的 YouTube URL`);
+
+                    // 同時更新本地快取的歌曲資料
+                    const songIndex = allSongsData.findIndex((s) => s.song_id == songId);
+                    if (songIndex !== -1) {
+                        allSongsData[songIndex].youtube_link = youtubeUrl;
+                        console.log(`✅ 本地快取也已更新`);
+                    }
+                    return result;
+                } catch (error) {
+                    console.error(`❌ 更新歌曲 ${songId} 的 YouTube URL 失敗:`, error);
+                    return null;
+                }
+            }
+
+            // 播放指定歌曲
+            async function playSong(index) {
+                console.log(`🎵 嘗試播放歌曲 index: ${index}`);
+
+                if (!isPlayerReady) {
+                    console.error("❌ YouTube 播放器尚未準備就緒");
+                    return;
+                }
+
+                if (index < 0 || index >= currentPlaylist.length) {
+                    console.error(`❌ 索引超出範圍: ${index}, 播放清單長度: ${currentPlaylist.length}`);
+                    return;
+                }
+
+                const song = currentPlaylist[index];
+                console.log("🎵 播放歌曲資料:", song);
+
+                // 檢查歌曲資料是否完整
+                if (!song || !song.song_name || song.song_name === "未知歌曲") {
+                    console.error("❌ 歌曲資料不完整:", song);
+                    return;
+                }
+
+                currentSongIndex = index;
+                updateCurrentSongDisplay();
+
+                try {
+                    let videoId = null;
+
+                    if (song.youtube_url) {
+                        videoId = extractVideoId(song.youtube_url);
+                        console.log("✅ 使用現有YouTube URL");
+                    }
+
+                    // 檢查是否已登入
+                    const token = gapi.client.getToken();
+                    if (!token) {
+                        console.error("❌ 尚未登入Google帳號");
+                        updatePlayerStatus("請先登入Google帳號才能搜尋歌曲");
+                        return;
+                    }
+
+                    if (!videoId) {
+                        console.log("🔍 沒有YouTube URL，開始搜尋...");
+                        updatePlayerStatus(`正在搜尋: ${song.song_name} - ${song.artist_name}`);
+
+                        try {
+                            const searchResult = await searchYouTubeVideo(song.song_name, song.artist_name);
+                            videoId = searchResult.videoId;
+
+                            await updateSongYouTubeUrl(song.song_id, searchResult.videoUrl);
+                        } catch (searchError) {
+                            console.error("❌ 搜尋失敗:", searchError);
+                            return;
+                        }
+                    }
+
+                    if (!videoId) {
+                        throw new Error("無法取得有效的影片ID");
+                    }
+
+                    ytPlayer.loadVideoById(videoId);
+                    updatePlayerStatus(`正在播放: ${song.song_name} - ${song.artist_name}`);
+                } catch (error) {
+                    console.error("❌ 播放失敗:", error);
+                    updatePlayerStatus(`播放失敗`);
+                }
+            }
+
+            // 載入播放清單
+            async function loadPlaylists() {
+                try {
+                    const response = await fetch(`${API_BASE}/playlists`);
+                    if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
+                    const playlists = await response.json();
+
+                    const playlistSelect = document.getElementById("playlist-select");
+                    playlistSelect.innerHTML = '<option value="">請選擇播放清單...</option>';
+
+                    playlists.forEach((playlist) => {
+                        const option = document.createElement("option");
+                        option.value = playlist.playlist_id;
+                        option.textContent = `${playlist.playlist_name} ${playlist.is_public ? "(公開)" : "(私人)"}`;
+                        playlistSelect.appendChild(option);
+                    });
+
+                    console.log("✅ 播放清單載入完成");
+                } catch (error) {
+                    console.error("❌ 載入播放清單失敗:", error);
+                }
+            }
+
+            // 載入歌手資料
+            async function loadArtists() {
+                try {
+                    const response = await fetch(`${API_BASE}/artists`);
+                    if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
+                    allArtistsData = await response.json();
+                    console.log("✅ 歌手資料載入完成");
+                } catch (error) {
+                    console.error("❌ 載入歌手失敗:", error);
+                    allArtistsData = [];
+                }
+            }
+
+            // 載入歌曲資料
+            async function loadSongs() {
+                try {
+                    const response = await fetch(`${API_BASE}/songs`);
+                    if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
+                    allSongsData = await response.json();
+                    console.log("✅ 歌曲資料載入完成");
+                } catch (error) {
+                    console.error("❌ 載入歌曲失敗:", error);
+                    allSongsData = [];
+                }
+            }
+
+            // 載入播放清單歌曲
+            async function loadPlaylistSongs(playlistId) {
+                try {
+                    console.log("🔄 載入播放清單歌曲:", playlistId);
+
+                    // 先測試API端點是否存在
+                    const apiUrl = `${API_BASE}/playlist_songs?playlist_id=${playlistId}`;
+                    console.log("📡 API URL:", apiUrl);
+
+                    const response = await fetch(apiUrl);
+                    console.log("📡 API Response Status:", response.status);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP錯誤: ${response.status}`);
+                    }
+
+                    const playlistSongs = await response.json();
+                    console.log("📋 原始播放清單歌曲資料:", playlistSongs);
+                    console.log("📊 播放清單歌曲數量:", playlistSongs.length);
+
+                    currentPlaylist = playlistSongs.map((ps) => {
+                        const song = allSongsData.find((s) => s.song_id == ps.song_id);
+                        const artist = allArtistsData.find((a) => a.artist_id == song?.artist_id);
+
+                        console.log(`🎵 處理歌曲 ${ps.song_id}:`, {
+                            songFound: !!song,
+                            artistFound: !!artist,
+                            songName: song?.song_name,
+                            artistName: artist?.artist_name,
+                            youtubeUrl: song?.youtube_url,
+                        });
+
+                        return {
+                            ...ps,
+                            song_name: song?.song_name || "未知歌曲",
+                            artist_name: artist?.artist_name || "未知歌手",
+                            youtube_url: song?.youtube_url || null,
+                        };
+                    });
+
+                    console.log("🎼 最終播放清單:", currentPlaylist);
+                    displayPlaylistSongs();
+                    console.log("✅ 播放清單歌曲載入完成");
+                } catch (error) {
+                    console.error("❌ 載入播放清單歌曲失敗:", error);
+                    alert(`載入播放清單失敗: ${error.message}`);
+                    currentPlaylist = [];
+                    displayPlaylistSongs();
+                }
+            }
+
+            // 顯示播放清單歌曲
+            function displayPlaylistSongs() {
+                const songsList = document.getElementById("songs-list");
+
+                if (currentPlaylist.length === 0) {
+                    songsList.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #666;">
+                            <i class="fas fa-music" style="font-size: 3em; margin-bottom: 15px; opacity: 0.3;"></i>
+                            <p>此播放清單沒有歌曲</p>
+                        </div>
+                    `;
+                    disableControls();
+                    return;
+                }
+
+                songsList.innerHTML = "";
+
+                currentPlaylist.forEach((song, index) => {
+                    const songItem = document.createElement("div");
+                    songItem.style.cssText = `
+                        display: flex; align-items: center; padding: 12px; margin-bottom: 8px;
+                        border-radius: 8px; cursor: pointer; transition: all 0.3s;
+                        border: 2px solid transparent; background: #f5f5f5;
+                    `;
+                    songItem.dataset.index = index;
+
+                    const hasYouTubeUrl = song.youtube_url && song.youtube_url.trim() !== "";
+                    const statusIcon = hasYouTubeUrl
+                        ? '<i class="fas fa-play-circle" style="color: green; margin-left: 8px;" title="有YouTube連結"></i>'
+                        : '<i class="fas fa-search" style="color: orange; margin-left: 8px;" title="需要搜尋YouTube連結"></i>';
+
+                    songItem.innerHTML = `
+                        <div style="width: 30px; text-align: center; font-weight: bold; margin-right: 15px; color: #ff6b35;">
+                            ${index + 1}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; margin-bottom: 4px;">
+                                ${song.song_name}
+                                ${statusIcon}
+                            </div>
+                            <div style="font-size: 0.9em; color: #666;">
+                                ${song.artist_name}
+                            </div>
+                        </div>
+                    `;
+
+                    songItem.addEventListener("click", () => playSong(index));
+                    songItem.addEventListener("mouseenter", () => {
+                        songItem.style.background = "#e5e7eb";
+                        songItem.style.borderColor = "#ff6b35";
+                        songItem.style.transform = "translateX(4px)";
+                    });
+                    songItem.addEventListener("mouseleave", () => {
+                        if (!songItem.classList.contains("playing")) {
+                            songItem.style.background = "#f5f5f5";
+                            songItem.style.borderColor = "transparent";
+                            songItem.style.transform = "translateX(0)";
+                        }
+                    });
+
+                    songsList.appendChild(songItem);
+                });
+
+                enableControls();
+
+                const songsWithUrl = currentPlaylist.filter(
+                    (song) => song.youtube_url && song.youtube_url.trim() !== ""
+                ).length;
+                const songsNeedSearch = currentPlaylist.length - songsWithUrl;
+
+                let statusMessage = `載入了 ${currentPlaylist.length} 首歌曲`;
+                if (songsNeedSearch > 0) {
+                    statusMessage += `，其中 ${songsNeedSearch} 首需要搜尋YouTube連結`;
+                }
+
+                updatePlayerStatus(statusMessage + "，點擊歌曲開始播放");
+            }
+
+            // 播放/暫停切換
+            function togglePlayPause() {
+                if (!ytPlayer || !isPlayerReady) return;
+
+                const state = ytPlayer.getPlayerState();
+                if (state === YT.PlayerState.PLAYING) {
+                    ytPlayer.pauseVideo();
+                } else if (state === YT.PlayerState.PAUSED) {
+                    ytPlayer.playVideo();
+                } else if (currentPlaylist.length > 0) {
+                    playSong(0);
+                }
+            }
+
+            // 更新當前歌曲顯示
+            function updateCurrentSongDisplay() {
+                document.querySelectorAll("[data-index]").forEach((item) => {
+                    item.classList.remove("playing");
+                    item.style.background = "#f5f5f5";
+                    item.style.borderColor = "transparent";
+                    item.style.transform = "translateX(0)";
+                });
+
+                if (currentSongIndex >= 0) {
+                    const currentSongElement = document.querySelector(`[data-index="${currentSongIndex}"]`);
+                    if (currentSongElement) {
+                        currentSongElement.classList.add("playing");
+                        currentSongElement.style.background = "linear-gradient(135deg, #ff6b35, #e55a2e)";
+                        currentSongElement.style.color = "white";
+                        currentSongElement.style.borderColor = "#ff6b35";
+                    }
+
+                    const song = currentPlaylist[currentSongIndex];
+                    document.getElementById("current-song-name").textContent = song.song_name;
+                    document.getElementById("current-artist-name").textContent = song.artist_name;
+                    document.getElementById("current-song-info").style.display = "block";
+                }
+            }
+
+            // 重置當前歌曲顯示
+            function resetCurrentSongDisplay() {
+                document.querySelectorAll("[data-index]").forEach((item) => {
+                    item.classList.remove("playing");
+                    item.style.background = "#f5f5f5";
+                    item.style.color = "";
+                    item.style.borderColor = "transparent";
+                });
+                document.getElementById("current-song-info").style.display = "none";
+                currentSongIndex = -1;
+
+                const playPauseBtn = document.getElementById("play-pause-btn");
+                playPauseBtn.innerHTML = '<i class="fas fa-play"></i> 播放';
+            }
+
+            // 更新播放器狀態
+            function updatePlayerStatus(status) {
+                document.getElementById("player-status").textContent = status;
+            }
+
+            // 啟用控制按鈕
+            function enableControls() {
+                const playBtn = document.getElementById("play-pause-btn");
+                playBtn.disabled = false;
+                playBtn.style.opacity = "1";
+                playBtn.style.cursor = "pointer";
+            }
+
+            // 禁用控制按鈕
+            function disableControls() {
+                const playBtn = document.getElementById("play-pause-btn");
+                playBtn.disabled = true;
+                playBtn.style.opacity = "0.5";
+                playBtn.style.cursor = "not-allowed";
+            }
+
+            // 頁面載入完成後初始化 (參考你的Demo)
+            window.onload = () => {
+                console.log("🚀 頁面載入完成，開始初始化");
+
+                // 載入基礎資料
+                Promise.all([loadArtists(), loadSongs(), loadPlaylists()]).then(() => {
+                    console.log("✅ 所有資料載入完成");
+                });
+
+                // 播放清單選擇事件
+                document.getElementById("playlist-select").addEventListener("change", function () {
+                    const playlistId = this.value;
+                    if (playlistId) {
+                        loadPlaylistSongs(playlistId);
+                        resetCurrentSongDisplay();
+                    } else {
+                        currentPlaylist = [];
+                        displayPlaylistSongs();
+                    }
+                });
+
+                // 載入 Google APIs
+                const script1 = document.createElement("script");
+                script1.src = "https://apis.google.com/js/api.js";
+                script1.onload = gapiLoaded;
+                document.body.appendChild(script1);
+
+                const script2 = document.createElement("script");
+                script2.src = "https://accounts.google.com/gsi/client";
+                script2.onload = gisLoaded;
+                document.body.appendChild(script2);
+            };
+        </script>
+    </body>
+</html>
