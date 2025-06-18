@@ -139,13 +139,33 @@
         <script src="https://www.youtube.com/iframe_api"></script>
 
         <script>
+            // 修正版本：根據環境自動切換 API 端點
+            // 檢測當前環境
+            const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+            const isGitHubPages = window.location.hostname.includes("github.io");
+
+            // 根據環境設定 API 端點
+            let API_BASE;
+            if (isLocalhost) {
+                API_BASE = "http://localhost:8000/api";
+                console.log("🏠 本地開發環境");
+            } else if (isGitHubPages) {
+                // GitHub Pages 環境 - 你需要將後端部署到雲端
+                API_BASE = "https://your-cloud-backend.herokuapp.com/api"; // 暫時註解，等雲端部署後使用
+                console.log("☁️ GitHub Pages 環境");
+
+                // 暫時顯示提示訊息
+                alert("GitHub Pages 環境下需要雲端資料庫，請先部署後端服務");
+            } else {
+                // 其他環境
+                API_BASE = "http://localhost:8000/api";
+                console.log("🌐 其他環境");
+            }
+
             console.log("🎵 YouTube 音樂播放器初始化");
 
-            // API 端點
-            const API_BASE = "http://localhost:8000/api";
-
             // 定義google OAuth 客戶端ID
-            const CLIENT_ID = "407957494432-1u5v186r9hnd126pgfirfcuu8nn2ccuh.apps.googleusercontent.com";
+            const CLIENT_ID = "407957494432-ickpd56p77suvnamqdrltgid9djfjvd3.apps.googleusercontent.com";
             const SCOPES = "https://www.googleapis.com/auth/youtube.readonly";
             const DISCOVERY_DOC = "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest";
 
@@ -179,7 +199,10 @@
                         rel: 0, // 影片結束後不顯示相關影片建議
                         showinfo: 0, // 不顯示影片標題和上傳者資訊
                         autoplay: 0, // 不自動播放
-                        origin: window.location.origin, // 設定來源，避免跨域問題
+                        origin: window.location.origin, // 允許嵌入的來源
+                        enablejsapi: 1, // 啟用 JavaScript API
+                        modestbranding: 1, // 減少 YouTube 品牌標誌
+                        fs: 1, // 允許全螢幕按鈕
                     },
                     events: {
                         onReady: onPlayerReady, // 播放器準備完成時觸發
@@ -226,11 +249,26 @@
             function onPlayerError(event) {
                 console.error("❌ YouTube 播放器錯誤:", event.data);
 
-                if (event.data === 150) {
-                    console.log("🔍 影片不能嵌入");
-                } else {
-                    updatePlayerStatus("播放錯誤，停止播放");
+                let errorMessage = "播放錯誤";
+                switch (event.data) {
+                    case 2:
+                        errorMessage = "影片 ID 無效";
+                        break;
+                    case 5:
+                        errorMessage = "HTML5 播放器錯誤";
+                        break;
+                    case 100:
+                        errorMessage = "影片不存在或已被移除";
+                        break;
+                    case 101:
+                    case 150:
+                        errorMessage = "影片擁有者不允許嵌入播放";
+                        break;
+                    default:
+                        errorMessage = `未知錯誤 (代碼: ${event.data})`;
                 }
+
+                updatePlayerStatus(errorMessage);
             }
 
             // Google API 載入 (參考你的Demo)
@@ -514,9 +552,17 @@
                 }
             }
 
-            // 載入播放清單
+            // 修正後的資料載入函數（支援離線模式）
             async function loadPlaylists() {
                 try {
+                    // 檢查是否在 GitHub Pages 且沒有雲端後端
+                    if (isGitHubPages && API_BASE.includes("localhost")) {
+                        console.log("⚠️ GitHub Pages 環境下無法連接本地資料庫");
+                        // 載入模擬資料
+                        loadMockData();
+                        return;
+                    }
+
                     const response = await fetch(`${API_BASE}/playlists`);
                     if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
                     const playlists = await response.json();
@@ -534,7 +580,42 @@
                     console.log("✅ 播放清單載入完成");
                 } catch (error) {
                     console.error("❌ 載入播放清單失敗:", error);
+
+                    if (isGitHubPages) {
+                        alert("GitHub Pages 環境下需要雲端資料庫才能正常運作");
+                    }
                 }
+            }
+
+            // 模擬資料（供 GitHub Pages 測試用）
+            function loadMockData() {
+                console.log("📋 載入模擬資料");
+
+                // 模擬播放清單
+                const mockPlaylists = [
+                    { playlist_id: 1, playlist_name: "我的最愛", is_public: false },
+                    { playlist_id: 2, playlist_name: "流行歌曲", is_public: true },
+                ];
+
+                const playlistSelect = document.getElementById("playlist-select");
+                playlistSelect.innerHTML = '<option value="">請選擇播放清單...</option>';
+
+                mockPlaylists.forEach((playlist) => {
+                    const option = document.createElement("option");
+                    option.value = playlist.playlist_id;
+                    option.textContent = `${playlist.playlist_name} (模擬資料)`;
+                    playlistSelect.appendChild(option);
+                });
+
+                // 模擬歌曲資料
+                allSongsData = [
+                    { song_id: 1, song_name: "告白氣球", artist_id: 1, youtube_url: null },
+                    { song_id: 2, song_name: "稻香", artist_id: 1, youtube_url: null },
+                ];
+
+                allArtistsData = [{ artist_id: 1, artist_name: "周杰倫" }];
+
+                console.log("✅ 模擬資料載入完成");
             }
 
             // 載入歌手資料
@@ -765,6 +846,76 @@
                 playBtn.disabled = true;
                 playBtn.style.opacity = "0.5";
                 playBtn.style.cursor = "not-allowed";
+            }
+
+            // 快速測試函數
+            function quickTest() {
+                // 模擬播放清單資料
+                currentPlaylist = [
+                    {
+                        song_id: 1,
+                        song_name: "告白氣球",
+                        artist_name: "周杰倫",
+                        youtube_url: "https://www.youtube.com/watch?v=bu7nU9Mhpyo",
+                    },
+                    {
+                        song_id: 2,
+                        song_name: "稻香",
+                        artist_name: "周杰倫",
+                        youtube_url: "https://www.youtube.com/watch?v=VjXl09n4NT8",
+                    },
+                ];
+
+                // 顯示模擬播放清單
+                displayPlaylistSongs();
+
+                console.log("🧪 快速測試模式啟動");
+                console.log("📍 當前環境:", window.location.href);
+                console.log("🌐 Origin:", window.location.origin);
+
+                // 測試 YouTube 播放器
+                if (isPlayerReady) {
+                    console.log("✅ YouTube 播放器已準備就緒");
+                } else {
+                    console.log("⏳ YouTube 播放器尚未準備就緒");
+                }
+            }
+
+            // 在頁面載入後自動執行快速測試
+            window.addEventListener("load", function () {
+                // 如果是 GitHub Pages 環境，等待 5 秒後執行測試
+                if (window.location.hostname.includes("github.io")) {
+                    setTimeout(quickTest, 5000);
+
+                    // 顯示環境資訊
+                    const envInfo = document.createElement("div");
+                    envInfo.style.cssText = `
+            position: fixed; top: 10px; right: 10px; 
+            background: #333; color: white; padding: 10px; 
+            border-radius: 5px; z-index: 9999; font-size: 12px;
+        `;
+                    envInfo.innerHTML = `
+            <div>🌐 GitHub Pages 模式</div>
+            <div>🔗 ${window.location.href}</div>
+            <div>📡 需要雲端資料庫</div>
+        `;
+                    document.body.appendChild(envInfo);
+                }
+            });
+
+            // 添加環境檢測函數
+            function detectEnvironment() {
+                const env = {
+                    hostname: window.location.hostname,
+                    protocol: window.location.protocol,
+                    port: window.location.port,
+                    isLocalhost: window.location.hostname === "localhost",
+                    isGitHubPages: window.location.hostname.includes("github.io"),
+                    isHTTPS: window.location.protocol === "https:",
+                };
+
+                console.log("🔍 環境檢測結果:", env);
+                return env;
             }
 
             // 頁面載入完成後初始化 (參考你的Demo)
