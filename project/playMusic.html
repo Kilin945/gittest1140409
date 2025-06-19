@@ -633,10 +633,11 @@
             // 修正後的資料載入函數（支援離線模式）
             async function loadPlaylists() {
                 try {
+                    console.log("🔄 載入播放清單...");
+
                     // 檢查是否在 GitHub Pages 且沒有雲端後端
-                    if (isGitHubPages && API_BASE.includes("localhost")) {
-                        console.log("⚠️ GitHub Pages 環境下無法連接本地資料庫");
-                        // 載入模擬資料
+                    if (currentHostname.includes("hitgub.io") && API_BASE.includes("localhost")) {
+                        console.warn("⚠️ 在 GitHub Pages 環境下無法連接本地資料庫，載入模擬資料");
                         loadMockData();
                         return;
                     }
@@ -655,12 +656,15 @@
                         playlistSelect.appendChild(option);
                     });
 
-                    console.log("✅ 播放清單載入完成");
+                    console.log("✅ 播放清單載入完成，數量：", playlists.length);
                 } catch (error) {
                     console.error("❌ 載入播放清單失敗:", error);
 
-                    if (isGitHubPages) {
-                        alert("GitHub Pages 環境下需要雲端資料庫才能正常運作");
+                    if (currentHostname.includes("github.io")) {
+                        console.log(" GitHub Pages 環境，載入模擬資料");
+                        loadMockData();
+                    } else {
+                        throw error;
                     }
                 }
             }
@@ -699,13 +703,15 @@
             // 載入歌手資料
             async function loadArtists() {
                 try {
+                    console.log("🔄 載入歌手資料...");
                     const response = await fetch(`${API_BASE}/artists`);
                     if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
                     allArtistsData = await response.json();
-                    console.log("✅ 歌手資料載入完成");
+                    console.log("✅ 歌手資料載入完成，數量：", allArtistsData.length);
                 } catch (error) {
                     console.error("❌ 載入歌手失敗:", error);
                     allArtistsData = [];
+                    throw Error; // 重新拋出錯誤以便上層處理
                 }
             }
 
@@ -722,10 +728,28 @@
                 }
             }
 
-            // 載入播放清單歌曲
+            // 在 loadPlaylistSongs 函數開頭加入檢查
             async function loadPlaylistSongs(playlistId) {
                 try {
                     console.log("🔄 載入播放清單歌曲:", playlistId);
+
+                    // 🔍 除錯：檢查基礎資料狀態
+                    console.log("📊 基礎資料檢查:");
+                    console.log("  - allSongsData 數量:", allSongsData.length);
+                    console.log("  - allArtistsData 數量:", allArtistsData.length);
+                    console.log("  - API_BASE:", API_BASE);
+
+                    if (allSongsData.length === 0) {
+                        console.error("❌ 歌曲資料尚未載入！");
+                        alert("歌曲資料尚未載入，請重新整理頁面");
+                        return;
+                    }
+
+                    if (allArtistsData.length === 0) {
+                        console.error("❌ 歌手資料尚未載入！");
+                        alert("歌手資料尚未載入，請重新整理頁面");
+                        return;
+                    }
 
                     // 先測試API端點是否存在
                     const apiUrl = `${API_BASE}/playlist_songs?playlist_id=${playlistId}`;
@@ -741,6 +765,13 @@
                     const playlistSongs = await response.json();
                     console.log("📋 原始播放清單歌曲資料:", playlistSongs);
                     console.log("📊 播放清單歌曲數量:", playlistSongs.length);
+
+                    if (playlistSongs.length === 0) {
+                        console.log("⚠️ 播放清單沒有歌曲");
+                        currentPlaylist = [];
+                        displayPlaylistSongs();
+                        return;
+                    }
 
                     currentPlaylist = playlistSongs.map((ps) => {
                         const song = allSongsData.find((s) => s.song_id == ps.song_id);
@@ -996,19 +1027,38 @@
                 return env;
             }
 
-            // 頁面載入完成後初始化 (參考你的Demo)
-            window.onload = () => {
+            // 頁面載入完成後初始化
+            window.onload = async () => {
                 console.log("🚀 頁面載入完成，開始初始化");
 
-                // 載入基礎資料
-                Promise.all([loadArtists(), loadSongs(), loadPlaylists()]).then(() => {
-                    console.log("✅ 所有資料載入完成");
-                });
+                try {
+                    // 載入基礎資料
+                    console.log("📊 開始載入基礎資料...");
+
+                    await loadArtists();
+                    console.log("🎤 歌手資料載入完成");
+
+                    await loadSongs();
+                    console.log("🎶 歌曲資料載入完成");
+
+                    await loadPlaylists();
+                    console.log("📚 播放清單資料載入完成");
+                } catch (error) {
+                    console.error("❌ 初始化失敗:", error);
+                    document.getElementById("auth-status").textContent = "❌ 初始化失敗: " + error.message;
+                }
 
                 // 播放清單選擇事件
                 document.getElementById("playlist-select").addEventListener("change", function () {
                     const playlistId = this.value;
                     if (playlistId) {
+                        //確保資料載入
+                        if (allSongsData.length === 0 || allArtistsDat.length === 0) {
+                            console.error("資料尚未載入完成");
+                            console.error("❌ 資料尚未載入完成，請稍後再試");
+                            return;
+                        }
+
                         loadPlaylistSongs(playlistId);
                         resetCurrentSongDisplay();
                     } else {
@@ -1019,12 +1069,12 @@
 
                 // 載入 Google APIs
                 const script1 = document.createElement("script");
-                script1.src = "https://apis.google.com/js/api.js";
+                script1.src = "https://apis.google.com/js/api.js"; // Google API Client Library
                 script1.onload = gapiLoaded;
                 document.body.appendChild(script1);
 
                 const script2 = document.createElement("script");
-                script2.src = "https://accounts.google.com/gsi/client";
+                script2.src = "https://accounts.google.com/gsi/client"; // Google Identity Services
                 script2.onload = gisLoaded;
                 document.body.appendChild(script2);
             };
