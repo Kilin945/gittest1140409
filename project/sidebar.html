@@ -28,6 +28,9 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: var(--claude-text);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
         }
 
         /* 💻 桌面版佈局 */
@@ -142,6 +145,92 @@
             border-radius: 2px;
         }
 
+        /* 🆕 使用者歡迎區域 */
+        .user-welcome {
+            background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent));
+            color: white;
+            padding: 12px 15px;
+            margin: 10px 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: var(--claude-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 🆕 遊客模式樣式 */
+        .user-welcome.guest-mode {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+
+        .user-welcome::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .user-welcome-content {
+            position: relative !important;
+            z-index: 1 !important;
+        }
+
+        .welcome-text {
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            margin-bottom: 0 !important;
+            display: inline !important;
+        }
+
+        .user-name {
+            font-size: 0.95rem !important;
+            font-weight: 700 !important;
+            margin-bottom: 5px !important;
+            display: inline !important;
+            margin-left: 5px !important;
+        }
+
+        .session-info {
+            font-size: 0.7rem !important;
+            margin-bottom: 5px !important;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* 🆕 使用時間顯示 */
+        .usage-time {
+            font-size: 0.7rem !important;
+            margin-bottom: 5px !important;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 4px 10px !important;
+            font-size: 0.7rem !important;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
         /* 導航選單 */
         .nav-menu {
             padding: 20px;
@@ -165,24 +254,36 @@
         /* 主要內容區域 */
         .content-header {
             text-align: center;
-            margin-bottom: 40px;
-            padding: 20px 0;
+            margin-bottom: 20px !important;
+            padding: 10px 0 !important;
         }
 
+        /* 🆕 個人化歡迎標題 */
         .welcome-title {
-            font-size: 2.5rem;
+            font-size: 2.2rem !important;
+            margin-bottom: 8px !important;
             font-weight: 700;
             color: var(--claude-text);
-            margin-bottom: 10px;
             background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .welcome-user-part {
+            font-size: 1.6rem !important;
+            color: var(--claude-accent);
+            font-weight: 600;
         }
 
         .welcome-subtitle {
             color: var(--claude-text-muted);
-            font-size: 1.2rem;
+            font-size: 1.1rem !important;
             margin: 0;
         }
 
@@ -316,13 +417,19 @@
             }
 
             .content-header {
-                margin-bottom: 30px;
-                padding: 10px 0;
+                margin-bottom: 15px !important;
+                padding: 5px 0 !important;
             }
 
             .welcome-title {
-                font-size: 2rem;
+                font-size: 1.8rem !important;
                 line-height: 1.2;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .welcome-user-part {
+                font-size: 1.3rem !important;
             }
 
             .welcome-subtitle {
@@ -371,6 +478,11 @@
                 font-size: 0.8rem;
                 margin: 20px 0 8px 0;
             }
+
+            .user-welcome {
+                margin: 10px 15px;
+                padding: 12px 15px;
+            }
         }
 
         /* 📱 小手機版響應式設計 (≤480px) */
@@ -380,11 +492,16 @@
             }
 
             .welcome-title {
+                font-size: 2rem;
+                margin-bottom: 10px !important;
+            }
+
+            .welcome-user-part {
                 font-size: 1.8rem;
             }
 
             .welcome-subtitle {
-                font-size: 0.9rem;
+                font-size: 1rem;
             }
 
             .menu-item a {
@@ -546,13 +663,33 @@
                 <div class="decorative-line"></div>
             </div>
 
+            <!-- 🆕 使用者歡迎區域 -->
+            <div class="user-welcome" id="userWelcome" style="display: none">
+                <div class="user-welcome-content">
+                    <div class="welcome-text" id="welcomeText">歡迎回來</div>
+                    <div class="user-name" id="userName">使用者</div>
+                    <div class="session-info">
+                        <i class="fas fa-clock"></i>
+                        <span id="sessionTime">登入時間</span>
+                    </div>
+                    <!-- 🆕 使用時間顯示 (僅註冊用戶) -->
+                    <div class="usage-time" id="usageTimeDisplay" style="display: none">
+                        <i class="fas fa-hourglass-half"></i>
+                        <span id="usageTimeText">使用時間: 00:00:00</span>
+                    </div>
+                    <button class="logout-btn" onclick="handleLogout()">
+                        <i class="fas fa-sign-out-alt"></i> <span id="logoutText">登出</span>
+                    </button>
+                </div>
+            </div>
+
             <nav class="nav-menu">
                 <div class="nav-item">
                     <a href="sidebar.html" class="nav-link"> <i class="fas fa-home"></i> 音樂系統首頁 </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="index.html" class="nav-link"> <i class="fas fa-user"></i> 個人首頁 </a>
+                    <a href="index.html" class="nav-link"> <i class="fas fa-user"></i> 返回個人首頁 </a>
                 </div>
 
                 <div class="nav-item">
@@ -578,8 +715,14 @@
                     </a>
                 </div>
 
-                <div class="nav-section-title">➕ 新增功能</div>
+                <div class="nav-section-title">⚙️ 資料管理</div>
+                <div class="nav-item">
+                    <a href="sidebar.html?target=demoAPI2.html" class="nav-link">
+                        <i class="fas fa-edit"></i> 資料操作
+                    </a>
+                </div>
 
+                <div class="nav-section-title">➕ 新增功能</div>
                 <div class="nav-item">
                     <a href="sidebar.html?target=insertArtists.html" class="nav-link">
                         <i class="fas fa-microphone"></i> 新增歌手
@@ -616,16 +759,15 @@
                     </a>
                 </div>
 
-                <div class="nav-section-title">⚙️ 資料管理</div>
-
+                <div class="nav-section-title">👤 個人功能</div>
                 <div class="nav-item">
-                    <a href="sidebar.html?target=demoAPI.html" class="nav-link">
-                        <i class="fas fa-edit"></i> 資料操作
+                    <a href="sidebar.html?target=myPlaylists.html" class="nav-link">
+                        <i class="fas fa-headphones"></i> 我的播放清單
                     </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="sidebar.html?target=updateUser.html" class="nav-link">
+                    <a href="sidebar.html?target=userSettings.html" class="nav-link">
                         <i class="fas fa-cog"></i> 個人設定
                     </a>
                 </div>
@@ -635,7 +777,9 @@
         <!-- 🎵 主要內容區域 -->
         <div class="content" id="mainContent">
             <div class="content-header">
-                <h1 class="welcome-title">歡迎來到 Kilin 音樂世界</h1>
+                <h1 class="welcome-title" id="welcomeTitle">
+                    <span id="welcomeUserText"></span>歡迎來到 Kilin 音樂世界
+                </h1>
                 <p class="welcome-subtitle">管理您的音樂收藏，享受美好時光</p>
             </div>
 
@@ -677,6 +821,181 @@
         </div>
 
         <script>
+            console.log("🎵 Kilin 音樂系統初始化中...");
+
+            // 全域變數
+            let currentUser = null;
+            let isGuestMode = false;
+            let sessionStartTime = null;
+            let usageTimer = null;
+            let totalUsageSeconds = 0;
+
+            // 🆕 時間格式化函數
+            function formatTime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs
+                    .toString()
+                    .padStart(2, "0")}`;
+            }
+
+            // 🆕 時間轉換為秒數
+            function timeToSeconds(timeStr) {
+                if (!timeStr) return 0;
+                const parts = timeStr.split(":");
+                if (parts.length !== 3) return 0;
+                return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+            }
+
+            // 🆕 開始計時器 (僅註冊用戶)
+            function startUsageTimer() {
+                if (isGuestMode) {
+                    console.log("🚫 遊客模式不計時");
+                    return;
+                }
+
+                console.log("⏰ 開始使用時間計時");
+                sessionStartTime = new Date();
+
+                // 每秒更新顯示
+                usageTimer = setInterval(() => {
+                    totalUsageSeconds++;
+                    updateUsageTimeDisplay();
+                }, 1000);
+            }
+
+            // 🆕 停止計時器
+            function stopUsageTimer() {
+                if (usageTimer) {
+                    clearInterval(usageTimer);
+                    usageTimer = null;
+                    console.log("⏹️ 停止使用時間計時");
+                }
+            }
+
+            // 🆕 更新使用時間顯示
+            function updateUsageTimeDisplay() {
+                const usageTimeText = document.getElementById("usageTimeText");
+                if (usageTimeText && !isGuestMode) {
+                    usageTimeText.textContent = `使用時間: ${formatTime(totalUsageSeconds)}`;
+                }
+            }
+
+            // 🆕 儲存使用時間到後端
+            async function saveUsageTimeToServer() {
+                if (isGuestMode || !currentUser || totalUsageSeconds === 0) {
+                    console.log("🚫 遊客模式或無使用時間，不儲存");
+                    return;
+                }
+
+                try {
+                    const usageTimeFormatted = formatTime(totalUsageSeconds);
+                    console.log(`💾 儲存使用時間到伺服器: ${usageTimeFormatted}`);
+
+                    const updateData = {
+                        table: "users",
+                        user_id: currentUser.user_id,
+                        user_name: currentUser.user_name,
+                        password: currentUser.password,
+                        usage_time: usageTimeFormatted,
+                        state: "0",
+                    };
+
+                    const response = await fetch("/api/2/update", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(updateData),
+                    });
+
+                    if (response.ok) {
+                        console.log("✅ 使用時間已成功儲存到資料庫");
+                    } else {
+                        console.error("❌ 儲存使用時間失敗:", response.status);
+                    }
+                } catch (error) {
+                    console.error("❌ 儲存使用時間時發生錯誤:", error);
+                }
+            }
+
+            // 🆕 檢查是否為遊客模式
+            function checkGuestMode() {
+                const guestSession = localStorage.getItem("kilin_guest_session");
+                if (guestSession) {
+                    isGuestMode = true;
+                    const guestInfo = JSON.parse(guestSession);
+                    updateGuestInterface(guestInfo);
+                    return true;
+                }
+                return false;
+            }
+
+            // 🆕 設定遊客模式
+            function setGuestMode() {
+                isGuestMode = true;
+                const guestInfo = {
+                    user_name: "遊客",
+                    login_time: new Date().toISOString(),
+                    is_guest: true,
+                };
+
+                localStorage.setItem("kilin_guest_session", JSON.stringify(guestInfo));
+                updateGuestInterface(guestInfo);
+                console.log("👤 已設定為遊客模式");
+            }
+
+            // 🆕 更新遊客介面
+            function updateGuestInterface(guestInfo) {
+                console.log("🎨 更新遊客介面:", guestInfo);
+
+                const userWelcome = document.getElementById("userWelcome");
+                const userName = document.getElementById("userName");
+                const sessionTime = document.getElementById("sessionTime");
+                const welcomeText = document.getElementById("welcomeText");
+                const usageTimeDisplay = document.getElementById("usageTimeDisplay");
+                const logoutText = document.getElementById("logoutText");
+
+                if (userWelcome && userName && sessionTime && welcomeText) {
+                    // 設定遊客樣式
+                    userWelcome.classList.add("guest-mode");
+
+                    welcomeText.textContent = "遊客模式";
+                    userName.textContent = guestInfo.user_name;
+                    logoutText.textContent = "結束遊客模式";
+
+                    const loginTime = new Date(guestInfo.login_time);
+                    const timeString = loginTime.toLocaleTimeString("zh-TW", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    });
+                    sessionTime.textContent = `${timeString} 開始瀏覽`;
+
+                    // 隱藏使用時間顯示
+                    if (usageTimeDisplay) {
+                        usageTimeDisplay.style.display = "none";
+                    }
+
+                    userWelcome.style.display = "block";
+
+                    // 更新主要歡迎標題 - 修改這裡讓遊客名字也變大
+                    const welcomeUserText = document.getElementById("welcomeUserText");
+                    if (welcomeUserText) {
+                        welcomeUserText.innerHTML = `<span class="welcome-user-part" style="font-size: 2.5rem !important;">你好，${guestInfo.user_name}，</span>`;
+                    }
+                    console.log("✅ 遊客介面更新完成");
+                }
+
+                // 更新主要歡迎標題
+                const welcomeUserText = document.getElementById("welcomeUserText");
+                if (welcomeUserText) {
+                    welcomeUserText.innerHTML = `<span class="welcome-user-part">你好，${guestInfo.user_name}，</span>`;
+                }
+
+                console.log("✅ 遊客介面更新完成");
+            }
+
             // 🎯 響應式選單控制
             function toggleSidebar() {
                 const sidebar = document.getElementById("sidebar");
@@ -685,7 +1004,6 @@
                 sidebar.classList.toggle("active");
                 overlay.classList.toggle("active");
 
-                // 防止背景滾動
                 if (sidebar.classList.contains("active")) {
                     document.body.style.overflow = "hidden";
                 } else {
@@ -700,6 +1018,136 @@
                 sidebar.classList.remove("active");
                 overlay.classList.remove("active");
                 document.body.style.overflow = "";
+            }
+
+            // 修改 checkLoginStatus 函數，移除 alert
+            function checkLoginStatus() {
+                try {
+                    // 首先檢查是否為遊客模式
+                    if (checkGuestMode()) {
+                        return true;
+                    }
+
+                    const sessionData = localStorage.getItem("kilin_user_session");
+                    if (!sessionData) {
+                        console.log("🔍 未找到登入會話，跳轉到登入頁面");
+                        redirectToLogin();
+                        return false;
+                    }
+
+                    const userInfo = JSON.parse(sessionData);
+                    console.log("✅ 找到使用者會話:", userInfo);
+
+                    // 驗證會話有效性（例如：檢查登入時間是否太久）
+                    const loginTime = new Date(userInfo.login_time);
+                    const now = new Date();
+                    const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
+
+                    // 如果登入超過24小時，要求重新登入
+                    if (hoursSinceLogin > 24) {
+                        console.log("⚠️ 會話已過期，清除並跳轉到登入頁面");
+                        localStorage.removeItem("kilin_user_session");
+                        redirectToLogin();
+                        return false;
+                    }
+
+                    currentUser = userInfo;
+                    isGuestMode = false;
+
+                    // 初始化使用者的累計使用時間
+                    if (userInfo.usage_time) {
+                        totalUsageSeconds = timeToSeconds(userInfo.usage_time);
+                    }
+
+                    updateUserInterface(userInfo);
+                    startUsageTimer(); // 開始計時
+                    return true;
+                } catch (error) {
+                    console.error("❌ 檢查登入狀態時發生錯誤:", error);
+                    localStorage.removeItem("kilin_user_session");
+                    redirectToLogin();
+                    return false;
+                }
+            }
+
+            // 🔄 跳轉到登入頁面
+            function redirectToLogin() {
+                console.log("🔄 跳轉到登入頁面");
+                window.location.href = "login.html";
+            }
+
+            // 🎨 更新使用者介面
+            function updateUserInterface(userInfo) {
+                console.log("🎨 更新使用者介面:", userInfo);
+
+                // 更新側邊欄使用者歡迎區域
+                const userWelcome = document.getElementById("userWelcome");
+                const userName = document.getElementById("userName");
+                const sessionTime = document.getElementById("sessionTime");
+                const welcomeText = document.getElementById("welcomeText");
+                const usageTimeDisplay = document.getElementById("usageTimeDisplay");
+                const logoutText = document.getElementById("logoutText");
+
+                if (userWelcome && userName && sessionTime && welcomeText) {
+                    // 確保不是遊客樣式
+                    userWelcome.classList.remove("guest-mode");
+
+                    welcomeText.textContent = "歡迎回來";
+                    userName.textContent = userInfo.user_name;
+                    logoutText.textContent = "登出";
+
+                    const loginTime = new Date(userInfo.login_time);
+                    const timeString = loginTime.toLocaleTimeString("zh-TW", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    });
+                    sessionTime.textContent = `${timeString} 登入`;
+
+                    // 顯示使用時間
+                    if (usageTimeDisplay) {
+                        usageTimeDisplay.style.display = "flex";
+                        updateUsageTimeDisplay();
+                    }
+
+                    userWelcome.style.display = "block";
+                }
+
+                // 更新主要歡迎標題 - 修改這裡讓使用者名字變大
+                const welcomeUserText = document.getElementById("welcomeUserText");
+                if (welcomeUserText) {
+                    welcomeUserText.innerHTML = `<span class="welcome-user-part" style="font-size: 2.5rem !important;">你好，${userInfo.user_name}，</span>`;
+                }
+
+                console.log("✅ 使用者介面更新完成");
+            }
+
+            // 🚪 處理登出
+            async function handleLogout() {
+                const confirmMessage = isGuestMode ? "確定要結束遊客模式嗎？" : "確定要登出嗎？";
+
+                if (confirm(confirmMessage)) {
+                    console.log(isGuestMode ? "🚪 遊客結束瀏覽" : "🚪 使用者登出");
+
+                    // 如果是註冊用戶，先儲存使用時間
+                    if (!isGuestMode && currentUser) {
+                        stopUsageTimer();
+                        await saveUsageTimeToServer();
+                    }
+
+                    // 清除會話資料
+                    if (isGuestMode) {
+                        localStorage.removeItem("kilin_guest_session");
+                    } else {
+                        localStorage.removeItem("kilin_user_session");
+                    }
+
+                    currentUser = null;
+                    isGuestMode = false;
+                    totalUsageSeconds = 0;
+
+                    // 跳轉到登入頁面
+                    redirectToLogin();
+                }
             }
 
             // 🔍 URL 參數處理
@@ -740,7 +1188,8 @@
                         }
                     });
 
-                    // 延遲執行腳本
+                    // 延遲執行腳本，並注入使用者資訊
+                    // 延遲執行腳本，並注入使用者資訊
                     setTimeout(() => {
                         const scripts = doc.querySelectorAll("script");
                         scripts.forEach((oldScript) => {
@@ -750,16 +1199,35 @@
                             if (oldScript.src) {
                                 newScript.src = oldScript.src;
                             } else {
+                                let scriptContent = oldScript.textContent;
+
+                                // 如果是需要使用者資訊的頁面，注入當前使用者資料
+                                if (fileName.includes("myPlaylists.html") || fileName.includes("userSettings.html")) {
+                                    const userDataToInject = isGuestMode
+                                        ? { user_name: "遊客", is_guest: true }
+                                        : currentUser;
+
+                                    scriptContent = `
+                    window.currentUser = ${JSON.stringify(userDataToInject)};
+                    window.isGuestMode = ${isGuestMode};
+                    ${scriptContent}
+                `;
+                                }
+
+                                // 🔧 恢復安全版本：保持 try-catch 但移除函數包裝
                                 newScript.textContent = `
-                                    setTimeout(function() {
-                                        ${oldScript.textContent}
-                                    }, 100);
-                                `;
+                try {
+                    ${scriptContent}
+                } catch (error) {
+                    console.error("動態腳本執行錯誤:", error);
+                    console.error("錯誤頁面:", "${fileName}");
+                }
+            `;
                             }
 
-                            document.body.appendChild(newScript);
+                            document.head.appendChild(newScript);
                         });
-                    }, 50);
+                    }, 100);
 
                     // 手機版自動關閉側邊欄
                     if (window.innerWidth <= 768) {
@@ -808,23 +1276,89 @@
                     e.preventDefault();
                     toggleSidebar();
                 }
+
+                // Ctrl/Cmd + L 登出
+                if ((e.ctrlKey || e.metaKey) && e.key === "l") {
+                    e.preventDefault();
+                    handleLogout();
+                }
+
+                // Ctrl/Cmd + G 切換遊客模式 (僅在未登入時)
+                if ((e.ctrlKey || e.metaKey) && e.key === "g") {
+                    e.preventDefault();
+                    if (!currentUser && !isGuestMode) {
+                        setGuestMode();
+                    }
+                }
+            });
+
+            // 🆕 頁面關閉/刷新前儲存使用時間
+            window.addEventListener("beforeunload", async (e) => {
+                if (!isGuestMode && currentUser && totalUsageSeconds > 0) {
+                    stopUsageTimer();
+
+                    // 使用 navigator.sendBeacon 確保數據能發送
+                    const usageTimeFormatted = formatTime(totalUsageSeconds);
+                    const updateData = {
+                        table: "users",
+                        user_id: currentUser.user_id,
+                        user_name: currentUser.user_name,
+                        password: currentUser.password,
+                        usage_time: usageTimeFormatted,
+                        state: "0",
+                    };
+
+                    try {
+                        navigator.sendBeacon("/api/2/update", JSON.stringify(updateData));
+                        console.log("📤 已透過 sendBeacon 發送使用時間");
+                    } catch (error) {
+                        console.error("❌ sendBeacon 發送失敗:", error);
+                    }
+                }
+            });
+
+            // 🆕 頁面可見性變化處理 (用戶切換分頁)
+            document.addEventListener("visibilitychange", () => {
+                if (!isGuestMode && currentUser) {
+                    if (document.hidden) {
+                        // 頁面隱藏時暫停計時
+                        console.log("⏸️ 頁面隱藏，暫停計時");
+                        stopUsageTimer();
+                    } else {
+                        // 頁面顯示時恢復計時
+                        console.log("▶️ 頁面顯示，恢復計時");
+                        startUsageTimer();
+                    }
+                }
             });
 
             // 🚀 頁面初始化
             window.addEventListener("DOMContentLoaded", () => {
+                console.log("🚀 頁面 DOM 載入完成");
+
+                // 🔐 檢查登入狀態或遊客模式
+                if (!checkLoginStatus()) {
+                    redirectToLogin();
+                    return;
+                }
+
+                // 處理 URL 參數
                 const target = getQueryParam("target");
                 if (target) {
                     loadPage(target);
                 }
 
                 // 預載入關鍵頁面
-                const criticalPages = ["searchAllSong.html", "playMusic.html"];
+                const criticalPages = ["searchAllSong.html", "playMusic.html", "myPlaylists.html"];
                 criticalPages.forEach((page) => {
                     const link = document.createElement("link");
                     link.rel = "prefetch";
                     link.href = page;
                     document.head.appendChild(link);
                 });
+
+                console.log("✅ 音樂系統初始化完成");
+                console.log(`📊 當前模式: ${isGuestMode ? "遊客模式" : "註冊用戶模式"}`);
             });
 
             // 📊 效能監控
@@ -834,6 +1368,25 @@
                     console.log(`🚀 頁面載入時間: ${Math.round(loadTime)}ms`);
                 });
             }
+
+            // 🔄 定期檢查會話狀態並儲存使用時間
+            setInterval(() => {
+                // 檢查會話狀態
+                const sessionData = localStorage.getItem("kilin_user_session");
+                const guestData = localStorage.getItem("kilin_guest_session");
+
+                if (!sessionData && !guestData && (currentUser || isGuestMode)) {
+                    console.log("⚠️ 會話已失效，跳轉到登入頁面");
+                    redirectToLogin();
+                    return;
+                }
+
+                // 每5分鐘自動儲存一次使用時間 (僅註冊用戶)
+                if (!isGuestMode && currentUser && totalUsageSeconds > 0 && totalUsageSeconds % 300 === 0) {
+                    console.log("💾 定期儲存使用時間...");
+                    saveUsageTimeToServer();
+                }
+            }, 60000); // 每分鐘檢查一次
 
             console.log("🎵 Kilin 音樂系統已成功初始化");
         </script>

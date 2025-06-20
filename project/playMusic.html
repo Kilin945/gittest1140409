@@ -1262,6 +1262,28 @@
                     document.getElementById("auth-status").textContent = "❌ 初始化失敗: " + error.message;
                 }
 
+                // 🆕 檢查 URL 參數中是否有指定的播放清單
+                const urlParams = new URLSearchParams(window.location.search);
+                const playlistId = urlParams.get("playlist");
+
+                if (playlistId) {
+                    console.log(`🎵 自動載入播放清單: ${playlistId}`);
+
+                    // 等待資料載入完成後自動選擇
+                    setTimeout(() => {
+                        const playlistSelect = document.getElementById("playlist-select");
+                        if (playlistSelect) {
+                            playlistSelect.value = playlistId;
+
+                            // 觸發 change 事件來載入歌曲
+                            const changeEvent = new Event("change");
+                            playlistSelect.dispatchEvent(changeEvent);
+
+                            console.log(`✅ 已自動選擇播放清單: ${playlistId}`);
+                        }
+                    }, 2000); // 等待2秒確保資料載入完成
+                }
+
                 // 播放清單選擇事件
                 document.getElementById("playlist-select").addEventListener("change", function () {
                     const playlistId = this.value;

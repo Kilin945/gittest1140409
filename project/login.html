@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>🎵 Kilin 音樂系統 - 登入</title>
+        <!-- Font Awesome 圖標庫 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <style>
+            /* Claude 風格完整重置 */
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Claude 風格色彩變數 */
+            :root {
+                --claude-bg: #0a0f0d !important;
+                --claude-bg-secondary: #0f1512 !important;
+                --claude-primary: #d97742 !important;
+                --claude-primary-hover: #c56a3a !important;
+                --claude-accent: #e08856 !important;
+                --claude-text: #ffffff !important;
+                --claude-text-secondary: #e5e7eb !important;
+                --claude-text-muted: #9ca3af !important;
+                --claude-card: rgba(217, 119, 66, 0.08) !important;
+                --claude-card-hover: rgba(217, 119, 66, 0.12) !important;
+                --claude-border: rgba(217, 119, 66, 0.3) !important;
+                --claude-shadow: 0 4px 20px rgba(217, 119, 66, 0.15) !important;
+                --claude-shadow-strong: 0 8px 32px rgba(217, 119, 66, 0.25) !important;
+                --claude-danger-red: #ef4444 !important;
+                --claude-success-green: #22c55e !important;
+                --border-radius: 16px !important;
+                --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+
+            /* 強制覆蓋 body 樣式 */
+            html,
+            body {
+                height: 100% !important;
+                background: var(--claude-bg) !important;
+                background-image: radial-gradient(circle at 20% 20%, rgba(217, 119, 66, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(224, 136, 86, 0.06) 0%, transparent 50%),
+                    linear-gradient(135deg, var(--claude-bg) 0%, var(--claude-bg-secondary) 100%) !important;
+                background-attachment: fixed !important;
+                color: var(--claude-text) !important;
+                font-family: "Inter", "Segoe UI", "微軟正黑體", sans-serif !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* 主容器 */
+            .login-container {
+                height: 100vh !important;
+                width: 100% !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                position: relative !important;
+                background: transparent !important;
+                padding: 20px !important;
+            }
+
+            /* 背景動畫 */
+            .login-container::before {
+                content: "" !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background: radial-gradient(circle at 15% 25%, rgba(217, 119, 66, 0.1) 0%, transparent 60%),
+                    radial-gradient(circle at 85% 75%, rgba(224, 136, 86, 0.08) 0%, transparent 60%) !important;
+                z-index: 0 !important;
+                animation: backgroundPulse 8s ease-in-out infinite !important;
+            }
+
+            @keyframes backgroundPulse {
+                0%,
+                100% {
+                    opacity: 0.3;
+                }
+                50% {
+                    opacity: 0.6;
+                }
+            }
+
+            /* 登入卡片 */
+            .login-card {
+                background: var(--claude-card) !important;
+                backdrop-filter: blur(20px) !important;
+                border: 1px solid var(--claude-border) !important;
+                border-radius: var(--border-radius) !important;
+                padding: 50px 40px !important;
+                box-shadow: var(--claude-shadow-strong) !important;
+                position: relative !important;
+                z-index: 1 !important;
+                width: 100% !important;
+                max-width: 450px !important;
+                overflow: hidden !important;
+                animation: cardSlideIn 0.8s ease-out !important;
+            }
+
+            .login-card::before {
+                content: "" !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background: linear-gradient(
+                    45deg,
+                    transparent 0%,
+                    rgba(217, 119, 66, 0.03) 50%,
+                    transparent 100%
+                ) !important;
+                z-index: 0 !important;
+            }
+
+            .login-content {
+                position: relative !important;
+                z-index: 1 !important;
+            }
+
+            @keyframes cardSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(50px) scale(0.9);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+            }
+
+            /* 登入標題 */
+            .login-header {
+                text-align: center !important;
+                margin: 0 0 40px 0 !important;
+            }
+
+            .login-title {
+                font-size: 2.2rem !important;
+                font-weight: 700 !important;
+                color: var(--claude-text) !important;
+                margin: 0 0 10px 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 15px !important;
+                font-family: inherit !important;
+            }
+
+            .login-title i {
+                color: var(--claude-primary) !important;
+                font-size: 2.5rem !important;
+                animation: iconBounce 2s ease-in-out infinite !important;
+            }
+
+            @keyframes iconBounce {
+                0%,
+                100% {
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-8px);
+                }
+            }
+
+            .login-subtitle {
+                font-size: 1.1rem !important;
+                color: var(--claude-text-muted) !important;
+                margin: 0 !important;
+                font-family: inherit !important;
+            }
+
+            /* 表單樣式 */
+            .login-form {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 25px !important;
+            }
+
+            .form-group {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 8px !important;
+            }
+
+            .form-label {
+                font-size: 1rem !important;
+                font-weight: 600 !important;
+                color: var(--claude-text-secondary) !important;
+                margin: 0 !important;
+                font-family: inherit !important;
+            }
+
+            .form-input {
+                width: 100% !important;
+                padding: 16px 20px !important;
+                border: 2px solid var(--claude-border) !important;
+                border-radius: var(--border-radius) !important;
+                background: var(--claude-bg-secondary) !important;
+                color: var(--claude-text) !important;
+                font-size: 1rem !important;
+                transition: var(--transition) !important;
+                font-family: inherit !important;
+                outline: none !important;
+            }
+
+            .form-input::placeholder {
+                color: var(--claude-text-muted) !important;
+            }
+
+            .form-input:focus {
+                border-color: var(--claude-primary) !important;
+                box-shadow: 0 0 0 4px rgba(217, 119, 66, 0.2) !important;
+                background: var(--claude-bg) !important;
+            }
+
+            /* 密碼輸入框特殊樣式 */
+            .password-input {
+                position: relative !important;
+            }
+
+            .password-toggle {
+                position: absolute !important;
+                right: 15px !important;
+                top: 50% !important;
+                transform: translateY(-50%) !important;
+                background: none !important;
+                border: none !important;
+                color: var(--claude-text-muted) !important;
+                cursor: pointer !important;
+                font-size: 1.1rem !important;
+                transition: var(--transition) !important;
+                padding: 5px !important;
+            }
+
+            .password-toggle:hover {
+                color: var(--claude-primary) !important;
+            }
+
+            /* 登入按鈕 */
+            .login-btn {
+                width: 100% !important;
+                padding: 18px 25px !important;
+                background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent)) !important;
+                color: white !important;
+                border: none !important;
+                border-radius: var(--border-radius) !important;
+                font-size: 1.1rem !important;
+                font-weight: 600 !important;
+                cursor: pointer !important;
+                transition: var(--transition) !important;
+                box-shadow: var(--claude-shadow) !important;
+                position: relative !important;
+                overflow: hidden !important;
+                font-family: inherit !important;
+                outline: none !important;
+                margin: 10px 0 0 0 !important;
+            }
+
+            .login-btn::before {
+                content: "" !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: -100% !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+                transition: left 0.6s !important;
+            }
+
+            .login-btn:hover {
+                background: linear-gradient(135deg, var(--claude-primary-hover), var(--claude-primary)) !important;
+                transform: translateY(-2px) !important;
+                box-shadow: var(--claude-shadow-strong) !important;
+            }
+
+            .login-btn:hover::before {
+                left: 100% !important;
+            }
+
+            .login-btn:active {
+                transform: translateY(0) !important;
+            }
+
+            .login-btn:disabled {
+                background: #666 !important;
+                cursor: not-allowed !important;
+                transform: none !important;
+            }
+
+            /* 錯誤訊息 */
+            .error-message {
+                background: rgba(239, 68, 68, 0.1) !important;
+                border: 1px solid rgba(239, 68, 68, 0.3) !important;
+                color: #fca5a5 !important;
+                padding: 15px 20px !important;
+                border-radius: var(--border-radius) !important;
+                font-size: 0.95rem !important;
+                font-weight: 500 !important;
+                margin: 15px 0 0 0 !important;
+                display: none !important;
+                align-items: center !important;
+                gap: 10px !important;
+                backdrop-filter: blur(10px) !important;
+                animation: errorSlideIn 0.3s ease-out !important;
+                font-family: inherit !important;
+            }
+
+            .error-message.show {
+                display: flex !important;
+            }
+
+            @keyframes errorSlideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .error-message i {
+                font-size: 1.1rem !important;
+                color: var(--claude-danger-red) !important;
+            }
+
+            /* 載入狀態 */
+            .loading {
+                display: none !important;
+                align-items: center !important;
+                gap: 10px !important;
+                color: var(--claude-text-muted) !important;
+                font-size: 0.95rem !important;
+                margin: 10px 0 0 0 !important;
+                font-family: inherit !important;
+            }
+
+            .loading.show {
+                display: flex !important;
+            }
+
+            .loading i {
+                animation: spin 1s linear infinite !important;
+                color: var(--claude-primary) !important;
+            }
+
+            @keyframes spin {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* 返回首頁連結 */
+            .back-link {
+                text-align: center !important;
+                margin: 30px 0 0 0 !important;
+            }
+
+            .back-link a {
+                color: var(--claude-text-muted) !important;
+                text-decoration: none !important;
+                font-size: 0.95rem !important;
+                transition: var(--transition) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                font-family: inherit !important;
+            }
+
+            .back-link a:hover {
+                color: var(--claude-primary) !important;
+                transform: translateX(-5px) !important;
+            }
+
+            /* 響應式設計 */
+            @media (max-width: 768px) {
+                .login-container {
+                    padding: 15px !important;
+                }
+
+                .login-card {
+                    padding: 40px 30px !important;
+                    max-width: 100% !important;
+                }
+
+                .login-title {
+                    font-size: 2rem !important;
+                    flex-direction: column !important;
+                    gap: 10px !important;
+                }
+
+                .login-title i {
+                    font-size: 2.2rem !important;
+                }
+
+                .form-input {
+                    padding: 14px 18px !important;
+                    font-size: 0.95rem !important;
+                }
+
+                .login-btn {
+                    padding: 16px 22px !important;
+                    font-size: 1rem !important;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .login-card {
+                    padding: 35px 25px !important;
+                }
+
+                .login-title {
+                    font-size: 1.8rem !important;
+                }
+
+                .form-input {
+                    padding: 12px 16px !important;
+                }
+            }
+
+            /* 新增的 CSS 樣式 */
+            .guest-section {
+                margin: 20px 0 0 0 !important;
+            }
+
+            .divider {
+                text-align: center !important;
+                margin: 20px 0 !important;
+                position: relative !important;
+            }
+
+            .divider::before {
+                content: "" !important;
+                position: absolute !important;
+                top: 50% !important;
+                left: 0 !important;
+                right: 0 !important;
+                height: 1px !important;
+                background: var(--claude-border) !important;
+            }
+
+            .divider span {
+                background: var(--claude-bg) !important;
+                padding: 0 15px !important;
+                color: var(--claude-text-muted) !important;
+                font-size: 0.9rem !important;
+                position: relative !important;
+            }
+
+            .guest-btn {
+                width: 100% !important;
+                padding: 16px 25px !important;
+                background: linear-gradient(135deg, #6c757d, #495057) !important;
+                color: white !important;
+                border: none !important;
+                border-radius: var(--border-radius) !important;
+                font-size: 1rem !important;
+                font-weight: 600 !important;
+                cursor: pointer !important;
+                transition: var(--transition) !important;
+                box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3) !important;
+                font-family: inherit !important;
+                outline: none !important;
+            }
+
+            .guest-btn:hover {
+                background: linear-gradient(135deg, #5a6268, #495057) !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4) !important;
+            }
+
+            .guest-btn:active {
+                transform: translateY(0) !important;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-content">
+                    <div class="login-header">
+                        <h1 class="login-title">
+                            <i class="fas fa-music"></i>
+                            Kilin 音樂系統
+                        </h1>
+                        <p class="login-subtitle">請輸入您的帳號密碼以進入音樂世界</p>
+                    </div>
+
+                    <form class="login-form" id="loginForm">
+                        <div class="form-group">
+                            <label class="form-label" for="username"> <i class="fas fa-user"></i> 使用者名稱 </label>
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                class="form-input"
+                                placeholder="請輸入使用者名稱"
+                                required
+                                autocomplete="username"
+                            />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="password"> <i class="fas fa-lock"></i> 密碼 </label>
+                            <div class="password-input">
+                                <input
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    class="form-input"
+                                    placeholder="請輸入密碼"
+                                    required
+                                    autocomplete="current-password"
+                                />
+                                <button type="button" class="password-toggle" onclick="togglePassword()">
+                                    <i class="fas fa-eye" id="passwordIcon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 在登入按鈕後面新增這段 HTML -->
+                        <div class="guest-section">
+                            <div class="divider">
+                                <span>或</span>
+                            </div>
+                            <button type="button" class="guest-btn" id="guestBtn" onclick="handleGuestLogin()">
+                                <i class="fas fa-user-secret"></i>
+                                以遊客身分瀏覽
+                            </button>
+                        </div>
+
+                        <button type="submit" class="login-btn" id="loginBtn">
+                            <i class="fas fa-sign-in-alt"></i>
+                            進入音樂系統
+                        </button>
+
+                        <div class="loading" id="loadingMessage">
+                            <i class="fas fa-spinner"></i>
+                            正在驗證登入資訊...
+                        </div>
+
+                        <div class="error-message" id="errorMessage">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="errorText">錯誤訊息</span>
+                        </div>
+                    </form>
+
+                    <div class="back-link">
+                        <a href="index.html">
+                            <i class="fas fa-arrow-left"></i>
+                            返回個人首頁
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            console.log("🎵 Kilin 音樂系統登入頁面載入完成");
+
+            // 動態設定 API Base URL
+            const currentHostname = window.location.hostname;
+            const currentOrigin = window.location.origin;
+
+            let API_BASE;
+            if (currentHostname.includes("github.io")) {
+                API_BASE = "https://1140412connectproject-production.up.railway.app/api";
+                console.log("☁️ GitHub Pages 環境");
+            } else if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
+                API_BASE = "http://localhost:8000/api";
+                console.log("🏠 本地開發環境");
+            } else if (currentHostname.includes("railway.app")) {
+                API_BASE = currentOrigin + "/api";
+                console.log("🚂 Railway 環境");
+            } else {
+                API_BASE = "https://1140412connectproject-production.up.railway.app/api";
+                console.log("🌐 預設環境");
+            }
+
+            console.log("📡 API_BASE:", API_BASE);
+
+            // 密碼顯示/隱藏切換
+            function togglePassword() {
+                const passwordInput = document.getElementById("password");
+                const passwordIcon = document.getElementById("passwordIcon");
+
+                if (passwordInput.type === "password") {
+                    passwordInput.type = "text";
+                    passwordIcon.className = "fas fa-eye-slash";
+                } else {
+                    passwordInput.type = "password";
+                    passwordIcon.className = "fas fa-eye";
+                }
+            }
+
+            // 顯示錯誤訊息
+            function showError(message) {
+                const errorMessage = document.getElementById("errorMessage");
+                const errorText = document.getElementById("errorText");
+                errorText.textContent = message;
+                errorMessage.classList.add("show");
+
+                // 3秒後自動隱藏
+                setTimeout(() => {
+                    errorMessage.classList.remove("show");
+                }, 3000);
+            }
+
+            // 顯示載入狀態
+            function showLoading(show = true) {
+                const loadingMessage = document.getElementById("loadingMessage");
+                const loginBtn = document.getElementById("loginBtn");
+
+                if (show) {
+                    loadingMessage.classList.add("show");
+                    loginBtn.disabled = true;
+                    loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 驗證中...';
+                } else {
+                    loadingMessage.classList.remove("show");
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 進入音樂系統';
+                }
+            }
+
+            // 驗證使用者
+            async function validateUser(username, password) {
+                try {
+                    console.log("🔍 開始驗證使用者:", username);
+
+                    // 檢查密碼是否為 "super"
+                    if (password !== "super") {
+                        throw new Error("密碼錯誤！(請使用 'super' 作為密碼)");
+                    }
+
+                    // 從資料庫查詢使用者
+                    const response = await fetch(`${API_BASE}/users`);
+                    if (!response.ok) {
+                        throw new Error(`無法連接伺服器 (${response.status})`);
+                    }
+
+                    const users = await response.json();
+                    console.log("📊 取得使用者資料，共", users.length, "位使用者");
+
+                    // 查找使用者
+                    const user = users.find((u) => u.user_name === username);
+                    if (!user) {
+                        throw new Error("找不到此使用者！請檢查使用者名稱是否正確");
+                    }
+
+                    console.log("✅ 使用者驗證成功:", user);
+                    return user;
+                } catch (error) {
+                    console.error("❌ 使用者驗證失敗:", error);
+                    throw error;
+                }
+            }
+
+            // 更新使用者使用時間（登入時增加30秒）
+            async function updateUserLoginTime(user) {
+                try {
+                    console.log("⏰ 更新使用者登入時間:", user.user_name);
+
+                    const updateData = {
+                        table: "users",
+                        user_id: parseInt(user.user_id),
+                        user_name: user.user_name,
+                        password: user.password,
+                        usage_time: "00:00:30", // 增加30秒使用時間
+                        state: user.state || 0,
+                    };
+
+                    const response = await fetch(`${API_BASE}/2/update`, {
+                        method: "POST",
+                        mode: "cors",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(updateData),
+                    });
+
+                    if (response.ok) {
+                        console.log("✅ 使用者登入時間更新成功");
+                    } else {
+                        console.warn("⚠️ 使用者登入時間更新失敗，但繼續登入流程");
+                    }
+                } catch (error) {
+                    console.warn("⚠️ 更新使用者登入時間時發生錯誤:", error);
+                    // 不阻擋登入流程，只是警告
+                }
+            }
+
+            // 新增遊客登入處理函數
+            function handleGuestLogin() {
+                console.log("👤 使用者選擇遊客模式");
+
+                // 設定遊客會話
+                const guestInfo = {
+                    user_name: "遊客",
+                    login_time: new Date().toISOString(),
+                    is_guest: true,
+                };
+
+                localStorage.setItem("kilin_guest_session", JSON.stringify(guestInfo));
+
+                // 顯示載入狀態
+                const guestBtn = document.getElementById("guestBtn");
+                guestBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 進入遊客模式...';
+                guestBtn.disabled = true;
+
+                // 延遲跳轉
+                setTimeout(() => {
+                    console.log("🎵 跳轉到音樂系統（遊客模式）");
+                    window.location.href = "sidebar.html";
+                }, 1000);
+            }
+
+            // 處理登入表單提交
+            document.getElementById("loginForm").addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const username = document.getElementById("username").value.trim();
+                const password = document.getElementById("password").value;
+
+                // 基本驗證
+                if (!username || !password) {
+                    showError("請輸入完整的帳號密碼資訊");
+                    return;
+                }
+
+                showLoading(true);
+
+                try {
+                    // 驗證使用者
+                    const user = await validateUser(username, password);
+
+                    // 更新使用者登入時間
+                    await updateUserLoginTime(user);
+
+                    // 儲存使用者資訊到 localStorage（用於在音樂系統中顯示歡迎訊息）
+                    const userInfo = {
+                        user_id: user.user_id,
+                        user_name: user.user_name,
+                        login_time: new Date().toISOString(),
+                        session_id: Date.now(), // 簡單的會話標識
+                    };
+
+                    localStorage.setItem("kilin_user_session", JSON.stringify(userInfo));
+                    console.log("💾 使用者會話資訊已儲存");
+
+                    // 登入成功，延遲跳轉以顯示成功狀態
+                    showLoading(false);
+                    document.getElementById("loginBtn").innerHTML = '<i class="fas fa-check"></i> 登入成功！';
+                    document.getElementById("loginBtn").style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
+
+                    setTimeout(() => {
+                        console.log("🎵 跳轉到音樂系統");
+                        window.location.href = "sidebar.html";
+                    }, 1500);
+                } catch (error) {
+                    showLoading(false);
+                    showError(error.message);
+                    console.error("❌ 登入失敗:", error);
+                }
+            });
+
+            // 頁面載入時檢查是否已登入
+            document.addEventListener("DOMContentLoaded", function () {
+                const existingSession = localStorage.getItem("kilin_user_session");
+                if (existingSession) {
+                    try {
+                        const userInfo = JSON.parse(existingSession);
+                        console.log("🔍 發現現有會話:", userInfo.user_name);
+
+                        // 可以選擇是否自動跳轉或詢問使用者
+                        if (confirm(`檢測到您已登入為 ${userInfo.user_name}，是否直接進入音樂系統？`)) {
+                            window.location.href = "sidebar.html";
+                            return;
+                        } else {
+                            // 清除會話，重新登入
+                            localStorage.removeItem("kilin_user_session");
+                        }
+                    } catch (error) {
+                        console.warn("⚠️ 會話資料無效，清除並重新登入");
+                        localStorage.removeItem("kilin_user_session");
+                    }
+                }
+
+                // 自動聚焦到使用者名稱輸入框
+                document.getElementById("username").focus();
+            });
+
+            // 鍵盤快捷鍵支援
+            document.addEventListener("keydown", function (e) {
+                // ESC 鍵清除表單
+                if (e.key === "Escape") {
+                    document.getElementById("loginForm").reset();
+                    document.getElementById("username").focus();
+                }
+            });
+
+            console.log("🔐 登入系統初始化完成");
+        </script>
+    </body>
+</html>

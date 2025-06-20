@@ -5,339 +5,920 @@
         <title>音樂選單系統 - 資料操作</title>
         <!-- Font Awesome 圖標庫 -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-        <link rel="stylesheet" href="css/main.css" />
         <style>
-            .page-title {
-                text-align: center;
-                margin: 20px 0;
-                color: var(--claude-text, #ffffff);
+            /* 完全重置並設定 Claude 風格 */
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
 
-            .tab-btn {
-                background: var(--claude-primary, #ff6b35);
-                color: white;
-                border: none;
-                padding: 10px 20px;
-                margin: 5px;
-                border-radius: 5px;
-                cursor: pointer;
-                transition: all 0.3s ease;
+            /* Claude 風格色彩變數 */
+            :root {
+                --claude-bg: #0a0f0d !important; /* 黑色加墨綠色的深色背景 */
+                --claude-bg-secondary: #0f1512 !important; /* 次要背景色 */
+                --claude-primary: #d97742 !important; /* 深橘色主色 */
+                --claude-primary-hover: #c56a3a !important; /* 深橘色懸停 */
+                --claude-accent: #e08856 !important; /* 明亮橘色強調 */
+                --claude-text: #ffffff !important; /* 白色文字 */
+                --claude-text-secondary: #e5e7eb !important; /* 淺灰色次要文字 */
+                --claude-text-muted: #9ca3af !important; /* 灰色靜音文字 */
+                --claude-card: rgba(217, 119, 66, 0.08) !important; /* 半透明卡片背景 */
+                --claude-card-hover: rgba(217, 119, 66, 0.12) !important;
+                --claude-border: rgba(217, 119, 66, 0.3) !important; /* 深橘色邊框 */
+                --claude-shadow: 0 4px 20px rgba(217, 119, 66, 0.15) !important;
+                --claude-shadow-strong: 0 8px 32px rgba(217, 119, 66, 0.25) !important;
+                --claude-glass: rgba(255, 255, 255, 0.05) !important; /* 玻璃效果 */
+                --claude-warm-beige: #f5f3f0 !important; /* 溫暖米色 */
+                --claude-warm-cream: #faf9f7 !important; /* 奶油色 */
+                --claude-danger-red: #ef4444 !important; /* 危險紅色 */
+                --border-radius: 16px !important;
+                --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
             }
 
-            .tab-btn:hover {
-                background: var(--claude-primary-hover, #e55a2b);
-                transform: translateY(-2px);
+            /* 強制覆蓋 body 樣式 */
+            html {
+                height: 100% !important;
+                background: var(--claude-bg) !important;
+                font-family: "Inter", "Segoe UI", "微軟正黑體", sans-serif !important;
             }
 
-            .tab-btn:active {
-                transform: translateY(0);
+            body {
+                height: 100% !important;
+                background: var(--claude-bg) !important;
+                background-image: radial-gradient(circle at 20% 20%, rgba(217, 119, 66, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(224, 136, 86, 0.06) 0%, transparent 50%),
+                    linear-gradient(135deg, var(--claude-bg) 0%, var(--claude-bg-secondary) 100%) !important;
+                background-attachment: fixed !important;
+                color: var(--claude-text) !important;
+                line-height: 1.7 !important;
+                font-family: "Inter", "Segoe UI", "微軟正黑體", sans-serif !important;
+                overflow-x: hidden !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
 
-            #tableContainer {
-                margin: 20px 0;
-                padding: 20px;
-                background: var(--claude-card, rgba(255, 255, 255, 0.1));
-                border-radius: 8px;
-                min-height: 200px;
-                color: var(--claude-text, #ffffff);
+            /* 主容器 */
+            .claude-data-page {
+                min-height: 100vh !important;
+                width: 100% !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                position: relative !important;
+                z-index: 1 !important;
             }
 
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 10px;
-                background: rgba(255, 255, 255, 0.9);
-                border-radius: 8px;
-                overflow: hidden;
+            /* 頁面頭部 - Claude 風格 */
+            .claude-header {
+                background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent)) !important;
+                color: white !important;
+                padding: 50px 30px !important;
+                text-align: center !important;
+                position: relative !important;
+                overflow: hidden !important;
+                margin: 0 !important;
+                box-shadow: var(--claude-shadow-strong) !important;
             }
 
-            th,
-            td {
-                padding: 12px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-                color: #333;
+            .claude-header::before {
+                content: "" !important;
+                position: absolute !important;
+                top: -50% !important;
+                left: -50% !important;
+                width: 200% !important;
+                height: 200% !important;
+                background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%) !important;
+                pointer-events: none !important;
+                z-index: 0 !important;
             }
 
-            th {
-                background: var(--claude-primary, #ff6b35);
-                color: white;
-                font-weight: bold;
+            .claude-header-content {
+                position: relative !important;
+                z-index: 1 !important;
             }
 
-            tr:hover {
-                background: rgba(255, 107, 53, 0.1);
+            .claude-title {
+                font-size: 3rem !important;
+                font-weight: 700 !important;
+                margin: 0 0 20px 0 !important;
+                color: white !important;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 20px !important;
+                font-family: inherit !important;
             }
 
-            .delete-btn {
-                background: #dc3545;
-                color: white;
-                border: none;
-                padding: 5px 10px;
-                border-radius: 3px;
-                cursor: pointer;
-                font-size: 12px;
-                transition: background 0.3s ease;
+            .claude-title-icon {
+                font-size: 3.5rem !important;
+                opacity: 0.9 !important;
             }
 
-            .delete-btn:hover {
-                background: #c82333;
+            .claude-subtitle {
+                font-size: 1.3rem !important;
+                margin: 0 !important;
+                opacity: 0.95 !important;
+                color: rgba(255, 255, 255, 0.9) !important;
+                font-weight: 400 !important;
+                font-family: inherit !important;
             }
 
-            .loading {
-                text-align: center;
-                padding: 20px;
-                font-style: italic;
-                color: var(--claude-text-muted, rgba(255, 255, 255, 0.7));
+            /* 控制面板 */
+            .claude-controls {
+                background: var(--claude-card) !important;
+                backdrop-filter: blur(20px) !important;
+                border: 1px solid var(--claude-border) !important;
+                border-radius: var(--border-radius) !important;
+                padding: 40px !important;
+                margin: 30px !important;
+                box-shadow: var(--claude-shadow) !important;
+                position: relative !important;
+                overflow: hidden !important;
             }
 
-            .error {
-                color: #ff6b6b;
-                text-align: center;
-                padding: 20px;
+            .claude-controls::before {
+                content: "" !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background: linear-gradient(
+                    45deg,
+                    transparent 0%,
+                    rgba(217, 119, 66, 0.02) 50%,
+                    transparent 100%
+                ) !important;
+                z-index: 0 !important;
             }
 
-            .no-data {
-                text-align: center;
-                padding: 20px;
-                color: var(--claude-text-muted, rgba(255, 255, 255, 0.7));
-                font-style: italic;
+            .claude-controls-content {
+                position: relative !important;
+                z-index: 1 !important;
+            }
+
+            .claude-controls-title {
+                font-size: 1.5rem !important;
+                font-weight: 700 !important;
+                color: var(--claude-text) !important;
+                margin: 0 0 30px 0 !important;
+                text-align: center !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 12px !important;
+                font-family: inherit !important;
+            }
+
+            .claude-button-grid {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+                gap: 20px !important;
+                max-width: 1200px !important;
+                margin: 0 auto !important;
+            }
+
+            /* Claude 風格按鈕 */
+            .claude-btn {
+                background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent)) !important;
+                color: white !important;
+                border: none !important;
+                padding: 20px 25px !important;
+                border-radius: var(--border-radius) !important;
+                cursor: pointer !important;
+                transition: var(--transition) !important;
+                font-size: 1.05rem !important;
+                font-weight: 600 !important;
+                box-shadow: var(--claude-shadow) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 12px !important;
+                min-height: 70px !important;
+                position: relative !important;
+                overflow: hidden !important;
+                text-decoration: none !important;
+                font-family: inherit !important;
+                outline: none !important;
+            }
+
+            .claude-btn::before {
+                content: "" !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: -100% !important;
+                width: 100% !important;
+                height: 100% !important;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
+                transition: left 0.6s !important;
+            }
+
+            .claude-btn:hover {
+                background: linear-gradient(135deg, var(--claude-primary-hover), var(--claude-primary)) !important;
+                transform: translateY(-3px) !important;
+                box-shadow: var(--claude-shadow-strong) !important;
+                color: white !important;
+            }
+
+            .claude-btn:hover::before {
+                left: 100% !important;
+            }
+
+            .claude-btn:active {
+                transform: translateY(-1px) !important;
+            }
+
+            .claude-btn i {
+                font-size: 1.3rem !important;
+                margin: 0 !important;
+            }
+
+            /* 表格容器 */
+            .claude-table-container {
+                margin: 30px !important;
+                padding: 0 !important;
+                background: transparent !important;
+                border-radius: 0 !important;
+                min-height: 400px !important;
+                color: var(--claude-text) !important;
+            }
+
+            .claude-table-wrapper {
+                background: var(--claude-card) !important;
+                backdrop-filter: blur(20px) !important;
+                border-radius: var(--border-radius) !important;
+                padding: 35px !important;
+                box-shadow: var(--claude-shadow-strong) !important;
+                border: 1px solid var(--claude-border) !important;
+                overflow: hidden !important;
+                position: relative !important;
+                animation: fadeInUp 0.6s ease-out !important;
+            }
+
+            .claude-table-wrapper::before {
+                content: "" !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background: linear-gradient(
+                    45deg,
+                    transparent 0%,
+                    rgba(217, 119, 66, 0.02) 50%,
+                    transparent 100%
+                ) !important;
+                z-index: 0 !important;
+            }
+
+            .claude-table-content {
+                position: relative !important;
+                z-index: 1 !important;
+            }
+
+            .claude-table-header {
+                margin: 0 0 30px 0 !important;
+                padding: 0 0 25px 0 !important;
+                border-bottom: 2px solid var(--claude-primary) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                flex-wrap: wrap !important;
+                gap: 20px !important;
+            }
+
+            .claude-table-title {
+                font-size: 1.6rem !important;
+                font-weight: 700 !important;
+                color: var(--claude-text) !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 15px !important;
+                margin: 0 !important;
+                font-family: inherit !important;
+            }
+
+            .claude-table-count {
+                background: var(--claude-primary) !important;
+                color: white !important;
+                padding: 10px 20px !important;
+                border-radius: 25px !important;
+                font-size: 0.95rem !important;
+                font-weight: 600 !important;
+                font-family: inherit !important;
+            }
+
+            .claude-table-scroll {
+                overflow-x: auto !important;
+                border-radius: var(--border-radius) !important;
+                box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+                background: var(--claude-warm-cream) !important;
+            }
+
+            /* Claude 風格表格 */
+            .claude-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin: 0 !important;
+                background: var(--claude-warm-cream) !important;
+                border-radius: var(--border-radius) !important;
+                overflow: hidden !important;
+                font-size: 1rem !important;
+                box-shadow: var(--claude-shadow) !important;
+                font-family: inherit !important;
+            }
+
+            .claude-table th {
+                background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent)) !important;
+                color: white !important;
+                font-weight: 700 !important;
+                padding: 22px 20px !important;
+                text-align: left !important;
+                font-size: 0.95rem !important;
+                letter-spacing: 0.5px !important;
+                text-transform: uppercase !important;
+                border: none !important;
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 10 !important;
+                font-family: inherit !important;
+            }
+
+            .claude-table th:first-child {
+                text-align: center !important;
+                width: 120px !important;
+            }
+
+            .claude-table td {
+                padding: 20px !important;
+                border-bottom: 1px solid rgba(217, 119, 66, 0.1) !important;
+                color: var(--claude-bg) !important;
+                vertical-align: middle !important;
+                background: var(--claude-warm-cream) !important;
+                transition: background-color 0.2s ease !important;
+                font-size: 0.95rem !important;
+                font-family: inherit !important;
+            }
+
+            .claude-table td:first-child {
+                text-align: center !important;
+                background: var(--claude-warm-beige) !important;
+            }
+
+            .claude-table tr:hover td {
+                background: rgba(217, 119, 66, 0.08) !important;
+            }
+
+            .claude-table tr:hover td:first-child {
+                background: rgba(217, 119, 66, 0.15) !important;
+            }
+
+            .claude-table tr:nth-child(even) td {
+                background: var(--claude-warm-beige) !important;
+            }
+
+            .claude-table tr:nth-child(even):hover td {
+                background: rgba(217, 119, 66, 0.08) !important;
+            }
+
+            /* Claude 風格刪除按鈕 */
+            .claude-delete-btn {
+                background: var(--claude-danger-red) !important;
+                color: white !important;
+                border: none !important;
+                padding: 12px 18px !important;
+                border-radius: var(--border-radius) !important;
+                cursor: pointer !important;
+                font-size: 0.9rem !important;
+                font-weight: 600 !important;
+                transition: var(--transition) !important;
+                box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                font-family: inherit !important;
+                outline: none !important;
+            }
+
+            .claude-delete-btn:hover {
+                background: #dc2626 !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4) !important;
+            }
+
+            .claude-delete-btn:active {
+                transform: translateY(0) !important;
+            }
+
+            /* Claude 風格狀態樣式 */
+            .claude-loading {
+                text-align: center !important;
+                padding: 100px 30px !important;
+                color: var(--claude-text-muted) !important;
+                background: var(--claude-card) !important;
+                border-radius: var(--border-radius) !important;
+                margin: 30px !important;
+                backdrop-filter: blur(20px) !important;
+                border: 1px solid var(--claude-border) !important;
+            }
+
+            .claude-loading i {
+                font-size: 3.5rem !important;
+                color: var(--claude-primary) !important;
+                margin: 0 0 25px 0 !important;
+                animation: spin 1.2s linear infinite !important;
+            }
+
+            .claude-loading p {
+                font-size: 1.3rem !important;
+                margin: 0 !important;
+                color: var(--claude-text) !important;
+                font-family: inherit !important;
+            }
+
+            @keyframes spin {
+                from {
+                    transform: rotate(0deg) !important;
+                }
+                to {
+                    transform: rotate(360deg) !important;
+                }
+            }
+
+            .claude-error {
+                color: var(--claude-danger-red) !important;
+                text-align: center !important;
+                padding: 80px 30px !important;
+                background: rgba(239, 68, 68, 0.1) !important;
+                border: 1px solid rgba(239, 68, 68, 0.3) !important;
+                border-radius: var(--border-radius) !important;
+                margin: 30px !important;
+                backdrop-filter: blur(20px) !important;
+            }
+
+            .claude-error i {
+                font-size: 3rem !important;
+                margin: 0 0 25px 0 !important;
+            }
+
+            .claude-error h3 {
+                font-size: 1.4rem !important;
+                margin: 0 0 15px 0 !important;
+                color: #fca5a5 !important;
+                font-family: inherit !important;
+            }
+
+            .claude-error p {
+                font-size: 1.1rem !important;
+                color: #fca5a5 !important;
+                margin: 0 !important;
+                font-family: inherit !important;
+            }
+
+            .claude-no-data {
+                text-align: center !important;
+                padding: 100px 30px !important;
+                color: var(--claude-text-muted) !important;
+                background: var(--claude-card) !important;
+                border-radius: var(--border-radius) !important;
+                margin: 30px !important;
+                border: 2px dashed var(--claude-border) !important;
+                backdrop-filter: blur(20px) !important;
+            }
+
+            .claude-no-data i {
+                font-size: 4.5rem !important;
+                color: var(--claude-primary) !important;
+                margin: 0 0 30px 0 !important;
+                opacity: 0.6 !important;
+            }
+
+            .claude-no-data p {
+                font-size: 1.4rem !important;
+                margin: 0 !important;
+                color: var(--claude-text) !important;
+                font-family: inherit !important;
+            }
+
+            /* 動畫 */
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0 !important;
+                    transform: translateY(40px) !important;
+                }
+                to {
+                    opacity: 1 !important;
+                    transform: translateY(0) !important;
+                }
+            }
+
+            /* 響應式設計 */
+            @media (max-width: 768px) {
+                .claude-header {
+                    padding: 40px 20px !important;
+                }
+
+                .claude-title {
+                    font-size: 2.2rem !important;
+                    flex-direction: column !important;
+                    gap: 15px !important;
+                }
+
+                .claude-title-icon {
+                    font-size: 3rem !important;
+                }
+
+                .claude-controls {
+                    padding: 30px 20px !important;
+                    margin: 20px !important;
+                }
+
+                .claude-button-grid {
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+                    gap: 15px !important;
+                }
+
+                .claude-btn {
+                    padding: 18px 22px !important;
+                    font-size: 1rem !important;
+                    min-height: 65px !important;
+                }
+
+                .claude-table-container {
+                    margin: 20px !important;
+                }
+
+                .claude-table-wrapper {
+                    padding: 30px 20px !important;
+                }
+
+                .claude-table-header {
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    gap: 20px !important;
+                }
+
+                .claude-table-title {
+                    font-size: 1.4rem !important;
+                }
+
+                .claude-table th,
+                .claude-table td {
+                    padding: 16px 12px !important;
+                    font-size: 0.9rem !important;
+                }
+
+                .claude-delete-btn {
+                    padding: 10px 14px !important;
+                    font-size: 0.85rem !important;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .claude-button-grid {
+                    grid-template-columns: 1fr !important;
+                }
+
+                .claude-btn {
+                    justify-content: flex-start !important;
+                    padding: 20px 25px !important;
+                }
+
+                .claude-title {
+                    font-size: 2rem !important;
+                }
+
+                .claude-table th,
+                .claude-table td {
+                    padding: 14px 10px !important;
+                    font-size: 0.85rem !important;
+                }
+            }
+
+            /* 滾動條美化 */
+            .claude-table-scroll::-webkit-scrollbar {
+                height: 10px !important;
+            }
+
+            .claude-table-scroll::-webkit-scrollbar-track {
+                background: rgba(217, 119, 66, 0.1) !important;
+                border-radius: 5px !important;
+            }
+
+            .claude-table-scroll::-webkit-scrollbar-thumb {
+                background: var(--claude-primary) !important;
+                border-radius: 5px !important;
+            }
+
+            .claude-table-scroll::-webkit-scrollbar-thumb:hover {
+                background: var(--claude-primary-hover) !important;
             }
         </style>
     </head>
 
     <body>
-        <div class="page-title">
-            <h1>📊 資料操作管理</h1>
-            <p>選擇要查看的資料表</p>
-        </div>
+        <div class="claude-data-page">
+            <div class="claude-header">
+                <div class="claude-header-content">
+                    <h1 class="claude-title">
+                        <i class="fas fa-database claude-title-icon"></i>
+                        資料操作管理
+                    </h1>
+                    <p class="claude-subtitle">選擇要查看和管理的資料表</p>
+                </div>
+            </div>
 
-        <div style="text-align: center; margin: 20px 0">
-            <button class="tab-btn" onclick="loadTable(apiArtists, container, '歌手')">
-                <i class="fas fa-microphone"></i> 歌手清單
-            </button>
-            <button class="tab-btn" onclick="loadTable(apiSongs, container, '歌曲')">
-                <i class="fas fa-music"></i> 歌曲清單
-            </button>
-            <button class="tab-btn" onclick="loadTable(apiAlbums, container, '專輯')">
-                <i class="fas fa-compact-disc"></i> 專輯清單
-            </button>
-            <button class="tab-btn" onclick="loadTable(apiUsers, container, '使用者')">
-                <i class="fas fa-users"></i> 使用者清單
-            </button>
-            <button class="tab-btn" onclick="loadTable(apiPlaylists, container, '播放清單')">
-                <i class="fas fa-list"></i> 播放清單
-            </button>
-            <button class="tab-btn" onclick="loadTable(apiPlaylistSongs, container, '播放歌曲')">
-                <i class="fas fa-play-circle"></i> 播放歌曲清單
-            </button>
-        </div>
+            <div class="claude-controls">
+                <div class="claude-controls-content">
+                    <div class="claude-controls-title">
+                        <i class="fas fa-table"></i>
+                        資料表選擇
+                    </div>
+                    <div class="claude-button-grid">
+                        <button
+                            class="claude-btn"
+                            onclick="ClaudeDataOperations.loadTable(ClaudeDataOperations.apiArtists, ClaudeDataOperations.container, '歌手')"
+                        >
+                            <i class="fas fa-microphone"></i>
+                            <span>歌手清單</span>
+                        </button>
+                        <button
+                            class="claude-btn"
+                            onclick="ClaudeDataOperations.loadTable(ClaudeDataOperations.apiSongs, ClaudeDataOperations.container, '歌曲')"
+                        >
+                            <i class="fas fa-music"></i>
+                            <span>歌曲清單</span>
+                        </button>
+                        <button
+                            class="claude-btn"
+                            onclick="ClaudeDataOperations.loadTable(ClaudeDataOperations.apiAlbums, ClaudeDataOperations.container, '專輯')"
+                        >
+                            <i class="fas fa-compact-disc"></i>
+                            <span>專輯清單</span>
+                        </button>
+                        <button
+                            class="claude-btn"
+                            onclick="ClaudeDataOperations.loadTable(ClaudeDataOperations.apiUsers, ClaudeDataOperations.container, '使用者')"
+                        >
+                            <i class="fas fa-users"></i>
+                            <span>使用者清單</span>
+                        </button>
+                        <button
+                            class="claude-btn"
+                            onclick="ClaudeDataOperations.loadTable(ClaudeDataOperations.apiPlaylists, ClaudeDataOperations.container, '播放清單')"
+                        >
+                            <i class="fas fa-list"></i>
+                            <span>播放清單</span>
+                        </button>
+                        <button
+                            class="claude-btn"
+                            onclick="ClaudeDataOperations.loadTable(ClaudeDataOperations.apiPlaylistSongs, ClaudeDataOperations.container, '播放歌曲')"
+                        >
+                            <i class="fas fa-play-circle"></i>
+                            <span>播放歌曲</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-        <div>
-            <div id="tableContainer">
-                <div class="no-data">
-                    <i class="fas fa-info-circle"></i>
-                    請點選上方按鈕查詢資料
+            <div class="claude-table-container" id="claudeTableContainer">
+                <div class="claude-no-data">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <p>請點選上方按鈕查詢資料</p>
                 </div>
             </div>
         </div>
 
         <script>
-            console.log("Data Operations Script 開始執行");
+            // Claude 風格數據操作系統
+            window.ClaudeDataOperations = (function () {
+                console.log("Claude Data Operations 系統啟動");
 
-            // 🔧 動態設定 API Base URL - 修正硬編碼問題
-            const currentHostname = window.location.hostname;
-            const currentOrigin = window.location.origin;
+                // API 配置
+                const currentHostname = window.location.hostname;
+                const currentOrigin = window.location.origin;
 
-            let API_BASE;
-            if (currentHostname.includes("github.io")) {
-                // GitHub Pages 環境
-                API_BASE = "https://1140412connectproject-production.up.railway.app/api";
-                console.log("☁️ GitHub Pages 環境，使用 Railway 後端");
-            } else if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
-                // 本地開發環境
-                API_BASE = "http://localhost:8000/api";
-                console.log("🏠 本地開發環境");
-            } else if (currentHostname.includes("railway.app")) {
-                // 直接訪問 Railway 應用
-                API_BASE = currentOrigin + "/api";
-                console.log("🚂 Railway 環境，使用相對路徑");
-            } else {
-                // 其他環境，預設使用 Railway
-                API_BASE = "https://1140412connectproject-production.up.railway.app/api";
-                console.log("🌐 未知環境，預設使用 Railway 後端");
-            }
-            console.log("📡 Data Operations API_BASE:", API_BASE);
+                let API_BASE;
+                if (currentHostname.includes("github.io")) {
+                    API_BASE = "https://1140412connectproject-production.up.railway.app/api";
+                    console.log("☁️ GitHub Pages 環境");
+                } else if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
+                    API_BASE = "http://localhost:8000/api";
+                    console.log("🏠 本地開發環境");
+                } else if (currentHostname.includes("railway.app")) {
+                    API_BASE = currentOrigin + "/api";
+                    console.log("🚂 Railway 環境");
+                } else {
+                    API_BASE = "https://1140412connectproject-production.up.railway.app/api";
+                    console.log("🌐 預設環境");
+                }
 
-            // 使用動態 API URL
-            const apiArtists = `${API_BASE}/artists`;
-            const apiSongs = `${API_BASE}/songs`;
-            const apiAlbums = `${API_BASE}/albums`;
-            const apiUsers = `${API_BASE}/users`;
-            const apiPlaylists = `${API_BASE}/playlists`;
-            const apiPlaylistSongs = `${API_BASE}/playlist_songs`;
+                const apiArtists = `${API_BASE}/artists`;
+                const apiSongs = `${API_BASE}/songs`;
+                const apiAlbums = `${API_BASE}/albums`;
+                const apiUsers = `${API_BASE}/users`;
+                const apiPlaylists = `${API_BASE}/playlists`;
+                const apiPlaylistSongs = `${API_BASE}/playlist_songs`;
 
-            const container = document.getElementById("tableContainer");
-            let currenturl = "";
-            let currenttodiv = container;
-            let currentTableName = "";
+                const container = document.getElementById("claudeTableContainer");
+                let currenturl = "";
+                let currenttodiv = container;
+                let currentTableName = "";
 
-            // 載入表格資料
-            async function loadTable(url, todiv, displayName) {
-                currenturl = url;
-                currenttodiv = todiv;
-                currentTableName = displayName;
+                // 載入表格資料
+                async function loadTable(url, todiv, displayName) {
+                    currenturl = url;
+                    currenttodiv = todiv;
+                    currentTableName = displayName;
 
-                try {
-                    // 顯示載入狀態
-                    todiv.innerHTML = `
-                        <div class="loading">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            正在載入${displayName}資料...
-                        </div>
-                    `;
-
-                    console.log(`🔄 開始載入${displayName}資料，URL: ${url}`);
-
-                    let tablename = "";
-                    switch (url) {
-                        case apiArtists:
-                            tablename = "artists";
-                            break;
-                        case apiSongs:
-                            tablename = "songs";
-                            break;
-                        case apiAlbums:
-                            tablename = "albums";
-                            break;
-                        case apiUsers:
-                            tablename = "users";
-                            break;
-                        case apiPlaylists:
-                            tablename = "playlists";
-                            break;
-                        case apiPlaylistSongs:
-                            tablename = "playlist_songs";
-                            break;
-                        default:
-                            throw new Error("未知的 API 端點");
-                    }
-
-                    const resp = await fetch(url);
-                    if (!resp.ok) throw new Error(`HTTP 錯誤: ${resp.status}`);
-                    const data = await resp.json();
-
-                    if (!Array.isArray(data) || data.length === 0) {
+                    try {
                         todiv.innerHTML = `
-                            <div class="no-data">
-                                <i class="fas fa-inbox"></i>
-                                ${displayName}沒有資料
+                            <div class="claude-loading">
+                                <i class="fas fa-spinner"></i>
+                                <p>正在載入${displayName}資料...</p>
                             </div>
                         `;
-                        return;
-                    }
 
-                    console.log(`✅ ${displayName}資料載入成功，共 ${data.length} 筆記錄`);
+                        console.log(`🔄 載入${displayName}資料: ${url}`);
 
-                    // 產生表格 HTML
-                    let table = `
-                        <div style="margin-bottom: 10px;">
-                            <strong>📋 ${displayName}清單</strong> 
-                            <span style="color: var(--claude-text-muted, #999); font-size: 14px;">
-                                (共 ${data.length} 筆記錄)
-                            </span>
-                        </div>
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th style="width: 80px;">操作</th>
-                    `;
+                        let tablename = "";
+                        switch (url) {
+                            case apiArtists:
+                                tablename = "artists";
+                                break;
+                            case apiSongs:
+                                tablename = "songs";
+                                break;
+                            case apiAlbums:
+                                tablename = "albums";
+                                break;
+                            case apiUsers:
+                                tablename = "users";
+                                break;
+                            case apiPlaylists:
+                                tablename = "playlists";
+                                break;
+                            case apiPlaylistSongs:
+                                tablename = "playlist_songs";
+                                break;
+                            default:
+                                throw new Error("未知的 API 端點");
+                        }
 
-                    // 自動產出表頭
-                    const keys = Object.keys(data[0]);
-                    keys.forEach((k) => {
-                        table += `<th>${k}</th>`;
-                    });
-                    table += `</tr></thead><tbody>`;
+                        const response = await fetch(url);
+                        if (!response.ok) throw new Error(`HTTP 錯誤: ${response.status}`);
+                        const data = await response.json();
 
-                    // 每一列資料
-                    data.forEach((row, index) => {
-                        const rowData = { ...row, state: -1, table: tablename };
-                        const jsonString = JSON.stringify(rowData).replace(/"/g, "&quot;");
+                        if (!Array.isArray(data) || data.length === 0) {
+                            todiv.innerHTML = `
+                                <div class="claude-table-wrapper">
+                                    <div class="claude-table-content">
+                                        <div class="claude-no-data">
+                                            <i class="fas fa-inbox"></i>
+                                            <p>${displayName}沒有資料</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            return;
+                        }
 
-                        table += `<tr>`;
-                        table += `
-                            <td>
-                                <button 
-                                    class="delete-btn" 
-                                    onclick='confirmDelete(${JSON.stringify(rowData)}, "${displayName}", ${index + 1})'
-                                    title="刪除這筆記錄">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
+                        console.log(`✅ ${displayName}載入成功，共 ${data.length} 筆記錄`);
+
+                        // 生成表格 HTML
+                        let tableHtml = `
+                            <div class="claude-table-wrapper">
+                                <div class="claude-table-content">
+                                    <div class="claude-table-header">
+                                        <div class="claude-table-title">
+                                            <i class="fas fa-table"></i>
+                                            ${displayName}清單
+                                        </div>
+                                        <div class="claude-table-count">
+                                            共 ${data.length} 筆記錄
+                                        </div>
+                                    </div>
+                                    <div class="claude-table-scroll">
+                                        <table class="claude-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>操作</th>
                         `;
 
+                        // 表頭
+                        const keys = Object.keys(data[0]);
                         keys.forEach((k) => {
-                            const value = row[k] !== null && row[k] !== undefined ? row[k] : "";
-                            table += `<td>${value}</td>`;
+                            tableHtml += `<th>${k}</th>`;
                         });
-                        table += `</tr>`;
-                    });
+                        tableHtml += `</tr></thead><tbody>`;
 
-                    table += `</tbody></table>`;
-                    todiv.innerHTML = table;
-                } catch (err) {
-                    console.error(`❌ 載入${displayName || "資料"}失敗:`, err);
-                    todiv.innerHTML = `
-                        <div class="error">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            載入${displayName || "資料"}失敗：${err.message}
-                        </div>
-                    `;
-                }
-            }
+                        // 表格內容
+                        data.forEach((row, index) => {
+                            const rowData = { ...row, state: -1, table: tablename };
 
-            // 確認刪除對話框
-            function confirmDelete(rowData, displayName, rowNumber) {
-                const confirmMessage = `確定要刪除這筆${displayName}資料嗎？\n\n這是第 ${rowNumber} 筆記錄\n此操作無法復原！`;
+                            tableHtml += `<tr>`;
+                            tableHtml += `
+                                <td>
+                                    <button 
+                                        class="claude-delete-btn" 
+                                        onclick='ClaudeDataOperations.confirmDelete(${JSON.stringify(rowData).replace(
+                                            /'/g,
+                                            "\\'"
+                                        )}, "${displayName}", ${index + 1})'
+                                        title="刪除這筆記錄">
+                                        <i class="fas fa-trash"></i>
+                                        刪除
+                                    </button>
+                                </td>
+                            `;
 
-                if (confirm(confirmMessage)) {
-                    updaterow(rowData, displayName);
-                }
-            }
+                            keys.forEach((k) => {
+                                const value = row[k] !== null && row[k] !== undefined ? row[k] : "";
+                                tableHtml += `<td>${value}</td>`;
+                            });
+                            tableHtml += `</tr>`;
+                        });
 
-            // 更新/刪除資料
-            async function updaterow(returnbody, displayName) {
-                try {
-                    console.log("📤 提交刪除請求:", returnbody);
-                    console.log("使用 API 端點:", `${API_BASE}/2/update`);
-
-                    const response = await fetch(`${API_BASE}/2/update`, {
-                        method: "POST",
-                        mode: "cors",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify(returnbody),
-                    });
-
-                    if (response.ok) {
-                        console.log(`✅ ${displayName}記錄刪除成功`);
-                        alert(`✅ ${displayName}記錄已成功刪除！`);
-
-                        // 重新載入當前表格
-                        loadTable(currenturl, currenttodiv, currentTableName);
-                    } else {
-                        const errorText = await response.text();
-                        throw new Error(`刪除失敗: ${errorText}`);
+                        tableHtml += `</tbody></table></div></div></div>`;
+                        todiv.innerHTML = tableHtml;
+                    } catch (err) {
+                        console.error(`❌ 載入${displayName}失敗:`, err);
+                        todiv.innerHTML = `
+                            <div class="claude-table-wrapper">
+                                <div class="claude-table-content">
+                                    <div class="claude-error">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                        <h3>載入${displayName}失敗</h3>
+                                        <p>${err.message}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
                     }
-                } catch (error) {
-                    console.error("❌ 刪除操作失敗:", error);
-                    alert(`❌ 刪除${displayName}失敗: ${error.message}`);
                 }
-            }
 
-            console.log("Data Operations Script 執行完畢");
+                // 確認刪除
+                function confirmDelete(rowData, displayName, rowNumber) {
+                    const confirmMessage = `確定要刪除這筆${displayName}資料嗎？\n\n這是第 ${rowNumber} 筆記錄\n此操作無法復原！`;
+
+                    if (confirm(confirmMessage)) {
+                        updaterow(rowData, displayName);
+                    }
+                }
+
+                // 執行刪除
+                async function updaterow(returnbody, displayName) {
+                    try {
+                        console.log("📤 提交刪除請求:", returnbody);
+
+                        const response = await fetch(`${API_BASE}/2/update`, {
+                            method: "POST",
+                            mode: "cors",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            body: JSON.stringify(returnbody),
+                        });
+
+                        if (response.ok) {
+                            console.log(`✅ ${displayName}刪除成功`);
+                            alert(`✅ ${displayName}記錄已成功刪除！`);
+                            loadTable(currenturl, currenttodiv, currentTableName);
+                        } else {
+                            const errorText = await response.text();
+                            throw new Error(`刪除失敗: ${errorText}`);
+                        }
+                    } catch (error) {
+                        console.error("❌ 刪除失敗:", error);
+                        alert(`❌ 刪除${displayName}失敗: ${error.message}`);
+                    }
+                }
+
+                console.log("Claude Data Operations 系統就緒");
+
+                // 公開 API
+                return {
+                    loadTable: loadTable,
+                    confirmDelete: confirmDelete,
+                    updaterow: updaterow,
+                    apiArtists: apiArtists,
+                    apiSongs: apiSongs,
+                    apiAlbums: apiAlbums,
+                    apiUsers: apiUsers,
+                    apiPlaylists: apiPlaylists,
+                    apiPlaylistSongs: apiPlaylistSongs,
+                    container: container,
+                };
+            })();
+
+            // 頁面載入完成後初始化
+            document.addEventListener("DOMContentLoaded", function () {
+                console.log("🎵 Claude 風格資料操作頁面已載入");
+            });
         </script>
     </body>
 </html>
