@@ -614,8 +614,9 @@
 
                                 // 🔍 檢查影片標題是否包含歌曲名稱和歌手名稱
                                 const songInTitle = title.includes(songName.toLowerCase());
-                                const artistInTitle = title.includes(artistName.toLowerCase()) ||
-                                                     channel.includes(artistName.toLowerCase());
+                                const artistInTitle =
+                                    title.includes(artistName.toLowerCase()) ||
+                                    channel.includes(artistName.toLowerCase());
 
                                 console.log(`🎵 檢查影片: ${video.snippet.title}`);
                                 console.log(`   - 歌曲名稱匹配: ${songInTitle}`);
@@ -632,7 +633,7 @@
                                         channel: video.snippet.channelTitle,
                                         videoId: videoId,
                                         url: videoUrl,
-                                        searchQuery: query
+                                        searchQuery: query,
                                     });
 
                                     return {
@@ -674,7 +675,6 @@
                     }
 
                     throw new Error("找不到可播放的影片");
-
                 } catch (searchError) {
                     console.error(`❌ 搜尋失敗:`, searchError);
                     throw searchError;
@@ -731,7 +731,12 @@
                     };
 
                     // 確保 album_id 正確處理
-                    if (songData.album_id && songData.album_id !== null && songData.album_id !== "" && songData.album_id !== "NULL") {
+                    if (
+                        songData.album_id &&
+                        songData.album_id !== null &&
+                        songData.album_id !== "" &&
+                        songData.album_id !== "NULL"
+                    ) {
                         updateData.album_id = parseInt(songData.album_id);
                     }
 
@@ -743,7 +748,7 @@
                         mode: "cors",
                         headers: {
                             "Content-Type": "application/json",
-                            "Accept": "application/json",
+                            Accept: "application/json",
                         },
                         body: JSON.stringify(updateData),
                     });
@@ -785,20 +790,18 @@
 
                     updatePlayerStatus(`✅ YouTube 連結已儲存到 Railway 資料庫：${songData.song_name}`);
                     return result;
-
                 } catch (error) {
                     console.error(`❌ Railway 資料庫更新失敗:`, error);
                     console.error("❌ 錯誤詳情:", {
                         message: error.message,
                         songId: songId,
                         youtubeUrl: youtubeUrl,
-                        API_BASE: API_BASE
+                        API_BASE: API_BASE,
                     });
 
                     updatePlayerStatus(`❌ Railway 資料庫更新失敗: ${error.message}`);
                     return null;
                 }
-            }
             }
 
             // 播放指定歌曲
@@ -865,7 +868,6 @@
                                 console.warn("⚠️ 儲存到資料庫失敗，但繼續播放");
                                 updatePlayerStatus(`⚠️ 播放成功，但儲存連結失敗`);
                             }
-
                         } catch (searchError) {
                             console.error("❌ 搜尋失敗:", searchError);
                             updatePlayerStatus(`❌ 搜尋失敗: ${searchError.message}`);
