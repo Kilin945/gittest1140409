@@ -53,9 +53,10 @@
         <select id="song_id" required disabled>
             <option value="">載入中...</option>
         </select>
+
         <div class="selection-info" id="song-info" style="display: none"></div>
 
-        <button disabled>載入中...</button>
+        <button id="submitBtn" disabled>載入中...</button>
 
         <script>
             console.log("🚀 新增播放清單歌曲頁面初始化");
@@ -85,6 +86,7 @@
             // 使用動態 API URL
             const apiPlaylists = `${window.API_BASE}/playlists`;
             const apiSongs = `${window.API_BASE}/songs`;
+            const apiArtists = `${window.API_BASE}/artists`;
 
             // 載入播放清單
             async function loadPlaylists() {
@@ -108,6 +110,7 @@
                     // 按播放清單名稱排序
                     data.sort((a, b) => a.playlist_name.localeCompare(b.playlist_name, "zh-Hant"));
 
+                    // 每一個播放清單資料
                     data.forEach((playlist) => {
                         let option = document.createElement("option");
                         option.value = playlist.playlist_id;
@@ -126,15 +129,32 @@
             // 載入歌曲清單
             async function loadSongs() {
                 try {
-                    console.log("🔄 開始載入歌曲資料...");
-                    const response = await fetch(apiSongs);
+                    console.log("🔄 開始載入歌曲和歌手資料...");
 
-                    if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
-                    const data = await response.json();
+                    // 同時載入歌曲和歌手資料
+                    const [songsResponse, artistsResponse] = await Promise.all([fetch(apiSongs), fetch(apiArtists)]);
+
+                    if (!songsResponse.ok || !artistsResponse.ok) {
+                        throw new Error("載入資料失敗");
+                    }
+
+                    const songsData = await songsResponse.json();
+                    const artistsData = await artistsResponse.json();
+
+                    console.log("歌曲資料:", songsData.slice(0, 3)); // 檢查前3筆資料
+                    console.log("歌手資料:", artistsData.slice(0, 3)); // 檢查前3筆資料
+
+                    // 建立歌手 ID 對應名稱的 Map
+                    const artistMap = {};
+                    artistsData.forEach((artist) => {
+                        artistMap[artist.artist_id] = artist.artist_name;
+                    });
+
+                    console.log("歌手對應表:", artistMap); // 檢查對應表
 
                     const songSelect = document.getElementById("song_id");
 
-                    if (!Array.isArray(data) || data.length === 0) {
+                    if (!Array.isArray(songsData) || songsData.length === 0) {
                         songSelect.innerHTML = '<option value="">沒有歌曲資料</option>';
                         return;
                     }
@@ -143,16 +163,19 @@
                     songSelect.disabled = false;
 
                     // 按歌曲名稱排序
-                    data.sort((a, b) => a.song_name.localeCompare(b.song_name, "zh-Hant"));
+                    songsData.sort((a, b) => a.song_name.localeCompare(b.song_name, "zh-Hant"));
 
-                    data.forEach((song) => {
+                    songsData.forEach((song) => {
                         let option = document.createElement("option");
                         option.value = song.song_id;
-                        option.textContent = `${song.song_name} - ${song.artist_name || "未知歌手"}`;
+
+                        // 從對應表中找歌手名稱
+                        const artistName = artistMap[song.artist_id] || `未知歌手(ID:${song.artist_id})`;
+                        option.textContent = `${song.song_name} - ${artistName}`;
                         songSelect.appendChild(option);
                     });
 
-                    console.log("✅ 歌曲載入成功，共", data.length, "首歌曲");
+                    console.log("✅ 歌曲載入成功，共", songsData.length, "首歌曲");
                 } catch (err) {
                     console.error("❌ 載入歌曲失敗:", err);
                     const songSelect = document.getElementById("song_id");
@@ -163,11 +186,17 @@
             // 更新載入狀態
             function updateLoadingStatus() {
                 const loadingStatus = document.getElementById("loading-status");
-                const button = document.querySelector("button");
+                const button = document.getElementById("submitBtn"); // 改用 ID 選擇器
 
-                loadingStatus.style.display = "none";
-                button.disabled = false;
-                button.textContent = "新增到播放清單";
+                if (loadingStatus) {
+                    loadingStatus.style.display = "none";
+                }
+
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = "新增到播放清單";
+                    console.log("✅ 載入狀態更新完成，按鈕已啟用");
+                }
             }
 
             // 執行狀態檢查
@@ -254,7 +283,9 @@
 
             // 事件綁定策略
             function bindSubmitEvent() {
-                const submitBtn = document.querySelector("button");
+                const submitBtn = document.getElementById("submitBtn"); // 改用 ID 選擇器
+                console.log("找到的按鈕:", submitBtn);
+
                 if (submitBtn) {
                     if (submitBtn.hasAttribute("data-bound")) {
                         console.log("⚠️ 按鈕已經綁定過事件，跳過");
@@ -271,16 +302,28 @@
                     console.log("✅ 新增播放清單歌曲按鈕事件已綁定");
                     return true;
                 } else {
-                    console.warn("⚠️ 未找到按鈕");
+                    console.warn("⚠️ 未找到正確的新增按鈕");
                     return false;
                 }
             }
 
             // 初始化載入
             async function initializePage() {
-                await Promise.all([loadPlaylists(), loadSongs()]);
-                updateLoadingStatus();
-                bindSubmitEvent();
+                try {
+                    console.log("開始初始化頁面...");
+
+                    // 分別載入，避免一個失敗影響整體
+                    await loadPlaylists();
+                    await loadSongs();
+
+                    console.log("資料載入完成，啟用按鈕");
+                } catch (error) {
+                    console.error("初始化失敗:", error);
+                } finally {
+                    // 無論如何都要啟用按鈕和綁定事件
+                    updateLoadingStatus();
+                    bindSubmitEvent();
+                }
             }
 
             // 多種載入時機綁定事件
