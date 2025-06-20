@@ -614,9 +614,8 @@
 
                                 // 🔍 檢查影片標題是否包含歌曲名稱和歌手名稱
                                 const songInTitle = title.includes(songName.toLowerCase());
-                                const artistInTitle =
-                                    title.includes(artistName.toLowerCase()) ||
-                                    channel.includes(artistName.toLowerCase());
+                                const artistInTitle = title.includes(artistName.toLowerCase()) ||
+                                                     channel.includes(artistName.toLowerCase());
 
                                 console.log(`🎵 檢查影片: ${video.snippet.title}`);
                                 console.log(`   - 歌曲名稱匹配: ${songInTitle}`);
@@ -633,7 +632,7 @@
                                         channel: video.snippet.channelTitle,
                                         videoId: videoId,
                                         url: videoUrl,
-                                        searchQuery: query,
+                                        searchQuery: query
                                     });
 
                                     return {
@@ -675,6 +674,7 @@
                     }
 
                     throw new Error("找不到可播放的影片");
+
                 } catch (searchError) {
                     console.error(`❌ 搜尋失敗:`, searchError);
                     throw searchError;
@@ -731,12 +731,7 @@
                     };
 
                     // 確保 album_id 正確處理
-                    if (
-                        songData.album_id &&
-                        songData.album_id !== null &&
-                        songData.album_id !== "" &&
-                        songData.album_id !== "NULL"
-                    ) {
+                    if (songData.album_id && songData.album_id !== null && songData.album_id !== "" && songData.album_id !== "NULL") {
                         updateData.album_id = parseInt(songData.album_id);
                     }
 
@@ -748,7 +743,7 @@
                         mode: "cors",
                         headers: {
                             "Content-Type": "application/json",
-                            Accept: "application/json",
+                            "Accept": "application/json",
                         },
                         body: JSON.stringify(updateData),
                     });
@@ -790,18 +785,20 @@
 
                     updatePlayerStatus(`✅ YouTube 連結已儲存到 Railway 資料庫：${songData.song_name}`);
                     return result;
+
                 } catch (error) {
                     console.error(`❌ Railway 資料庫更新失敗:`, error);
                     console.error("❌ 錯誤詳情:", {
                         message: error.message,
                         songId: songId,
                         youtubeUrl: youtubeUrl,
-                        API_BASE: API_BASE,
+                        API_BASE: API_BASE
                     });
 
                     updatePlayerStatus(`❌ Railway 資料庫更新失敗: ${error.message}`);
                     return null;
                 }
+            }
             }
 
             // 播放指定歌曲
@@ -868,6 +865,7 @@
                                 console.warn("⚠️ 儲存到資料庫失敗，但繼續播放");
                                 updatePlayerStatus(`⚠️ 播放成功，但儲存連結失敗`);
                             }
+
                         } catch (searchError) {
                             console.error("❌ 搜尋失敗:", searchError);
                             updatePlayerStatus(`❌ 搜尋失敗: ${searchError.message}`);
@@ -1216,38 +1214,8 @@
                 nextBtn.disabled = true;
             }
 
-            // 快速測試函數
-            function quickTest() {
-                // 模擬播放清單資料
-                currentPlaylist = [
-                    {
-                        song_id: 1,
-                        song_name: "告白氣球",
-                        artist_name: "周杰倫",
-                        youtube_url: "https://www.youtube.com/watch?v=bu7nU9Mhpyo",
-                    },
-                    {
-                        song_id: 2,
-                        song_name: "稻香",
-                        artist_name: "周杰倫",
-                        youtube_url: "https://www.youtube.com/watch?v=VjXl09n4NT8",
-                    },
-                ];
-
-                // 顯示模擬播放清單
-                displayPlaylistSongs();
-
-                console.log("🧪 快速測試模式啟動");
-                console.log("📍 當前環境:", window.location.href);
-                console.log("🌐 Origin:", window.location.origin);
-
-                // 測試 YouTube 播放器
-                if (isPlayerReady) {
-                    console.log("✅ YouTube 播放器已準備就緒");
-                } else {
-                    console.log("⏳ YouTube 播放器尚未準備就緒");
-                }
-            }
+            // 移除所有測試相關的程式碼和框框
+            // 保持程式碼簡潔，專注於音樂播放功能
 
             // 在頁面載入後自動執行快速測試 (移除黑色測試框)
             window.addEventListener("load", function () {
