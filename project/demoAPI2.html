@@ -694,7 +694,9 @@
         </div>
 
         <script>
-            // Claude 風格數據操作系統
+            // 在模組頂部新增編輯狀態追蹤
+            let currentEditingIndex = -1; // 追蹤目前正在編輯的行
+
             window.ClaudeDataOperations = (function () {
                 console.log("Claude Data Operations 系統啟動");
 
@@ -732,6 +734,8 @@
 
                 // 載入表格資料
                 async function loadTable(url, todiv, displayName) {
+                    // 重置編輯狀態
+                    currentEditingIndex = -1;
                     currenturl = url;
                     currenttodiv = todiv;
                     currentTableName = displayName;
@@ -896,39 +900,71 @@
                 }
 
                 function editRow(index) {
+                    // 如果已經有其他行在編輯，先取消編輯
+                    if (currentEditingIndex !== -1 && currentEditingIndex !== index) {
+                        cancelEdit(currentEditingIndex);
+                    }
+
                     const row = currentData[index];
-                    const keys = Object.keys(row).filter((k) => k !== "state"); // 👈 排除 state 欄位
+                    if (!row) {
+                        console.error("找不到資料行:", index);
+                        return;
+                    }
+
+                    const keys = Object.keys(row).filter((k) => k !== "state");
+                    currentEditingIndex = index; // 設定目前編輯的行
+
+                    // 檢查按鈕元素是否存在
+                    const actionsDiv = document.getElementById(`actions-${index}`);
+                    const editActionsDiv = document.getElementById(`edit-actions-${index}`);
+
+                    if (!actionsDiv || !editActionsDiv) {
+                        console.error("找不到按鈕容器:", index);
+                        return;
+                    }
 
                     // 切換按鈕顯示
-                    document.getElementById(`actions-${index}`).style.display = "none";
-                    document.getElementById(`edit-actions-${index}`).style.display = "block";
+                    actionsDiv.style.display = "none";
+                    editActionsDiv.style.display = "block";
 
                     // 將欄位轉為輸入框
                     keys.forEach((key) => {
                         const cell = document.getElementById(`cell-${index}-${key}`);
+                        if (!cell) {
+                            console.error("找不到儲存格:", `cell-${index}-${key}`);
+                            return;
+                        }
+
                         const currentValue = row[key] || "";
 
+                        // 根據欄位類型設定不同的輸入控制項
                         if (key.includes("_id") && key !== "user_id" && key !== "artist_id" && key !== "album_id") {
+                            // ID 欄位設為唯讀
                             cell.innerHTML = `<input type="text" class="edit-input" value="${currentValue}" readonly>`;
                         } else if (key === "gender") {
+                            // 性別下拉選單
                             cell.innerHTML = `<select class="edit-select">
                 <option value="男" ${currentValue === "男" ? "selected" : ""}>男</option>
                 <option value="女" ${currentValue === "女" ? "selected" : ""}>女</option>
                 <option value="其他" ${currentValue === "其他" ? "selected" : ""}>其他</option>
             </select>`;
                         } else if (key === "is_public") {
+                            // 公開/私人下拉選單
                             cell.innerHTML = `<select class="edit-select">
                 <option value="1" ${currentValue == "1" ? "selected" : ""}>是</option>
                 <option value="0" ${currentValue == "0" ? "selected" : ""}>否</option>
             </select>`;
                         } else if (key === "state") {
+                            // 狀態下拉選單
                             cell.innerHTML = `<select class="edit-select">
                 <option value="0" ${currentValue == "0" ? "selected" : ""}>啟用</option>
                 <option value="1" ${currentValue == "1" ? "selected" : ""}>停用</option>
             </select>`;
                         } else if (key === "release_date") {
+                            // 日期輸入
                             cell.innerHTML = `<input type="date" class="edit-input" value="${currentValue}">`;
                         } else {
+                            // 一般文字輸入
                             cell.innerHTML = `<input type="text" class="edit-input" value="${currentValue}">`;
                         }
                     });
@@ -936,30 +972,55 @@
 
                 function cancelEdit(index) {
                     const row = currentData[index];
-                    const keys = Object.keys(row).filter((k) => k !== "state"); // 👈 添加過濾
+                    if (!row) {
+                        console.error("找不到資料行:", index);
+                        return;
+                    }
+
+                    const keys = Object.keys(row).filter((k) => k !== "state");
+                    currentEditingIndex = -1; // 清除編輯狀態
+
+                    // 檢查按鈕元素是否存在
+                    const actionsDiv = document.getElementById(`actions-${index}`);
+                    const editActionsDiv = document.getElementById(`edit-actions-${index}`);
+
+                    if (!actionsDiv || !editActionsDiv) {
+                        console.error("找不到按鈕容器:", index);
+                        return;
+                    }
 
                     // 切換按鈕顯示
-                    document.getElementById(`actions-${index}`).style.display = "block";
-                    document.getElementById(`edit-actions-${index}`).style.display = "none";
+                    actionsDiv.style.display = "block";
+                    editActionsDiv.style.display = "none";
 
                     // 恢復原始值
                     keys.forEach((key) => {
                         const cell = document.getElementById(`cell-${index}-${key}`);
-                        cell.innerHTML = row[key] || "";
+                        if (cell) {
+                            cell.innerHTML = row[key] || "";
+                        }
                     });
                 }
 
                 async function saveRow(index, tablename) {
                     try {
                         const row = currentData[index];
-                        const keys = Object.keys(row).filter((k) => k !== "state"); // 👈 添加過濾
+                        if (!row) {
+                            throw new Error("找不到資料行");
+                        }
+
+                        const keys = Object.keys(row).filter((k) => k !== "state");
                         const updatedData = {};
 
                         // 收集編輯後的資料
                         keys.forEach((key) => {
                             const cell = document.getElementById(`cell-${index}-${key}`);
-                            const input = cell.querySelector("input, select");
-                            updatedData[key] = input ? input.value : row[key];
+                            if (cell) {
+                                const input = cell.querySelector("input, select");
+                                updatedData[key] = input ? input.value : row[key];
+                            } else {
+                                updatedData[key] = row[key]; // 如果找不到輸入元素，使用原值
+                            }
                         });
 
                         updatedData.table = tablename;
@@ -971,22 +1032,35 @@
                         });
 
                         if (response.ok) {
-                            // 更新成功，切換回顯示模式
-                            currentData[index] = updatedData;
-                            document.getElementById(`actions-${index}`).style.display = "block";
-                            document.getElementById(`edit-actions-${index}`).style.display = "none";
+                            // 更新成功
+                            currentData[index] = updatedData; // 更新本地資料
+                            currentEditingIndex = -1; // 清除編輯狀態
 
+                            // 切換回顯示模式
+                            const actionsDiv = document.getElementById(`actions-${index}`);
+                            const editActionsDiv = document.getElementById(`edit-actions-${index}`);
+
+                            if (actionsDiv && editActionsDiv) {
+                                actionsDiv.style.display = "block";
+                                editActionsDiv.style.display = "none";
+                            }
+
+                            // 更新顯示內容
                             keys.forEach((key) => {
                                 const cell = document.getElementById(`cell-${index}-${key}`);
-                                cell.innerHTML = updatedData[key];
+                                if (cell) {
+                                    cell.innerHTML = updatedData[key];
+                                }
                             });
 
                             console.log("✅ 更新成功");
+                            alert("✅ 資料更新成功！");
                         } else {
                             throw new Error("更新失敗");
                         }
                     } catch (error) {
-                        alert(`更新失敗: ${error.message}`);
+                        console.error("❌ 更新失敗:", error);
+                        alert(`❌ 更新失敗: ${error.message}`);
                     }
                 }
 
@@ -1058,7 +1132,7 @@
                     saveRow: saveRow,
                     confirmDelete: confirmDelete,
                     updaterow: updaterow,
-                    getTableNameFromUrl: getTableNameFromUrl, // 輔助函數
+                    getTableNameFromUrl: getTableNameFromUrl,
                     apiArtists: apiArtists,
                     apiSongs: apiSongs,
                     apiAlbums: apiAlbums,
