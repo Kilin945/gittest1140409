@@ -44,35 +44,32 @@
         <button>新增專輯</button>
 
         <script>
-            console.log("Insert Album Script 開始執行");
+            console.log("🚀 新增專輯頁面初始化");
 
-            // 🔧 動態設定 API Base URL - 修正硬編碼問題
-            const currentHostname = window.location.hostname;
-            const currentOrigin = window.location.origin;
+            // 🔧 確保 API_BASE 在全域可用
+            window.API_BASE = (() => {
+                const currentHostname = window.location.hostname;
+                const currentOrigin = window.location.origin;
 
-            let API_BASE;
-            if (currentHostname.includes("github.io")) {
-                // GitHub Pages 環境
-                API_BASE = "https://1140412connectproject-production.up.railway.app/api";
-                console.log("☁️ GitHub Pages 環境，使用 Railway 後端");
-            } else if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
-                // 本地開發環境
-                API_BASE = "http://localhost:8000/api";
-                console.log("🏠 本地開發環境");
-            } else if (currentHostname.includes("railway.app")) {
-                // 直接訪問 Railway 應用
-                API_BASE = currentOrigin + "/api";
-                console.log("🚂 Railway 環境，使用相對路徑");
-            } else {
-                // 其他環境，預設使用 Railway
-                API_BASE = "https://1140412connectproject-production.up.railway.app/api";
-                console.log("🌐 未知環境，預設使用 Railway 後端");
-            }
-            console.log("📡 Insert Album API_BASE:", API_BASE);
+                if (currentHostname.includes("github.io")) {
+                    console.log("☁️ GitHub Pages 環境，使用 Railway 後端");
+                    return "https://1140412connectproject-production.up.railway.app/api";
+                } else if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
+                    console.log("🏠 本地開發環境");
+                    return "http://localhost:8000/api";
+                } else if (currentHostname.includes("railway.app")) {
+                    console.log("🚂 Railway 環境，使用相對路徑");
+                    return currentOrigin + "/api";
+                } else {
+                    console.log("🌐 未知環境，預設使用 Railway 後端");
+                    return "https://1140412connectproject-production.up.railway.app/api";
+                }
+            })();
+
+            console.log("📡 API_BASE:", window.API_BASE);
 
             // 使用動態 API URL
-            const apiArtists = `${API_BASE}/artists`;
-            const apiAlbums = `${API_BASE}/albums`;
+            const apiArtists = `${window.API_BASE}/artists`;
 
             // 載入歌手清單
             async function artistNameAdd() {
@@ -122,8 +119,18 @@
                 }
             }
 
+            // 執行狀態檢查
+            let isSubmitting = false;
+
             // 新增專輯函數
             window.insertpost = async function () {
+                if (isSubmitting) {
+                    console.log("⚠️ 正在處理中，請勿重複提交");
+                    return;
+                }
+
+                isSubmitting = true;
+
                 try {
                     // 取得所有欄位的值並進行清理
                     const album_name = document.getElementById("album_name").value.trim();
@@ -170,9 +177,9 @@
                     }
 
                     console.log("📤 提交資料:", requestData);
-                    console.log("使用 API 端點:", `${API_BASE}/2/insert`);
+                    console.log("使用 API 端點:", `${window.API_BASE}/2/insert`);
 
-                    const response = await fetch(`${API_BASE}/2/insert`, {
+                    const response = await fetch(`${window.API_BASE}/2/insert`, {
                         method: "POST",
                         mode: "cors",
                         headers: {
@@ -181,7 +188,7 @@
                         body: JSON.stringify(requestData),
                     });
 
-                    console.log("API回應狀態:", response.status);
+                    console.log("📡 伺服器回應狀態:", response.status);
 
                     if (response.ok) {
                         // 取得選中的歌手名稱
@@ -209,7 +216,7 @@
                         document.getElementById("album_name").value = "";
                         document.getElementById("artist_id").value = "";
                         document.getElementById("release_date").value = "";
-                        document.getElementById("artist_id").focus(); // 焦點回到歌手選擇
+                        document.getElementById("artist_id").focus();
                     } else {
                         const errorText = await response.text();
                         console.error("❌ 新增失敗:", response.status, errorText);
@@ -218,26 +225,61 @@
                 } catch (error) {
                     console.error("❌ 新增專輯失敗:", error);
                     alert(`❌ 新增專輯失敗: ${error.message}`);
+                } finally {
+                    isSubmitting = false; // 確保狀態重置
                 }
             };
 
-            // 綁定按鈕事件
-            console.log("綁定按鈕事件");
-            const btn = document.querySelector("button");
-            console.log("找到按鈕:", btn);
-            if (btn) {
-                btn.addEventListener("click", function () {
-                    console.log("按鈕被點擊");
-                    window.insertpost();
-                });
-                console.log("✅ 按鈕事件綁定成功");
-            } else {
-                console.error("❌ 找不到新增專輯按鈕");
+            // 事件綁定策略
+            function bindSubmitEvent() {
+                const submitBtn = document.querySelector("button");
+                if (submitBtn) {
+                    // 檢查是否已經綁定過
+                    if (submitBtn.hasAttribute("data-bound")) {
+                        console.log("⚠️ 按鈕已經綁定過事件，跳過");
+                        return true;
+                    }
+
+                    // 綁定事件
+                    submitBtn.addEventListener("click", function (e) {
+                        e.preventDefault();
+                        console.log("🔥 新增專輯按鈕被點擊");
+                        window.insertpost();
+                    });
+
+                    // 標記已綁定，防止重複
+                    submitBtn.setAttribute("data-bound", "true");
+                    console.log("✅ 新增專輯按鈕事件已綁定");
+                    return true;
+                } else {
+                    console.warn("⚠️ 未找到新增專輯按鈕");
+                    return false;
+                }
             }
 
-            // 載入歌手資料
-            artistNameAdd();
-            console.log("Insert Album Script 執行完畢");
+            // 多種載入時機綁定事件
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", function () {
+                    bindSubmitEvent();
+                    artistNameAdd();
+                });
+            } else {
+                bindSubmitEvent();
+                artistNameAdd();
+            }
+
+            // Enter 鍵提交（加上防重複機制）
+            let enterKeyBound = false;
+            if (!enterKeyBound) {
+                document.addEventListener("keydown", function (e) {
+                    if (e.key === "Enter") {
+                        window.insertpost();
+                    }
+                });
+                enterKeyBound = true;
+            }
+
+            console.log("✅ 新增專輯頁面初始化完成");
         </script>
     </body>
 </html>
