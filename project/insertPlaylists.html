@@ -52,7 +52,7 @@
         <div class="user-info">👤 當前使用者：<span id="currentUserName">測試使用者</span></div>
         <input type="hidden" id="user_id" value="1" />
 
-        <button>新增播放清單</button>
+        <button id="submitBtn">新增播放清單</button>
 
         <script>
             console.log("🚀 新增播放清單頁面初始化");
@@ -178,7 +178,7 @@ ${privacyIcon} 隱私設定: ${privacyText}
 
             // 事件綁定策略
             function bindSubmitEvent() {
-                const submitBtn = document.querySelector("button");
+                const submitBtn = document.getElementById("submitBtn");
                 if (submitBtn) {
                     // 檢查是否已經綁定過
                     if (submitBtn.hasAttribute("data-bound")) {

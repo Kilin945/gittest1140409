@@ -58,7 +58,7 @@
         <button disabled>載入中...</button>
 
         <script>
-            console.log("🚀 新增歌曲頁面初始化");
+            console.log("🚀 新增播放清單歌曲頁面初始化");
 
             // 🔧 確保 API_BASE 在全域可用
             window.API_BASE = (() => {
@@ -83,110 +83,97 @@
             console.log("📡 API_BASE:", window.API_BASE);
 
             // 使用動態 API URL
-            const apiArtists = `${window.API_BASE}/artists`;
-            const apiAlbums = `${window.API_BASE}/albums`;
+            const apiPlaylists = `${window.API_BASE}/playlists`;
+            const apiSongs = `${window.API_BASE}/songs`;
 
-            // 載入歌手清單
-            async function artistNameAdd() {
+            // 載入播放清單
+            async function loadPlaylists() {
                 try {
-                    console.log("🔄 開始載入歌手資料...");
-                    const response = await fetch(apiArtists);
-                    console.log("API回應狀態:", response.status);
+                    console.log("🔄 開始載入播放清單資料...");
+                    const response = await fetch(apiPlaylists);
 
                     if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
                     const data = await response.json();
 
-                    const artistSelect = document.getElementById("artist_id");
-
-                    if (!artistSelect) {
-                        console.error("找不到 artist_id 元素");
-                        return;
-                    }
+                    const playlistSelect = document.getElementById("playlist_id");
 
                     if (!Array.isArray(data) || data.length === 0) {
-                        artistSelect.innerHTML = '<option value="">沒有歌手資料</option>';
+                        playlistSelect.innerHTML = '<option value="">沒有播放清單資料</option>';
                         return;
                     }
 
-                    // 清空現有選項（保留預設選項）
-                    artistSelect.innerHTML = '<option value="">請選擇歌手</option>';
+                    playlistSelect.innerHTML = '<option value="">請選擇播放清單</option>';
+                    playlistSelect.disabled = false;
 
-                    // 按歌手名稱排序
-                    data.sort((a, b) => a.artist_name.localeCompare(b.artist_name, "zh-Hant"));
+                    // 按播放清單名稱排序
+                    data.sort((a, b) => a.playlist_name.localeCompare(b.playlist_name, "zh-Hant"));
 
-                    // 每一列歌手資料
-                    data.forEach((row) => {
-                        let id = row["artist_id"];
-                        let name = row["artist_name"];
+                    data.forEach((playlist) => {
                         let option = document.createElement("option");
-                        option.value = id;
-                        option.textContent = name;
-                        artistSelect.appendChild(option);
+                        option.value = playlist.playlist_id;
+                        option.textContent = `${playlist.playlist_name} (${playlist.is_public ? "公開" : "私人"})`;
+                        playlistSelect.appendChild(option);
                     });
 
-                    console.log("✅ 歌手資料載入成功，共", data.length, "位歌手");
+                    console.log("✅ 播放清單載入成功，共", data.length, "個播放清單");
                 } catch (err) {
-                    console.error("❌ 載入歌手失敗:", err);
-                    const artistSelect = document.getElementById("artist_id");
-                    if (artistSelect) {
-                        artistSelect.innerHTML = '<option value="">載入失敗，請重新整理頁面</option>';
-                    }
+                    console.error("❌ 載入播放清單失敗:", err);
+                    const playlistSelect = document.getElementById("playlist_id");
+                    playlistSelect.innerHTML = '<option value="">載入失敗，請重新整理頁面</option>';
                 }
             }
 
-            // 載入專輯清單（根據選擇的歌手）
-            async function loadAlbumsByArtist(artistId) {
+            // 載入歌曲清單
+            async function loadSongs() {
                 try {
-                    const albumSelect = document.getElementById("album_id");
-
-                    if (!artistId) {
-                        albumSelect.innerHTML = '<option value="">請先選擇歌手</option>';
-                        albumSelect.disabled = true;
-                        albumSelect.classList.add("disabled-select");
-                        return;
-                    }
-
-                    // 啟用專輯選擇
-                    albumSelect.disabled = false;
-                    albumSelect.classList.remove("disabled-select");
-
-                    console.log("🔄 載入歌手專輯資料...", artistId);
-                    const response = await fetch(apiAlbums);
+                    console.log("🔄 開始載入歌曲資料...");
+                    const response = await fetch(apiSongs);
 
                     if (!response.ok) throw new Error(`HTTP錯誤: ${response.status}`);
                     const data = await response.json();
 
-                    // 過濾該歌手的專輯
-                    const artistAlbums = data.filter((album) => album.artist_id == artistId);
+                    const songSelect = document.getElementById("song_id");
 
-                    // 清空現有選項
-                    albumSelect.innerHTML = '<option value="">請選擇專輯</option>';
-                    albumSelect.innerHTML += '<option value="8">未分類</option>'; // 預設專輯
-
-                    if (artistAlbums.length > 0) {
-                        // 按專輯名稱排序
-                        artistAlbums.sort((a, b) => a.album_name.localeCompare(b.album_name, "zh-Hant"));
-
-                        artistAlbums.forEach((album) => {
-                            let option = document.createElement("option");
-                            option.value = album.album_id;
-                            option.textContent = album.album_name;
-                            albumSelect.appendChild(option);
-                        });
+                    if (!Array.isArray(data) || data.length === 0) {
+                        songSelect.innerHTML = '<option value="">沒有歌曲資料</option>';
+                        return;
                     }
 
-                    console.log("✅ 專輯資料載入成功，共", artistAlbums.length, "張專輯");
+                    songSelect.innerHTML = '<option value="">請選擇歌曲</option>';
+                    songSelect.disabled = false;
+
+                    // 按歌曲名稱排序
+                    data.sort((a, b) => a.song_name.localeCompare(b.song_name, "zh-Hant"));
+
+                    data.forEach((song) => {
+                        let option = document.createElement("option");
+                        option.value = song.song_id;
+                        option.textContent = `${song.song_name} - ${song.artist_name || "未知歌手"}`;
+                        songSelect.appendChild(option);
+                    });
+
+                    console.log("✅ 歌曲載入成功，共", data.length, "首歌曲");
                 } catch (err) {
-                    console.error("❌ 載入專輯失敗:", err);
-                    const albumSelect = document.getElementById("album_id");
-                    albumSelect.innerHTML = '<option value="">載入失敗</option>';
+                    console.error("❌ 載入歌曲失敗:", err);
+                    const songSelect = document.getElementById("song_id");
+                    songSelect.innerHTML = '<option value="">載入失敗，請重新整理頁面</option>';
                 }
+            }
+
+            // 更新載入狀態
+            function updateLoadingStatus() {
+                const loadingStatus = document.getElementById("loading-status");
+                const button = document.querySelector("button");
+
+                loadingStatus.style.display = "none";
+                button.disabled = false;
+                button.textContent = "新增到播放清單";
             }
 
             // 執行狀態檢查
             let isSubmitting = false;
 
-            // 新增歌曲函數
+            // 新增播放清單歌曲函數
             window.insertpost = async function () {
                 if (isSubmitting) {
                     console.log("⚠️ 正在處理中，請勿重複提交");
@@ -196,45 +183,31 @@
                 isSubmitting = true;
 
                 try {
-                    // 取得所有欄位的值並進行清理
-                    const song_name = document.getElementById("song_name").value.trim();
-                    const artist_id = document.getElementById("artist_id").value;
-                    const album_id = document.getElementById("album_id").value;
-                    const music_category = document.getElementById("category").value; // 修正：使用正確的 ID
-                    const youtube_link = document.getElementById("ytlink").value.trim(); // 修正：使用正確的 ID
+                    const playlist_id = document.getElementById("playlist_id").value;
+                    const song_id = document.getElementById("song_id").value;
 
                     console.log("=== 欄位值檢查 ===");
-                    console.log("song_name:", `'${song_name}'`);
-                    console.log("artist_id:", `'${artist_id}'`);
-                    console.log("album_id:", `'${album_id}'`);
-                    console.log("music_category:", `'${music_category}'`);
-                    console.log("youtube_link:", `'${youtube_link}'`);
+                    console.log("playlist_id:", `'${playlist_id}'`);
+                    console.log("song_id:", `'${song_id}'`);
 
                     // 檢查必填欄位
-                    if (!song_name) {
-                        alert("請輸入歌曲名稱！");
-                        document.getElementById("song_name").focus();
+                    if (!playlist_id) {
+                        alert("請選擇播放清單！");
+                        document.getElementById("playlist_id").focus();
                         return;
                     }
 
-                    if (!artist_id || artist_id === "") {
-                        alert("請選擇歌手！");
-                        document.getElementById("artist_id").focus();
+                    if (!song_id) {
+                        alert("請選擇歌曲！");
+                        document.getElementById("song_id").focus();
                         return;
                     }
 
                     const requestData = {
-                        table: "songs",
-                        song_name: song_name,
-                        artist_id: artist_id,
-                        music_category: music_category || "",
-                        youtube_link: youtube_link || "",
+                        table: "playlist_songs",
+                        playlist_id: playlist_id,
+                        song_id: song_id,
                     };
-
-                    // 只有選擇專輯時才加入
-                    if (album_id && album_id !== "") {
-                        requestData.album_id = album_id;
-                    }
 
                     console.log("📤 提交資料:", requestData);
                     console.log("使用 API 端點:", `${window.API_BASE}/2/insert`);
@@ -251,46 +224,31 @@
                     console.log("📡 伺服器回應狀態:", response.status);
 
                     if (response.ok) {
-                        // 取得選中的歌手名稱
-                        const selectedArtistName = document.getElementById("artist_id").selectedOptions[0].textContent;
+                        const selectedPlaylistName =
+                            document.getElementById("playlist_id").selectedOptions[0].textContent;
+                        const selectedSongName = document.getElementById("song_id").selectedOptions[0].textContent;
 
-                        // 取得選中的專輯名稱
-                        const albumSelect = document.getElementById("album_id");
-                        const selectedAlbumName = albumSelect.selectedOptions[0]
-                            ? albumSelect.selectedOptions[0].textContent
-                            : "未分類";
-
-                        // 創建成功訊息
-                        const successMessage = `✅ 歌曲新增成功！
-🎤 歌手: ${selectedArtistName}
-🎵 歌曲名稱: ${song_name}
-💿 專輯: ${selectedAlbumName}
-🎶 音樂類型: ${music_category || "未填寫"}
-🔗 YouTube連結: ${youtube_link || "未填寫"}`;
+                        const successMessage = `✅ 歌曲新增到播放清單成功！
+📋 播放清單: ${selectedPlaylistName}
+🎵 歌曲: ${selectedSongName}`;
 
                         alert(successMessage);
-                        console.log("✅ 歌曲新增成功");
+                        console.log("✅ 播放清單歌曲新增成功");
 
                         // 清空表單
-                        document.getElementById("song_name").value = "";
-                        document.getElementById("artist_id").value = "";
-                        const albumSelectElement = document.getElementById("album_id");
-                        albumSelectElement.innerHTML = '<option value="">請先選擇歌手</option>';
-                        albumSelectElement.disabled = true;
-                        albumSelectElement.classList.add("disabled-select");
-                        document.getElementById("category").value = "";
-                        document.getElementById("ytlink").value = "";
-                        document.getElementById("artist_id").focus();
+                        document.getElementById("playlist_id").value = "";
+                        document.getElementById("song_id").value = "";
+                        document.getElementById("playlist_id").focus();
                     } else {
                         const errorText = await response.text();
                         console.error("❌ 新增失敗:", response.status, errorText);
-                        alert(`❌ 新增歌曲失敗: ${errorText}`);
+                        alert(`❌ 新增播放清單歌曲失敗: ${errorText}`);
                     }
                 } catch (error) {
-                    console.error("❌ 新增歌曲失敗:", error);
-                    alert(`❌ 新增歌曲失敗: ${error.message}`);
+                    console.error("❌ 新增播放清單歌曲失敗:", error);
+                    alert(`❌ 新增播放清單歌曲失敗: ${error.message}`);
                 } finally {
-                    isSubmitting = false; // 確保狀態重置
+                    isSubmitting = false;
                 }
             };
 
@@ -298,53 +256,38 @@
             function bindSubmitEvent() {
                 const submitBtn = document.querySelector("button");
                 if (submitBtn) {
-                    // 檢查是否已經綁定過
                     if (submitBtn.hasAttribute("data-bound")) {
                         console.log("⚠️ 按鈕已經綁定過事件，跳過");
                         return true;
                     }
 
-                    // 綁定事件
                     submitBtn.addEventListener("click", function (e) {
                         e.preventDefault();
-                        console.log("🔥 新增歌曲按鈕被點擊");
+                        console.log("🔥 新增播放清單歌曲按鈕被點擊");
                         window.insertpost();
                     });
 
-                    // 標記已綁定，防止重複
                     submitBtn.setAttribute("data-bound", "true");
-                    console.log("✅ 新增歌曲按鈕事件已綁定");
+                    console.log("✅ 新增播放清單歌曲按鈕事件已綁定");
                     return true;
                 } else {
-                    console.warn("⚠️ 未找到新增歌曲按鈕");
+                    console.warn("⚠️ 未找到按鈕");
                     return false;
                 }
             }
 
-            // 綁定歌手選擇變更事件
-            function bindArtistChangeEvent() {
-                const artistSelect = document.getElementById("artist_id");
-                if (artistSelect && !artistSelect.hasAttribute("data-change-bound")) {
-                    artistSelect.addEventListener("change", function () {
-                        const selectedArtistId = this.value;
-                        loadAlbumsByArtist(selectedArtistId);
-                    });
-                    artistSelect.setAttribute("data-change-bound", "true");
-                    console.log("✅ 歌手選擇變更事件已綁定");
-                }
+            // 初始化載入
+            async function initializePage() {
+                await Promise.all([loadPlaylists(), loadSongs()]);
+                updateLoadingStatus();
+                bindSubmitEvent();
             }
 
             // 多種載入時機綁定事件
             if (document.readyState === "loading") {
-                document.addEventListener("DOMContentLoaded", function () {
-                    bindSubmitEvent();
-                    bindArtistChangeEvent();
-                    artistNameAdd();
-                });
+                document.addEventListener("DOMContentLoaded", initializePage);
             } else {
-                bindSubmitEvent();
-                bindArtistChangeEvent();
-                artistNameAdd();
+                initializePage();
             }
 
             // Enter 鍵提交（加上防重複機制）
@@ -358,7 +301,7 @@
                 enterKeyBound = true;
             }
 
-            console.log("✅ 新增歌曲頁面初始化完成");
+            console.log("✅ 新增播放清單歌曲頁面初始化完成");
         </script>
     </body>
 </html>

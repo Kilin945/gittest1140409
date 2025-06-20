@@ -41,7 +41,7 @@
         <input type="date" id="release_date" placeholder="請選擇發行日期" />
         <div class="date-hint">發行日期為選填項目，可留空</div>
 
-        <button>新增專輯</button>
+        <button id="submitBtn">新增專輯</button>
 
         <script>
             console.log("🚀 新增專輯頁面初始化");
@@ -232,7 +232,7 @@
 
             // 事件綁定策略
             function bindSubmitEvent() {
-                const submitBtn = document.querySelector("button");
+                const submitBtn = document.getElementById("submitBtn"); // 改用 ID 選擇器
                 if (submitBtn) {
                     // 檢查是否已經綁定過
                     if (submitBtn.hasAttribute("data-bound")) {

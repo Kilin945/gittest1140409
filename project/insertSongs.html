@@ -49,7 +49,7 @@
 
         <label for="song_name">歌曲名稱 <span class="required">*</span></label>
         <input type="text" id="song_name" placeholder="請輸入歌曲名稱" required />
-        <button>新增歌曲</button>
+        <button id="submitBtn">新增歌曲</button>
 
         <script>
             console.log("🚀 新增歌曲頁面初始化");
@@ -135,8 +135,14 @@
 
                     if (!artistId) {
                         albumSelect.innerHTML = '<option value="">請先選擇歌手</option>';
+                        albumSelect.disabled = true;
+                        albumSelect.classList.add("disabled-select");
                         return;
                     }
+
+                    // 啟用專輯選擇器
+                    albumSelect.disabled = false;
+                    albumSelect.classList.remove("disabled-select");
 
                     console.log("🔄 載入歌手專輯資料...", artistId);
                     const response = await fetch(apiAlbums);
@@ -188,8 +194,8 @@
                     const song_name = document.getElementById("song_name").value.trim();
                     const artist_id = document.getElementById("artist_id").value;
                     const album_id = document.getElementById("album_id").value;
-                    const music_category = document.getElementById("music_category").value;
-                    const youtube_link = document.getElementById("youtube_link").value.trim();
+                    const music_category = document.getElementById("category").value;
+                    const youtube_link = document.getElementById("ytlink").value.trim();
 
                     console.log("=== 欄位值檢查 ===");
                     console.log("song_name:", `'${song_name}'`);
@@ -215,8 +221,8 @@
                         table: "songs",
                         song_name: song_name,
                         artist_id: artist_id,
-                        music_category: music_category || "",
-                        youtube_link: youtube_link || "",
+                        music_category: category || "",
+                        youtube_link: ytlink || "",
                     };
 
                     // 只有選擇專輯時才加入
@@ -279,9 +285,12 @@
                         // 清空表單
                         document.getElementById("song_name").value = "";
                         document.getElementById("artist_id").value = "";
-                        document.getElementById("album_id").innerHTML = '<option value="">請先選擇歌手</option>';
-                        document.getElementById("music_category").value = "";
-                        document.getElementById("youtube_link").value = "";
+                        const albumSelectElement = document.getElementById("album_id");
+                        albumSelectElement.innerHTML = '<option value="">請先選擇歌手</option>';
+                        albumSelectElement.disabled = true;
+                        albumSelectElement.classList.add("disabled-select");
+                        document.getElementById("category").value = "";
+                        document.getElementById("ytlink").value = "";
                         document.getElementById("artist_id").focus();
                     } else {
                         const errorText = await response.text();
@@ -298,7 +307,7 @@
 
             // 事件綁定策略
             function bindSubmitEvent() {
-                const submitBtn = document.querySelector("button");
+                const submitBtn = document.getElementById("submitBtn");
                 if (submitBtn) {
                     // 檢查是否已經綁定過
                     if (submitBtn.hasAttribute("data-bound")) {
