@@ -82,7 +82,98 @@
                 margin: 0 !important;
                 box-shadow: var(--claude-shadow-strong) !important;
             }
+            .claude-edit-btn {
+                background: #3b82f6 !important; /* 藍色 */
+                color: white !important;
+                border: none !important;
+                padding: 8px 12px !important;
+                border-radius: var(--border-radius) !important;
+                cursor: pointer !important;
+                font-size: 0.8rem !important;
+                font-weight: 600 !important;
+                transition: var(--transition) !important;
+                box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                font-family: inherit !important;
+                outline: none !important;
+                margin-right: 8px !important;
+            }
 
+            .claude-edit-btn:hover {
+                background: #2563eb !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
+            }
+
+            .claude-save-btn {
+                background: #10b981 !important; /* 綠色 */
+                color: white !important;
+                border: none !important;
+                padding: 8px 12px !important;
+                border-radius: var(--border-radius) !important;
+                cursor: pointer !important;
+                font-size: 0.8rem !important;
+                font-weight: 600 !important;
+                transition: var(--transition) !important;
+                box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                font-family: inherit !important;
+                outline: none !important;
+                margin-right: 8px !important;
+            }
+
+            .claude-save-btn:hover {
+                background: #059669 !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4) !important;
+            }
+
+            .claude-cancel-btn {
+                background: #6b7280 !important; /* 灰色 */
+                color: white !important;
+                border: none !important;
+                padding: 8px 12px !important;
+                border-radius: var(--border-radius) !important;
+                cursor: pointer !important;
+                font-size: 0.8rem !important;
+                font-weight: 600 !important;
+                transition: var(--transition) !important;
+                box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 6px !important;
+                font-family: inherit !important;
+                outline: none !important;
+            }
+
+            .claude-cancel-btn:hover {
+                background: #4b5563 !important;
+                transform: translateY(-1px) !important;
+                box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4) !important;
+            }
+
+            .edit-input,
+            .edit-select {
+                width: 100% !important;
+                padding: 8px 12px !important;
+                border: 1px solid var(--claude-border) !important;
+                border-radius: 8px !important;
+                background: var(--claude-warm-cream) !important;
+                color: var(--claude-bg) !important;
+                font-size: 0.9rem !important;
+                font-family: inherit !important;
+                outline: none !important;
+            }
+
+            .edit-input:focus,
+            .edit-select:focus {
+                border-color: var(--claude-primary) !important;
+                box-shadow: 0 0 0 2px rgba(217, 119, 66, 0.2) !important;
+            }
             .claude-header::before {
                 content: "" !important;
                 position: absolute !important;
@@ -857,8 +948,6 @@
 
                         // 資料列
                         filteredData.forEach((row, index) => {
-                            const rowData = { ...row, state: -1, table: tablename };
-
                             tableHtml += `<tr>`;
                             tableHtml += `
 <td>
@@ -873,9 +962,8 @@
 </td>
 `;
                             keys.forEach((k) => {
-                                // 排除 state 欄位
-                                const value = row[k] !== null && row[k] !== undefined ? row[k] : ""; // 處理空值
-                                tableHtml += `<td id="cell-${index}-${k}">${value}</td>`; // 顯示欄位值 id
+                                const value = row[k] !== null && row[k] !== undefined ? row[k] : "";
+                                tableHtml += `<td id="cell-${index}-${k}">${value}</td>`;
                             });
                             tableHtml += `</tr>`;
                         });
@@ -913,6 +1001,7 @@
                         restoreRow(rowData, currentTableName);
                     }
                 }
+
                 // 新增輔助函數（如果還沒有的話）
                 function getTableNameFromUrl(url) {
                     if (url === apiArtists) return "artists";
