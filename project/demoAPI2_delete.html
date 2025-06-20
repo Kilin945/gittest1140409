@@ -504,6 +504,29 @@
                 font-family: inherit !important;
             }
 
+            .claude-restore-btn {
+                background: #10b981 !important; /* 綠色 */
+                color: white !important;
+                border: none !important;
+                padding: 12px 18px !important;
+                border-radius: var(--border-radius) !important;
+                cursor: pointer !important;
+                font-size: 0.9rem !important;
+                font-weight: 600 !important;
+                transition: var(--transition) !important;
+                box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3) !important;
+                display: inline-flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                font-family: inherit !important;
+                outline: none !important;
+            }
+            .claude-restore-btn:hover {
+                background: #059669 !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4) !important;
+            }
+
             /* 動畫 */
             @keyframes fadeInUp {
                 from {
@@ -625,18 +648,18 @@
             <div class="claude-header">
                 <div class="claude-header-content">
                     <h1 class="claude-title">
-                        <i class="fas fa-database claude-title-icon"></i>
-                        資料操作管理
+                        <i class="fas fa-trash-restore claude-title-icon"></i>
+                        已刪除資料管理
                     </h1>
-                    <p class="claude-subtitle">選擇要查看和管理的資料表</p>
+                    <p class="claude-subtitle">查看和復原已刪除的資料</p>
                 </div>
             </div>
 
             <div class="claude-controls">
                 <div class="claude-controls-content">
                     <div class="claude-controls-title">
-                        <i class="fas fa-table"></i>
-                        資料表選擇
+                        <i class="fas fa-trash-restore"></i>
+                        已刪除資料表選擇
                     </div>
                     <div class="claude-button-grid">
                         <button
@@ -776,9 +799,9 @@
                         const data = await response.json();
                         console.log(`📊 原始資料: ${data.length} 筆`);
 
-                        // 過濾掉 state = -1 的資料，必須同時過濾兩種不同變數
+                        // 只要 state = -1 的資料，兩種不同變數，修改成 or
                         const filteredData = data.filter((row) => {
-                            return row.state !== -1 && row.state !== "-1";
+                            return row.state === -1 || row.state === "-1";
                         });
 
                         currentData = filteredData; //儲存資料
@@ -814,10 +837,10 @@
                     <div class="claude-table-header">
                         <div class="claude-table-title">
                             <i class="fas fa-table"></i>
-                            ${displayName}清單
+                            已刪除的${displayName}清單
                         </div>
                         <div class="claude-table-count">
-                            共 ${filteredData.length} 筆記錄
+                            共 ${filteredData.length} 筆已刪除記錄
                         </div>
                     </div>
                     <div class="claude-table-scroll">
@@ -840,36 +863,17 @@
                             tableHtml += `
     <td>
         <div id="actions-${index}">
-            <button class="claude-action-btn claude-edit-btn" 
-                    onclick='ClaudeDataOperations.editRow(${index})' 
-                    title="編輯這筆記錄">
-                <i class="fas fa-edit"></i>
-                編輯
-            </button>
-            <button class="claude-action-btn claude-delete-btn" 
-        onclick='ClaudeDataOperations.confirmDelete(${JSON.stringify(rowData).replace(
-            /'/g,
-            "\\'"
-        )}，"${displayName}", ${index + 1})'
-        title="刪除這筆記錄">
-    <i class="fas fa-trash"></i>
-    刪除
-</button>
-        </div>
-        <div id="edit-actions-${index}" style="display: none;">
-            <button class="claude-action-btn claude-save-btn" 
-                    onclick='ClaudeDataOperations.saveRow(${index}, "${tablename}")' 
-                    title="儲存變更">
-                <i class="fas fa-save"></i>
-                儲存
-            </button>
-            <button class="claude-action-btn claude-cancel-btn" 
-                    onclick='ClaudeDataOperations.cancelEdit(${index})' 
-                    title="取消編輯">
-                <i class="fas fa-times"></i>
-                取消
-            </button>
-        </div>
+    <button class="claude-action-btn claude-restore-btn" 
+            onclick='ClaudeDataOperations.confirmRestore(${JSON.stringify({
+                ...row,
+                state: 0,
+                table: tablename,
+            }).replace(/'/g, "\\'")}，"${displayName}", ${index + 1})'
+            title="復原這筆記錄">
+        <i class="fas fa-undo"></i>
+        復原
+    </button>
+</div>
     </td>
 `;
                             keys.forEach((k) => {
@@ -898,114 +902,19 @@
                     }
                 }
 
-                function editRow(index) {
-                    const row = currentData[index];
-                    const keys = Object.keys(row).filter((k) => k !== "state"); // 👈 排除 state 欄位
-
-                    // 切換按鈕顯示
-                    document.getElementById(`actions-${index}`).style.display = "none";
-                    document.getElementById(`edit-actions-${index}`).style.display = "block";
-
-                    // 將欄位轉為輸入框
-                    keys.forEach((key) => {
-                        const cell = document.getElementById(`cell-${index}-${key}`);
-                        const currentValue = row[key] || "";
-
-                        if (key.includes("_id") && key !== "user_id" && key !== "artist_id" && key !== "album_id") {
-                            cell.innerHTML = `<input type="text" class="edit-input" value="${currentValue}" readonly>`;
-                        } else if (key === "gender") {
-                            cell.innerHTML = `<select class="edit-select">
-                <option value="男" ${currentValue === "男" ? "selected" : ""}>男</option>
-                <option value="女" ${currentValue === "女" ? "selected" : ""}>女</option>
-                <option value="其他" ${currentValue === "其他" ? "selected" : ""}>其他</option>
-            </select>`;
-                        } else if (key === "is_public") {
-                            cell.innerHTML = `<select class="edit-select">
-                <option value="1" ${currentValue == "1" ? "selected" : ""}>是</option>
-                <option value="0" ${currentValue == "0" ? "selected" : ""}>否</option>
-            </select>`;
-                        } else if (key === "state") {
-                            cell.innerHTML = `<select class="edit-select">
-                <option value="0" ${currentValue == "0" ? "selected" : ""}>啟用</option>
-                <option value="1" ${currentValue == "1" ? "selected" : ""}>停用</option>
-            </select>`;
-                        } else if (key === "release_date") {
-                            cell.innerHTML = `<input type="date" class="edit-input" value="${currentValue}">`;
-                        } else {
-                            cell.innerHTML = `<input type="text" class="edit-input" value="${currentValue}">`;
-                        }
-                    });
-                }
-
-                function cancelEdit(index) {
-                    const row = currentData[index];
-                    const keys = Object.keys(row).filter((k) => k !== "state"); // 👈 添加過濾
-
-                    // 切換按鈕顯示
-                    document.getElementById(`actions-${index}`).style.display = "block";
-                    document.getElementById(`edit-actions-${index}`).style.display = "none";
-
-                    // 恢復原始值
-                    keys.forEach((key) => {
-                        const cell = document.getElementById(`cell-${index}-${key}`);
-                        cell.innerHTML = row[key] || "";
-                    });
-                }
-
-                async function saveRow(index, tablename) {
-                    try {
-                        const row = currentData[index];
-                        const keys = Object.keys(row).filter((k) => k !== "state"); // 👈 添加過濾
-                        const updatedData = {};
-
-                        // 收集編輯後的資料
-                        keys.forEach((key) => {
-                            const cell = document.getElementById(`cell-${index}-${key}`);
-                            const input = cell.querySelector("input, select");
-                            updatedData[key] = input ? input.value : row[key];
-                        });
-
-                        updatedData.table = tablename;
-
-                        const response = await fetch(`${API_BASE}/2/update`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify(updatedData),
-                        });
-
-                        if (response.ok) {
-                            // 更新成功，切換回顯示模式
-                            currentData[index] = updatedData;
-                            document.getElementById(`actions-${index}`).style.display = "block";
-                            document.getElementById(`edit-actions-${index}`).style.display = "none";
-
-                            keys.forEach((key) => {
-                                const cell = document.getElementById(`cell-${index}-${key}`);
-                                cell.innerHTML = updatedData[key];
-                            });
-
-                            console.log("✅ 更新成功");
-                        } else {
-                            throw new Error("更新失敗");
-                        }
-                    } catch (error) {
-                        alert(`更新失敗: ${error.message}`);
-                    }
-                }
-
-                // 確認刪除
-                function confirmDelete(rowData, displayName, rowNumber) {
-                    const confirmMessage = `確定要刪除這筆${displayName}資料嗎？\n\n這是第 ${rowNumber} 筆記錄\n此操作無法復原！`;
+                // 確認復原
+                function confirmRestore(rowData, displayName, rowNumber) {
+                    const confirmMessage = `確定要復原這筆${displayName}資料嗎？\n\n這是第 ${rowNumber} 筆記錄`;
 
                     if (confirm(confirmMessage)) {
-                        updaterow(rowData, displayName);
+                        restoreRow(rowData, displayName);
                     }
                 }
 
-                // 執行刪除
-                async function updaterow(returnbody, displayName) {
+                // 復原函數
+                async function restoreRow(returnbody, displayName) {
                     try {
-                        console.log("📤 提交刪除請求:", returnbody);
+                        console.log("📤 提交復原請求:", returnbody);
 
                         const response = await fetch(`${API_BASE}/2/update`, {
                             method: "POST",
@@ -1017,16 +926,16 @@
                         });
 
                         if (response.ok) {
-                            console.log(`✅ ${displayName}刪除成功`);
-                            alert(`✅ ${displayName}記錄已成功刪除！`);
+                            console.log(`✅ ${displayName}復原成功`);
+                            alert(`✅ ${displayName}記錄已成功復原！`);
                             loadTable(currenturl, currenttodiv, currentTableName);
                         } else {
                             const errorText = await response.text();
-                            throw new Error(`刪除失敗: ${errorText}`);
+                            throw new Error(`復原失敗: ${errorText}`);
                         }
                     } catch (error) {
-                        console.error("❌ 刪除失敗:", error);
-                        alert(`❌ 刪除${displayName}失敗: ${error.message}`);
+                        console.error("❌ 復原失敗:", error);
+                        alert(`❌ 復原${displayName}失敗: ${error.message}`);
                     }
                 }
 
@@ -1035,11 +944,8 @@
                 // 公開 API
                 return {
                     loadTable: loadTable,
-                    editRow: editRow, // 新增
-                    cancelEdit: cancelEdit, // 新增
-                    saveRow: saveRow, // 新增
-                    confirmDelete: confirmDelete,
-                    updaterow: updaterow,
+                    confirmRestore: confirmRestore, // 👈 新增
+                    restoreRow: restoreRow, // 👈 新增
                     apiArtists: apiArtists,
                     apiSongs: apiSongs,
                     apiAlbums: apiAlbums,
