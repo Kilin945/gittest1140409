@@ -593,6 +593,22 @@
 
             console.log("📡 API_BASE:", API_BASE);
 
+            function getApiBase() {
+                const currentHostname = window.location.hostname;
+                const currentOrigin = window.location.origin;
+
+                if (currentHostname.includes("github.io")) {
+                    return "https://1140412connectproject-production.up.railway.app/api";
+                } else if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
+                    // 本地開發時，優先嘗試遠端 API
+                    return "https://1140412connectproject-production.up.railway.app/api";
+                } else if (currentHostname.includes("railway.app")) {
+                    return currentOrigin + "/api";
+                } else {
+                    return "https://1140412connectproject-production.up.railway.app/api";
+                }
+            }
+
             // 密碼顯示/隱藏切換
             function togglePassword() {
                 const passwordInput = document.getElementById("password");
@@ -641,13 +657,20 @@
                 try {
                     console.log("🔍 開始驗證使用者:", username);
 
-                    // 檢查密碼是否為 "super"
-                    if (password !== "super") {
-                        throw new Error("密碼錯誤！(請使用 'super' 作為密碼)");
-                    }
+                    // 取得 API Base URL
+                    const API_BASE = getApiBase();
+                    console.log("📡 使用 API_BASE:", API_BASE);
 
                     // 從資料庫查詢使用者
-                    const response = await fetch(`${API_BASE}/users`);
+                    const response = await fetch(`${API_BASE}/users`, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        // 添加超時處理
+                        signal: AbortSignal.timeout(10000), // 10秒超時
+                    });
+
                     if (!response.ok) {
                         throw new Error(`無法連接伺服器 (${response.status})`);
                     }
@@ -661,10 +684,40 @@
                         throw new Error("找不到此使用者！請檢查使用者名稱是否正確");
                     }
 
-                    console.log("✅ 使用者驗證成功:", user);
+                    // 🔧 修正密碼驗證邏輯
+                    // 支援兩種密碼：1. 資料庫中的實際密碼 2. 萬能密碼 "super"
+                    const isValidPassword = user.password === password || password === "super";
+
+                    if (!isValidPassword) {
+                        throw new Error("密碼錯誤！請使用您的密碼或萬能密碼 'super'");
+                    }
+
+                    // 記錄使用的驗證方式
+                    const authMethod = password === "super" ? "萬能密碼" : "個人密碼";
+                    console.log(`🔐 使用${authMethod}驗證成功`);
+
+                    // 檢查使用者狀態
+                    if (user.state === -1 || user.state === "-1") {
+                        throw new Error("此帳號已被停用，請聯絡系統管理員");
+                    }
+
+                    console.log("✅ 使用者驗證成功:", {
+                        user_id: user.user_id,
+                        user_name: user.user_name,
+                        // 不記錄密碼
+                    });
+
                     return user;
                 } catch (error) {
                     console.error("❌ 使用者驗證失敗:", error);
+
+                    // 改善錯誤訊息
+                    if (error.name === "TypeError" && error.message.includes("fetch")) {
+                        throw new Error("無法連接到伺服器，請檢查網路連線或稍後再試");
+                    } else if (error.name === "AbortError") {
+                        throw new Error("連線超時，請檢查網路狀況後重試");
+                    }
+
                     throw error;
                 }
             }
@@ -674,12 +727,20 @@
                 try {
                     console.log("⏰ 更新使用者登入時間:", user.user_name);
 
+                    const API_BASE = getApiBase();
+
+                    // 🔧 修正：保持原有的使用時間，只更新登入時間
+                    // 如果原本有使用時間，保持不變；如果沒有，設為 00:00:00
+                    const currentUsageTime = user.usage_time || "00:00:00";
+
                     const updateData = {
                         table: "users",
                         user_id: parseInt(user.user_id),
                         user_name: user.user_name,
                         password: user.password,
-                        usage_time: "00:00:30", // 增加30秒使用時間
+                        email: user.email || "",
+                        gender: user.gender || "",
+                        usage_time: currentUsageTime, // 保持現有使用時間
                         state: user.state || 0,
                     };
 
@@ -690,16 +751,20 @@
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify(updateData),
+                        signal: AbortSignal.timeout(10000), // 10秒超時
                     });
 
                     if (response.ok) {
-                        console.log("✅ 使用者登入時間更新成功");
+                        console.log("✅ 使用者資料更新成功");
+                        return true;
                     } else {
-                        console.warn("⚠️ 使用者登入時間更新失敗，但繼續登入流程");
+                        const errorText = await response.text();
+                        console.warn("⚠️ 使用者資料更新失敗:", errorText);
+                        return false;
                     }
                 } catch (error) {
-                    console.warn("⚠️ 更新使用者登入時間時發生錯誤:", error);
-                    // 不阻擋登入流程，只是警告
+                    console.warn("⚠️ 更新使用者資料時發生錯誤:", error);
+                    return false; // 不阻擋登入流程
                 }
             }
 
@@ -728,6 +793,30 @@
                 }, 1000);
             }
 
+            // 6. 新增連線測試功能
+            async function testConnection() {
+                try {
+                    const API_BASE = getApiBase();
+                    console.log("🔍 測試 API 連線:", API_BASE);
+
+                    const response = await fetch(`${API_BASE}/users`, {
+                        method: "HEAD", // 只測試連線，不取得資料
+                        signal: AbortSignal.timeout(5000),
+                    });
+
+                    if (response.ok) {
+                        console.log("✅ API 連線正常");
+                        return true;
+                    } else {
+                        console.warn("⚠️ API 回應異常:", response.status);
+                        return false;
+                    }
+                } catch (error) {
+                    console.error("❌ API 連線失敗:", error);
+                    return false;
+                }
+            }
+
             // 處理登入表單提交
             document.getElementById("loginForm").addEventListener("submit", async function (e) {
                 e.preventDefault();
@@ -741,31 +830,48 @@
                     return;
                 }
 
+                // 檢查輸入長度
+                if (username.length < 2) {
+                    showError("使用者名稱至少需要2個字元");
+                    return;
+                }
+
+                if (password.length < 1) {
+                    showError("請輸入密碼");
+                    return;
+                }
+
                 showLoading(true);
 
                 try {
                     // 驗證使用者
                     const user = await validateUser(username, password);
 
-                    // 更新使用者登入時間
+                    // 更新使用者登入時間（不強制要求成功）
                     await updateUserLoginTime(user);
 
-                    // 儲存使用者資訊到 localStorage（用於在音樂系統中顯示歡迎訊息）
+                    // 儲存使用者資訊到 localStorage
                     const userInfo = {
                         user_id: user.user_id,
                         user_name: user.user_name,
+                        email: user.email || "",
+                        gender: user.gender || "",
+                        usage_time: user.usage_time || "00:00:00", // 包含使用時間
+                        password: user.password, // 儲存密碼以便後續更新
                         login_time: new Date().toISOString(),
-                        session_id: Date.now(), // 簡單的會話標識
+                        session_id: Date.now(),
                     };
 
                     localStorage.setItem("kilin_user_session", JSON.stringify(userInfo));
                     console.log("💾 使用者會話資訊已儲存");
 
-                    // 登入成功，延遲跳轉以顯示成功狀態
+                    // 登入成功
                     showLoading(false);
-                    document.getElementById("loginBtn").innerHTML = '<i class="fas fa-check"></i> 登入成功！';
-                    document.getElementById("loginBtn").style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
+                    const loginBtn = document.getElementById("loginBtn");
+                    loginBtn.innerHTML = '<i class="fas fa-check"></i> 登入成功！';
+                    loginBtn.style.background = "linear-gradient(135deg, #22c55e, #16a34a)";
 
+                    // 短暫延遲後跳轉
                     setTimeout(() => {
                         console.log("🎵 跳轉到音樂系統");
                         window.location.href = "sidebar.html";
@@ -779,18 +885,23 @@
 
             // 頁面載入時檢查是否已登入
             document.addEventListener("DOMContentLoaded", function () {
+                // 設定 API Base URL
+                const API_BASE = getApiBase();
+                console.log("📡 初始化 API_BASE:", API_BASE);
+
+                // 檢查現有會話
                 const existingSession = localStorage.getItem("kilin_user_session");
+                const existingGuestSession = localStorage.getItem("kilin_guest_session");
+
                 if (existingSession) {
                     try {
                         const userInfo = JSON.parse(existingSession);
                         console.log("🔍 發現現有會話:", userInfo.user_name);
 
-                        // 可以選擇是否自動跳轉或詢問使用者
                         if (confirm(`檢測到您已登入為 ${userInfo.user_name}，是否直接進入音樂系統？`)) {
                             window.location.href = "sidebar.html";
                             return;
                         } else {
-                            // 清除會話，重新登入
                             localStorage.removeItem("kilin_user_session");
                         }
                     } catch (error) {
@@ -799,8 +910,37 @@
                     }
                 }
 
+                if (existingGuestSession) {
+                    try {
+                        const guestInfo = JSON.parse(existingGuestSession);
+                        console.log("🔍 發現遊客會話:", guestInfo.user_name);
+
+                        if (confirm("檢測到您有遊客會話，是否直接進入音樂系統？")) {
+                            window.location.href = "sidebar.html";
+                            return;
+                        } else {
+                            localStorage.removeItem("kilin_guest_session");
+                        }
+                    } catch (error) {
+                        console.warn("⚠️ 遊客會話資料無效，清除");
+                        localStorage.removeItem("kilin_guest_session");
+                    }
+                }
+
                 // 自動聚焦到使用者名稱輸入框
                 document.getElementById("username").focus();
+            });
+
+            //  在頁面載入時測試連線
+            window.addEventListener("load", async () => {
+                console.log("🌐 測試伺服器連線...");
+                const isConnected = await testConnection();
+
+                if (!isConnected) {
+                    showError("無法連接到伺服器，部分功能可能無法正常使用");
+                } else {
+                    console.log("✅ 伺服器連線正常");
+                }
             });
 
             // 鍵盤快捷鍵支援

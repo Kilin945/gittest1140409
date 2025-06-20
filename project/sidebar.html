@@ -870,13 +870,15 @@
             let sessionStartTime = null;
             let usageTimer = null;
             let totalUsageSeconds = 0;
+            let currentSessionSeconds = 0; // 當前會話時間
+            let lastSaveTime = 0; // 上次儲存時間
 
             // 🆕 時間格式化函數
             function formatTime(seconds) {
-                const hours = Math.floor(seconds / 3600);
-                const minutes = Math.floor((seconds % 3600) / 60);
-                const secs = seconds % 60;
-                return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs
+                const hours = Math.floor(seconds / 3600); // 3600秒為一小時
+                const minutes = Math.floor((seconds % 3600) / 60); // 60秒為一分鐘
+                const secs = seconds % 60; // 秒數
+                return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs // 秒數
                     .toString()
                     .padStart(2, "0")}`;
             }
@@ -886,64 +888,114 @@
                 if (!timeStr) return 0;
                 const parts = timeStr.split(":");
                 if (parts.length !== 3) return 0;
-                return parseInt(parts[0]) * 3600 + parseInt(parts[1]) * 60 + parseInt(parts[2]);
+                const hours = parseInt(parts[0]) || 0;
+                const minutes = parseInt(parts[1]) || 0;
+                const seconds = parseInt(parts[2]) || 0;
+                return hours * 3600 + minutes * 60 + seconds;
+                return hours * 3600 + minutes * 60 + seconds; // 秒數
             }
 
-            // 🆕 開始計時器 (僅註冊用戶)
+            // 🔧 修正：開始計時器
             function startUsageTimer() {
                 if (isGuestMode) {
                     console.log("🚫 遊客模式不計時");
                     return;
                 }
 
+                // 如果已經在計時，先停止
+                if (usageTimer) {
+                    clearInterval(usageTimer);
+                }
+
                 console.log("⏰ 開始使用時間計時");
-                sessionStartTime = new Date();
+                sessionStartTime = Date.now(); // 使用時間戳
+                currentSessionSeconds = 0;
 
                 // 每秒更新顯示
                 usageTimer = setInterval(() => {
-                    totalUsageSeconds++;
-                    updateUsageTimeDisplay();
+                    currentSessionSeconds++;
+                    const currentTotal = totalUsageSeconds + currentSessionSeconds;
+                    updateUsageTimeDisplay(currentTotal);
+
+                    // 每30秒自動儲存一次（避免資料遺失）
+                    if (currentSessionSeconds % 30 === 0) {
+                        console.log(`💾 自動儲存使用時間 (${formatTime(currentTotal)})`);
+                        saveUsageTimeToServer(currentTotal);
+                    }
                 }, 1000);
             }
 
-            // 🆕 停止計時器
+            // 🔧 修正：停止計時器
             function stopUsageTimer() {
                 if (usageTimer) {
                     clearInterval(usageTimer);
                     usageTimer = null;
-                    console.log("⏹️ 停止使用時間計時");
+
+                    // 更新總使用時間
+                    if (currentSessionSeconds > 0) {
+                        totalUsageSeconds += currentSessionSeconds;
+                        console.log(
+                            `⏹️ 停止計時，本次會話: ${formatTime(currentSessionSeconds)}，總計: ${formatTime(
+                                totalUsageSeconds
+                            )}`
+                        );
+                        currentSessionSeconds = 0;
+                    }
                 }
             }
 
-            // 🆕 更新使用時間顯示
-            function updateUsageTimeDisplay() {
+            // 🔧 修正：更新使用時間顯示
+            function updateUsageTimeDisplay(displaySeconds = null) {
                 const usageTimeText = document.getElementById("usageTimeText");
                 if (usageTimeText && !isGuestMode) {
-                    usageTimeText.textContent = `使用時間: ${formatTime(totalUsageSeconds)}`;
+                    const timeToShow = displaySeconds !== null ? displaySeconds : totalUsageSeconds;
+                    usageTimeText.textContent = `使用時間: ${formatTime(timeToShow)}`;
                 }
             }
 
-            // 🆕 儲存使用時間到後端
-            async function saveUsageTimeToServer() {
-                if (isGuestMode || !currentUser || totalUsageSeconds === 0) {
-                    console.log("🚫 遊客模式或無使用時間，不儲存");
-                    return;
+            // 🔧 修正：儲存使用時間到後端
+            async function saveUsageTimeToServer(timeSeconds = null) {
+                if (isGuestMode || !currentUser) {
+                    console.log("🚫 遊客模式或無使用者，不儲存");
+                    return false;
                 }
 
                 try {
-                    const usageTimeFormatted = formatTime(totalUsageSeconds);
-                    console.log(`💾 儲存使用時間到伺服器: ${usageTimeFormatted}`);
+                    const timeToSave = timeSeconds || totalUsageSeconds + currentSessionSeconds;
+
+                    if (timeToSave === lastSaveTime) {
+                        console.log("⏭️ 使用時間無變化，跳過儲存");
+                        return true;
+                    }
+
+                    const usageTimeFormatted = formatTime(timeToSave);
+                    console.log(`💾 儲存使用時間到伺服器: ${usageTimeFormatted} (${timeToSave}秒)`);
+
+                    // 取得目前環境的 API 基準 URL
+                    const currentHostname = window.location.hostname;
+                    let API_BASE;
+                    if (currentHostname.includes("github.io")) {
+                        API_BASE = "https://1140412connectproject-production.up.railway.app/api";
+                    } else if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
+                        API_BASE = "http://localhost:8000/api";
+                    } else if (currentHostname.includes("railway.app")) {
+                        API_BASE = window.location.origin + "/api";
+                    } else {
+                        API_BASE = "https://1140412connectproject-production.up.railway.app/api";
+                    }
 
                     const updateData = {
                         table: "users",
                         user_id: currentUser.user_id,
                         user_name: currentUser.user_name,
                         password: currentUser.password,
+                        email: currentUser.email || "",
+                        gender: currentUser.gender || "",
                         usage_time: usageTimeFormatted,
                         state: "0",
                     };
 
-                    const response = await fetch("/api/2/update", {
+                    const response = await fetch(`${API_BASE}/2/update`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -952,12 +1004,24 @@
                     });
 
                     if (response.ok) {
+                        lastSaveTime = timeToSave;
                         console.log("✅ 使用時間已成功儲存到資料庫");
+
+                        // 更新本地儲存的使用者資料
+                        if (currentUser) {
+                            currentUser.usage_time = usageTimeFormatted;
+                            localStorage.setItem("kilin_user_session", JSON.stringify(currentUser));
+                        }
+
+                        return true;
                     } else {
-                        console.error("❌ 儲存使用時間失敗:", response.status);
+                        const errorText = await response.text();
+                        console.error("❌ 儲存使用時間失敗:", response.status, errorText);
+                        return false;
                     }
                 } catch (error) {
                     console.error("❌ 儲存使用時間時發生錯誤:", error);
+                    return false;
                 }
             }
 
@@ -1061,7 +1125,7 @@
                 document.body.style.overflow = "";
             }
 
-            // 修改 checkLoginStatus 函數，移除 alert
+            // 🔧 修正：檢查登入狀態
             function checkLoginStatus() {
                 try {
                     // 首先檢查是否為遊客模式
@@ -1079,12 +1143,11 @@
                     const userInfo = JSON.parse(sessionData);
                     console.log("✅ 找到使用者會話:", userInfo);
 
-                    // 驗證會話有效性（例如：檢查登入時間是否太久）
+                    // 驗證會話有效性
                     const loginTime = new Date(userInfo.login_time);
                     const now = new Date();
                     const hoursSinceLogin = (now - loginTime) / (1000 * 60 * 60);
 
-                    // 如果登入超過24小時，要求重新登入
                     if (hoursSinceLogin > 24) {
                         console.log("⚠️ 會話已過期，清除並跳轉到登入頁面");
                         localStorage.removeItem("kilin_user_session");
@@ -1095,13 +1158,17 @@
                     currentUser = userInfo;
                     isGuestMode = false;
 
-                    // 初始化使用者的累計使用時間
+                    // 🔧 修正：正確初始化使用者的累計使用時間
                     if (userInfo.usage_time) {
                         totalUsageSeconds = timeToSeconds(userInfo.usage_time);
+                        console.log(`📊 載入累計使用時間: ${formatTime(totalUsageSeconds)} (${totalUsageSeconds}秒)`);
+                    } else {
+                        totalUsageSeconds = 0;
+                        console.log("📊 初始使用者，使用時間為 0");
                     }
 
                     updateUserInterface(userInfo);
-                    startUsageTimer(); // 開始計時
+                    startUsageTimer(); // 開始新的計時會話
                     return true;
                 } catch (error) {
                     console.error("❌ 檢查登入狀態時發生錯誤:", error);
@@ -1162,17 +1229,19 @@
                 console.log("✅ 使用者介面更新完成");
             }
 
-            // 🚪 處理登出
+            // 🔧 修正：登出處理
             async function handleLogout() {
                 const confirmMessage = isGuestMode ? "確定要結束遊客模式嗎？" : "確定要登出嗎？";
 
                 if (confirm(confirmMessage)) {
                     console.log(isGuestMode ? "🚪 遊客結束瀏覽" : "🚪 使用者登出");
 
-                    // 如果是註冊用戶，先儲存使用時間
+                    // 如果是註冊用戶，先停止計時並儲存最終時間
                     if (!isGuestMode && currentUser) {
                         stopUsageTimer();
-                        await saveUsageTimeToServer();
+                        const finalTime = totalUsageSeconds;
+                        console.log(`💾 登出前最終儲存，總使用時間: ${formatTime(finalTime)}`);
+                        await saveUsageTimeToServer(finalTime);
                     }
 
                     // 清除會話資料
@@ -1185,8 +1254,9 @@
                     currentUser = null;
                     isGuestMode = false;
                     totalUsageSeconds = 0;
+                    currentSessionSeconds = 0;
+                    lastSaveTime = 0;
 
-                    // 跳轉到登入頁面
                     redirectToLogin();
                 }
             }
@@ -1333,40 +1403,60 @@
                 }
             });
 
-            // 🆕 頁面關閉/刷新前儲存使用時間
+            // 🔧 修正：頁面關閉前處理
             window.addEventListener("beforeunload", async (e) => {
-                if (!isGuestMode && currentUser && totalUsageSeconds > 0) {
+                if (!isGuestMode && currentUser) {
                     stopUsageTimer();
+                    const finalTime = totalUsageSeconds;
 
-                    // 使用 navigator.sendBeacon 確保數據能發送
-                    const usageTimeFormatted = formatTime(totalUsageSeconds);
-                    const updateData = {
-                        table: "users",
-                        user_id: currentUser.user_id,
-                        user_name: currentUser.user_name,
-                        password: currentUser.password,
-                        usage_time: usageTimeFormatted,
-                        state: "0",
-                    };
+                    if (finalTime > lastSaveTime) {
+                        console.log("📤 頁面關閉前儲存使用時間");
 
-                    try {
-                        navigator.sendBeacon("/api/2/update", JSON.stringify(updateData));
-                        console.log("📤 已透過 sendBeacon 發送使用時間");
-                    } catch (error) {
-                        console.error("❌ sendBeacon 發送失敗:", error);
+                        // 使用 navigator.sendBeacon 確保數據能發送
+                        const usageTimeFormatted = formatTime(finalTime);
+
+                        // 取得 API 基準 URL
+                        const currentHostname = window.location.hostname;
+                        let API_BASE;
+                        if (currentHostname.includes("github.io")) {
+                            API_BASE = "https://1140412connectproject-production.up.railway.app/api";
+                        } else if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
+                            API_BASE = "http://localhost:8000/api";
+                        } else if (currentHostname.includes("railway.app")) {
+                            API_BASE = window.location.origin + "/api";
+                        } else {
+                            API_BASE = "https://1140412connectproject-production.up.railway.app/api";
+                        }
+
+                        const updateData = {
+                            table: "users",
+                            user_id: currentUser.user_id,
+                            user_name: currentUser.user_name,
+                            password: currentUser.password,
+                            email: currentUser.email || "",
+                            gender: currentUser.gender || "",
+                            usage_time: usageTimeFormatted,
+                            state: "0",
+                        };
+
+                        try {
+                            const blob = new Blob([JSON.stringify(updateData)], { type: "application/json" });
+                            navigator.sendBeacon(`${API_BASE}/2/update`, blob);
+                            console.log("📤 已透過 sendBeacon 發送使用時間");
+                        } catch (error) {
+                            console.error("❌ sendBeacon 發送失敗:", error);
+                        }
                     }
                 }
             });
 
-            // 🆕 頁面可見性變化處理 (用戶切換分頁)
+            // 🔧 修正：頁面可見性變化處理
             document.addEventListener("visibilitychange", () => {
                 if (!isGuestMode && currentUser) {
                     if (document.hidden) {
-                        // 頁面隱藏時暫停計時
                         console.log("⏸️ 頁面隱藏，暫停計時");
                         stopUsageTimer();
                     } else {
-                        // 頁面顯示時恢復計時
                         console.log("▶️ 頁面顯示，恢復計時");
                         startUsageTimer();
                     }
@@ -1410,7 +1500,7 @@
                 });
             }
 
-            // 🔄 定期檢查會話狀態並儲存使用時間
+            // 🔧 修正：定期檢查和儲存
             setInterval(() => {
                 // 檢查會話狀態
                 const sessionData = localStorage.getItem("kilin_user_session");
@@ -1422,10 +1512,11 @@
                     return;
                 }
 
-                // 每5分鐘自動儲存一次使用時間 (僅註冊用戶)
-                if (!isGuestMode && currentUser && totalUsageSeconds > 0 && totalUsageSeconds % 300 === 0) {
-                    console.log("💾 定期儲存使用時間...");
-                    saveUsageTimeToServer();
+                // 每5分鐘強制儲存一次 (僅註冊用戶)
+                if (!isGuestMode && currentUser && currentSessionSeconds > 0 && currentSessionSeconds % 300 === 0) {
+                    const currentTotal = totalUsageSeconds + currentSessionSeconds;
+                    console.log("⏰ 定期強制儲存使用時間");
+                    saveUsageTimeToServer(currentTotal);
                 }
             }, 60000); // 每分鐘檢查一次
 
