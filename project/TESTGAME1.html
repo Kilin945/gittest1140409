@@ -9,6 +9,30 @@
 
         <link rel="stylesheet" href="main.css" />
         <style>
+            /* 強制置中容器 */
+            .container {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                text-align: center;
+                width: 100%;
+                padding: 0;
+                margin: 0;
+            }
+
+            /* 強制遊戲區域置中 */
+            .game-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
+            /* 遊戲區域本身 */
             #gameArea {
                 width: 600px;
                 height: 400px;
@@ -16,8 +40,10 @@
                 border: 3px solid #ff9900;
                 border-radius: 10px;
                 position: relative;
-                margin: 20px auto;
-                overflow: hidden; /* 確保方塊不會跑出邊界 */
+                margin: 20px 0; /* 只保留上下間距 */
+                overflow: hidden;
+                max-width: 90%;
+                display: block;
             }
 
             #box {
@@ -89,19 +115,18 @@
                 color: #663300;
                 border-left: 3px solid #ff9900;
             }
-            /* 響應式設計 - 遊戲區域 */
-            #gameArea {
-                width: 600px;
-                height: 400px;
-                background-color: rgba(255, 248, 220, 0.9);
-                border: 3px solid #ff9900;
-                border-radius: 10px;
-                position: relative;
-                margin: 20px auto;
-                overflow: hidden;
-                max-width: 90%; /* 確保在小螢幕上不會溢出 */
+            /* 確保 overlay 也不會影響置中 */
+            .overlay {
+                width: 100%;
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0;
+                padding: 0;
             }
 
+            /* 響應式設計 */
             /* 平板尺寸 */
             @media (max-width: 768px) {
                 #gameArea {
@@ -190,9 +215,11 @@
 
                 <div class="score-display">得分：<span id="score">0</span></div>
 
-                <!-- 添加遊戲區域，限制方塊移動範圍 -->
-                <div id="gameArea">
-                    <div id="box"></div>
+                <!-- 遊戲區域置中包裝 -->
+                <div class="game-container">
+                    <div id="gameArea">
+                        <div id="box"></div>
+                    </div>
                 </div>
 
                 <!-- 返回首頁按鈕 -->

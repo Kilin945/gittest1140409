@@ -3,40 +3,397 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Kilin的小聊天室</title>
+        <title>💬 Kilin的小聊天室</title>
         <!-- Font Awesome 圖標庫 -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-
         <link rel="stylesheet" href="main.css" />
+        <style>
+            /* 覆蓋主要容器樣式實現置中 */
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                padding: 20px;
+                margin: 0;
+            }
+
+            .overlay {
+                width: 100%;
+                max-width: 800px;
+                margin: 0 auto;
+            }
+
+            .container {
+                background: var(--claude-card);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--claude-border);
+                border-radius: var(--border-radius);
+                padding: 40px;
+                box-shadow: var(--claude-shadow-strong);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .container::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(
+                    135deg,
+                    rgba(255, 107, 53, 0.03) 0%,
+                    transparent 50%,
+                    rgba(255, 140, 107, 0.02) 100%
+                );
+                z-index: 0;
+            }
+
+            /* 美化聊天室樣式 */
+            .chat-container {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 107, 53, 0.2);
+                border-radius: 15px;
+                padding: 25px;
+                margin: 20px 0;
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+                transition: all 0.3s ease;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* 標題樣式 */
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                position: relative;
+                z-index: 1;
+            }
+
+            .header h1 {
+                font-size: 2.5rem;
+                font-weight: 700;
+                color: var(--claude-text);
+                letter-spacing: -0.02em;
+                margin-bottom: 10px;
+            }
+
+            .header p {
+                color: var(--claude-text-muted);
+                font-size: 1.1rem;
+                margin: 0;
+            }
+
+            /* 返回首頁按鈕 */
+            .home-button {
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #ff6b35, #e55a2e);
+                color: white;
+                text-decoration: none;
+                padding: 12px 20px;
+                border-radius: 50px;
+                box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+                transition: all 0.3s ease;
+                font-weight: bold;
+                z-index: 1000;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+            }
+
+            .home-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+                text-decoration: none;
+                color: white;
+            }
+
+            /* 輸入框組 */
+            .input-group {
+                margin: 20px 0;
+                position: relative;
+            }
+
+            .input-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: var(--claude-text);
+                font-size: 16px;
+            }
+
+            .input-group label i {
+                color: #ff6b35;
+                margin-right: 8px;
+            }
+
+            .input-group input {
+                width: 100%;
+                padding: 15px 20px;
+                border: 2px solid rgba(255, 107, 53, 0.2);
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.9);
+                color: #333;
+                font-size: 16px;
+                transition: all 0.3s ease;
+                box-sizing: border-box;
+            }
+
+            .input-group input:focus {
+                outline: none;
+                border-color: #ff6b35;
+                box-shadow: 0 0 15px rgba(255, 107, 53, 0.2);
+                transform: translateY(-2px);
+            }
+
+            .input-group input::placeholder {
+                color: #999;
+                font-style: italic;
+            }
+
+            /* 訊息框美化 */
+            .message-box {
+                height: 400px;
+                overflow-y: auto;
+                background: rgba(255, 255, 255, 0.95);
+                border: 2px solid rgba(255, 107, 53, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+                margin: 20px 0;
+                box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.1);
+                color: #333;
+                font-size: 15px;
+                line-height: 1.5;
+            }
+
+            /* 訊息項目美化 */
+            .message-item {
+                margin: 12px 0;
+                padding: 12px 16px;
+                border-radius: 10px;
+                background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                border-left: 4px solid #ff6b35;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            }
+
+            .message-item:hover {
+                transform: translateX(5px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+
+            .message-item b {
+                color: #ff6b35;
+                font-weight: 700;
+            }
+
+            .message-time {
+                color: #666;
+                font-size: 12px;
+                font-style: italic;
+            }
+
+            /* 用戶訊息樣式 */
+            .user-message {
+                background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+                border-left-color: #2196f3;
+            }
+
+            .user-message b {
+                color: #1976d2;
+            }
+
+            /* 系統訊息樣式 */
+            .system-message {
+                background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+                border-left-color: #9c27b0;
+                font-style: italic;
+            }
+
+            .system-message b {
+                color: #7b1fa2;
+            }
+
+            /* 發送按鈕美化 */
+            .action-button {
+                background: linear-gradient(135deg, #ff6b35, #e55a2e);
+                color: white;
+                border: none;
+                padding: 15px 30px;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
+                width: 100%;
+                margin-top: 15px;
+            }
+
+            .action-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
+                background: linear-gradient(135deg, #e55a2e, #d1512a);
+            }
+
+            .action-button:active {
+                transform: translateY(0);
+            }
+
+            /* 滾動條美化 */
+            .message-box::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            .message-box::-webkit-scrollbar-track {
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 10px;
+            }
+
+            .message-box::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #ff6b35, #e55a2e);
+                border-radius: 10px;
+            }
+
+            .message-box::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #e55a2e, #d1512a);
+            }
+
+            /* 在線狀態指示 */
+            .online-indicator {
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                background: #4caf50;
+                border-radius: 50%;
+                margin-left: 8px;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.5;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+
+            /* 響應式設計 */
+            @media (max-width: 768px) {
+                body {
+                    padding: 10px;
+                    align-items: flex-start;
+                    padding-top: 20px;
+                }
+
+                .container {
+                    padding: 20px 15px 80px;
+                }
+
+                .chat-container {
+                    padding: 15px;
+                }
+
+                .message-box {
+                    height: 300px;
+                }
+
+                .input-group input {
+                    padding: 12px 15px;
+                    font-size: 14px;
+                }
+
+                .action-button {
+                    padding: 12px 25px;
+                    font-size: 14px;
+                }
+
+                .home-button {
+                    bottom: 15px;
+                    right: 15px;
+                    padding: 10px 15px;
+                    font-size: 12px;
+                }
+
+                .header h1 {
+                    font-size: 2rem;
+                }
+            }
+
+            /* 動畫效果 */
+            .fade-in {
+                animation: fadeIn 0.5s ease-out;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        </style>
     </head>
 
     <body>
         <div class="overlay">
-            <div class="container">
+            <div class="container fade-in">
                 <div class="header">
-                    <h1>Kilin 的小聊天室</h1>
+                    <h1>💬 Kilin 的小聊天室</h1>
+                    <p>目前只能跟自己聊天的聊天室</p>
                 </div>
 
-                <a href="index.html" class="home-button"> <i class="fas fa-home"></i> 返回首頁 </a>
+                <a href="index.html" class="home-button">
+                    <i class="fas fa-home"></i>
+                    返回首頁
+                </a>
 
                 <div class="chat-container">
                     <div class="input-group">
-                        <label for="username"><i class="fas fa-user"></i> 你的名字：</label>
-                        <input type="text" id="username" placeholder="請輸入你的名字..." />
+                        <label for="username">
+                            <i class="fas fa-user"></i>
+                            你的名字：
+                        </label>
+                        <input type="text" id="username" placeholder="請輸入你的名字..." maxlength="20" />
                     </div>
 
                     <div class="message-box" id="messages">
-                        <div class="message-item">
-                            <b>系統訊息:</b> 歡迎來到 Kilin 的小聊天室！請輸入你的名字和訊息開始聊天。
+                        <div class="message-item system-message">
+                            <b>🎉 系統訊息</b>
+                            <span class="online-indicator"></span>
+                            <br />
+                            歡迎來到 Kilin 的小聊天室！請輸入你的名字和訊息開始聊天。
                         </div>
                     </div>
+
                     <div class="input-group">
-                        <label for="input"><i class="fas fa-comment"></i> 你的訊息：</label>
-                        <input type="text" id="input" placeholder="請輸入訊息..." />
+                        <label for="input">
+                            <i class="fas fa-comment"></i>
+                            你的訊息：
+                        </label>
+                        <input type="text" id="input" placeholder="請輸入訊息..." maxlength="200" />
                     </div>
 
                     <button class="action-button" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i> 送出
+                        <i class="fas fa-paper-plane"></i>
+                        送出訊息
                     </button>
                 </div>
 
@@ -45,68 +402,221 @@
         </div>
 
         <script>
+            // 🔧 動態設定 API Base URL - 修正硬編碼問題
+            const currentHostname = window.location.hostname;
+            const currentOrigin = window.location.origin;
+
+            let API_BASE;
+            if (currentHostname.includes("github.io")) {
+                // GitHub Pages 環境
+                API_BASE = "https://1140412connectproject-production.up.railway.app";
+                console.log("☁️ GitHub Pages 環境，使用 Railway 後端");
+            } else if (currentHostname === "localhost" || currentHostname === "127.0.0.1") {
+                // 本地開發環境
+                API_BASE = "http://localhost:8000";
+                console.log("🏠 本地開發環境");
+            } else if (currentHostname.includes("railway.app")) {
+                // 直接訪問 Railway 應用
+                API_BASE = currentOrigin;
+                console.log("🚂 Railway 環境，使用相對路徑");
+            } else {
+                // 其他環境，預設使用 Railway
+                API_BASE = "https://1140412connectproject-production.up.railway.app";
+                console.log("🌐 未知環境，預設使用 Railway 後端");
+            }
+
+            console.log("📡 Chat API_BASE:", API_BASE);
+
             const messages = document.getElementById("messages");
             const input = document.getElementById("input");
             const username = document.getElementById("username");
 
-            const apiBase = "http://localhost:8000"; // ✅ <--- 請改成你的 ngrok 網址
-
-            // 發送訊息函數
+            // 🎨 美化版發送訊息函數
             function sendMessage() {
-                const name = username.value.trim(); // 取得名字
-                const text = input.value.trim(); // 取得訊息
+                const name = username.value.trim();
+                const text = input.value.trim();
 
-                if (!name || !text) {
-                    return alert("請輸入名字和訊息！");
+                // 驗證輸入
+                if (!name) {
+                    showNotification("請輸入你的名字！", "warning");
+                    username.focus();
+                    return;
                 }
-                input.value = ""; // 清空輸入框,不要在發送請求的後面
 
-                fetch(`${apiBase}/chat/send`, {
+                if (!text) {
+                    showNotification("請輸入訊息內容！", "warning");
+                    input.focus();
+                    return;
+                }
+
+                // 清空輸入框
+                input.value = "";
+
+                // 發送請求
+                fetch(`${API_BASE}/chat/send`, {
                     method: "POST",
-                    mode: "cors", // ✅ 很關鍵
-                    headers: { "Content-Type": "application/json" }, // 設定請求標頭
-                    body: JSON.stringify({ name: name, message: text }), // 將資料轉換為 JSON 格式
-                }).then(() => {
-                    // 發送請求
-                    //input.value = '';
-                    loadMessages(); // 即時刷新
-                });
+                    mode: "cors",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        message: text,
+                    }),
+                })
+                    .then((response) => {
+                        if (response.ok) {
+                            console.log("✅ 訊息發送成功");
+                            loadMessages(); // 即時刷新
+                        } else {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("❌ 發送訊息失敗:", error);
+                        showNotification("發送失敗，請檢查網路連線", "error");
+                    });
             }
 
-            //撈取訊息
+            // 🎨 美化版載入訊息函數
             async function loadMessages() {
                 try {
-                    const resp = await fetch(`${apiBase}/chat/messages`, {
-                        method: "GET", // 或 POST 之類
+                    const resp = await fetch(`${API_BASE}/chat/messages`, {
+                        method: "GET",
                         headers: {
                             "ngrok-skip-browser-warning": "true",
                         },
                     });
+
+                    if (!resp.ok) {
+                        throw new Error(`HTTP ${resp.status}`);
+                    }
+
                     const data = await resp.json();
-                    messages.innerHTML = ""; // 清空訊息區域
-                    data.forEach((msg) => {
-                        // 將訊息添加到訊息區域
-                        const div = document.createElement("div"); // 創建新的訊息元素
-                        div.innerHTML = `<b>${msg.name}</b> (${msg.time}) : ${msg.message}`; // 創建新的訊息元素
-                        messages.appendChild(div); // 添加訊息到訊息區域
+
+                    // 清空訊息區域但保留系統訊息
+                    const systemMsg = messages.querySelector(".system-message");
+                    messages.innerHTML = "";
+                    if (systemMsg) {
+                        messages.appendChild(systemMsg);
+                    }
+
+                    // 添加聊天訊息
+                    data.forEach((msg, index) => {
+                        const div = document.createElement("div");
+                        div.className = "message-item user-message fade-in";
+                        div.style.animationDelay = `${index * 0.1}s`;
+
+                        div.innerHTML = `
+                            <b>👤 ${escapeHtml(msg.name)}</b>
+                            <span class="message-time">(${msg.time})</span>
+                            <br>
+                            ${escapeHtml(msg.message)}
+                        `;
+
+                        messages.appendChild(div);
                     });
-                    messages.scrollTop = messages.scrollHeight; // 滾動到最底部
+
+                    // 滾動到最底部
+                    messages.scrollTop = messages.scrollHeight;
                 } catch (err) {
-                    messages.innerHTML = "<i>載入失敗</i>";
-                    console.error("載入訊息錯誤：", err);
-                    0;
+                    console.error("❌ 載入訊息錯誤：", err);
+
+                    // 只在完全沒有訊息時顯示錯誤
+                    if (messages.children.length <= 1) {
+                        const errorDiv = document.createElement("div");
+                        errorDiv.className = "message-item system-message";
+                        errorDiv.innerHTML = `
+                            <b>⚠️ 連線錯誤</b><br>
+                            無法載入聊天訊息，請檢查網路連線或稍後再試
+                        `;
+                        messages.appendChild(errorDiv);
+                    }
                 }
             }
-            // 每 1 秒刷新
+
+            // 🛡️ HTML 轉義函數（安全性）
+            function escapeHtml(text) {
+                const div = document.createElement("div");
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // 🔔 通知函數
+            function showNotification(message, type = "info") {
+                const notification = document.createElement("div");
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    color: white;
+                    font-weight: bold;
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease;
+                `;
+
+                switch (type) {
+                    case "success":
+                        notification.style.background = "linear-gradient(135deg, #4caf50, #45a049)";
+                        break;
+                    case "warning":
+                        notification.style.background = "linear-gradient(135deg, #ff9800, #f57c00)";
+                        break;
+                    case "error":
+                        notification.style.background = "linear-gradient(135deg, #f44336, #d32f2f)";
+                        break;
+                    default:
+                        notification.style.background = "linear-gradient(135deg, #2196f3, #1976d2)";
+                }
+
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                // 3秒後自動移除
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+
+            // 🕐 每 500ms 刷新一次
             setInterval(loadMessages, 500);
+
+            // 初始載入
             loadMessages();
 
-            // 監聽 Enter 鍵
+            // 🎹 監聽 Enter 鍵
             document.getElementById("input").addEventListener("keypress", function (event) {
                 if (event.key === "Enter") {
                     sendMessage();
                 }
             });
+
+            // 🎹 監聽名字輸入框的 Enter 鍵
+            document.getElementById("username").addEventListener("keypress", function (event) {
+                if (event.key === "Enter") {
+                    document.getElementById("input").focus();
+                }
+            });
+
+            // 🎨 添加 CSS 動畫
+            const style = document.createElement("style");
+            style.textContent = `
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            console.log("💬 Kilin 小聊天室已初始化完成");
         </script>
     </body>
 </html>

@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Kilin 音樂資料庫管理系統</title>
+        <title>🎵 Kilin 音樂資料庫管理系統</title>
         <!-- Font Awesome 圖標庫 -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         <link rel="stylesheet" href="main.css" />
@@ -14,6 +14,7 @@
             --claude-card-hover: rgba(255, 255, 255, 0.15);
             --claude-border: rgba(255, 107, 53, 0.3);
             --claude-primary: #ff6b35;
+            --claude-accent: #ff8c69;
             --claude-text: #ffffff;
             --claude-text-muted: rgba(255, 255, 255, 0.7);
             --claude-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -22,22 +23,173 @@
             --transition-speed: 0.3s;
         }
 
+        /* 🔧 響應式佈局基礎 */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* 💻 桌面版佈局 */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--claude-card);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--claude-border);
+            z-index: 1000;
+            transition: transform var(--transition-speed) ease;
+        }
+
+        .content {
+            margin-left: 280px;
+            min-height: 100vh;
+            padding: 20px;
+            transition: margin-left var(--transition-speed) ease;
+        }
+
+        /* 📱 手機版漢堡選單按鈕 */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--claude-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            box-shadow: var(--claude-shadow);
+            transition: all var(--transition-speed) ease;
+        }
+
+        .mobile-menu-toggle:hover {
+            background: var(--claude-accent);
+            transform: scale(1.05);
+        }
+
+        .mobile-menu-toggle i {
+            font-size: 18px;
+        }
+
+        /* 📱 手機版覆蓋層 */
+        .mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity var(--transition-speed) ease;
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+        }
+
         /* 導航連結樣式 */
         .nav-link {
             text-decoration: none;
             color: inherit;
             display: block;
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 4px 0;
+            transition: all var(--transition-speed) ease;
         }
 
         .nav-link:hover {
             text-decoration: none;
             color: inherit;
+            background: var(--claude-card-hover);
+            transform: translateX(5px);
+        }
+
+        /* 側邊欄標題 */
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid var(--claude-border);
+            text-align: center;
+        }
+
+        .sidebar-header h2 {
+            margin: 0 0 8px 0;
+            color: var(--claude-text);
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .sidebar-subtitle {
+            color: var(--claude-text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .decorative-line {
+            width: 50px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--claude-primary), var(--claude-accent));
+            margin: 0 auto;
+            border-radius: 2px;
+        }
+
+        /* 導航選單 */
+        .nav-menu {
+            padding: 20px;
+        }
+
+        .nav-section-title {
+            color: var(--claude-text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 25px 0 10px 0;
+            padding-left: 10px;
+            border-left: 3px solid var(--claude-primary);
+        }
+
+        .nav-item {
+            margin: 6px 0;
         }
 
         /* 主要內容區域 */
+        .content-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--claude-text);
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .welcome-subtitle {
+            color: var(--claude-text-muted);
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        /* 主要內容區域網格 */
         .section {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
             margin-bottom: 60px;
             position: relative;
@@ -113,56 +265,181 @@
             color: var(--claude-accent);
         }
 
-        /* 響應式設計 */
-        @media (max-width: 768px) {
-            .container {
-                padding: 40px 25px 80px;
+        /* 🔧 平板電腦響應式設計 (768px - 1024px) */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .sidebar {
+                width: 250px;
             }
 
-            .header h1 {
-                font-size: 2.5rem;
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .header h1::before {
-                font-size: 2.5rem;
+            .content {
+                margin-left: 250px;
             }
 
             .section {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                 gap: 20px;
             }
 
             .menu-item a {
-                font-size: 1.2rem;
-                padding: 25px 20px;
+                font-size: 1.3rem;
+                padding: 30px 25px;
             }
 
-            .like-button {
-                bottom: 20px;
-                right: 20px;
-                padding: 12px 24px;
-                font-size: 14px;
+            .welcome-title {
+                font-size: 2.2rem;
             }
         }
 
-        @media (max-width: 480px) {
-            .header h1 {
+        /* 📱 手機版響應式設計 (≤768px) */
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .mobile-overlay {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                box-shadow: var(--claude-shadow-strong);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 70px 15px 20px;
+            }
+
+            .content-header {
+                margin-bottom: 30px;
+                padding: 10px 0;
+            }
+
+            .welcome-title {
                 font-size: 2rem;
+                line-height: 1.2;
+            }
+
+            .welcome-subtitle {
+                font-size: 1rem;
+            }
+
+            .section {
+                grid-template-columns: 1fr;
+                gap: 15px;
+                margin-bottom: 40px;
+            }
+
+            .menu-item {
+                min-height: 100px;
             }
 
             .menu-item a {
                 font-size: 1.1rem;
+                padding: 25px 20px;
                 gap: 15px;
             }
 
             .menu-item .icon {
-                font-size: 1.5rem;
+                font-size: 1.6rem;
+            }
+
+            /* 側邊欄在手機版的樣式調整 */
+            .sidebar-header {
+                padding: 20px 15px;
+            }
+
+            .sidebar-header h2 {
+                font-size: 1.2rem;
+            }
+
+            .nav-menu {
+                padding: 15px;
+            }
+
+            .nav-link {
+                padding: 10px 15px;
+                font-size: 0.95rem;
+            }
+
+            .nav-section-title {
+                font-size: 0.8rem;
+                margin: 20px 0 8px 0;
             }
         }
 
-        /* 動畫效果 */
+        /* 📱 小手機版響應式設計 (≤480px) */
+        @media (max-width: 480px) {
+            .content {
+                padding: 70px 10px 20px;
+            }
+
+            .welcome-title {
+                font-size: 1.8rem;
+            }
+
+            .welcome-subtitle {
+                font-size: 0.9rem;
+            }
+
+            .menu-item a {
+                font-size: 1rem;
+                gap: 12px;
+                padding: 20px 15px;
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .menu-item .icon {
+                font-size: 1.8rem;
+            }
+
+            .section {
+                gap: 12px;
+            }
+
+            .sidebar {
+                width: 260px;
+            }
+
+            .nav-link {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+            }
+        }
+
+        /* 🔧 超寬螢幕優化 (≥1400px) */
+        @media (min-width: 1400px) {
+            .sidebar {
+                width: 320px;
+            }
+
+            .content {
+                margin-left: 320px;
+                max-width: 1200px;
+                margin-right: auto;
+            }
+
+            .section {
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 30px;
+            }
+
+            .welcome-title {
+                font-size: 3rem;
+            }
+
+            .welcome-subtitle {
+                font-size: 1.3rem;
+            }
+        }
+
+        /* 🎨 動畫效果 */
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -173,87 +450,193 @@
                 transform: translateY(0);
             }
         }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .content {
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .nav-item {
+            animation: slideInLeft 0.4s ease-out;
+        }
+
+        .nav-item:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        .nav-item:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+        .nav-item:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+        .nav-item:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        /* 🔄 載入狀態 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--claude-text-muted);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 🎯 焦點狀態和無障礙設計 */
+        .nav-link:focus,
+        .menu-item a:focus,
+        .mobile-menu-toggle:focus {
+            outline: 2px solid var(--claude-primary);
+            outline-offset: 2px;
+        }
+
+        /* 🌙 深色模式優化 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --claude-card: rgba(255, 255, 255, 0.08);
+                --claude-card-hover: rgba(255, 255, 255, 0.12);
+            }
+        }
+
+        /* 🎭 減少動畫偏好設定 */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
     <body>
-        <div class="sidebar">
+        <!-- 📱 手機版選單按鈕 -->
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()" aria-label="開啟選單">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- 📱 手機版覆蓋層 -->
+        <div class="mobile-overlay" onclick="closeSidebar()"></div>
+
+        <!-- 🎵 側邊欄 -->
+        <div class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2>音樂選單系統</h2>
+                <h2>🎵 音樂選單系統</h2>
                 <div class="sidebar-subtitle">Music Database System</div>
                 <div class="decorative-line"></div>
             </div>
 
             <nav class="nav-menu">
                 <div class="nav-item">
-                    <a href="sidebar.html" class="nav-link"> 音樂系統首頁 </a>
+                    <a href="sidebar.html" class="nav-link"> <i class="fas fa-home"></i> 音樂系統首頁 </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="index.html" class="nav-link">個人首頁</a>
+                    <a href="index.html" class="nav-link"> <i class="fas fa-user"></i> 個人首頁 </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="playMusic.html" class="nav-link"> 播放音樂 </a>
+                    <a href="playMusic.html" class="nav-link"> <i class="fas fa-play"></i> 播放音樂 </a>
                 </div>
 
-                <div class="nav-section-title">查詢功能</div>
+                <div class="nav-section-title">🔍 查詢功能</div>
                 <div class="nav-item">
-                    <a href="sidebar.html?target=searchAllSong.html" class="nav-link">查詢歌曲</a>
-                </div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=musicCharts.html" class="nav-link">音樂排行榜</a>
-                </div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=popularArtists.html" class="nav-link">最受歡迎歌手</a>
-                </div>
-
-                <div class="nav-section-title">新增功能</div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=insertArtists.html" class="nav-link">新增歌手</a>
+                    <a href="sidebar.html?target=searchAllSong.html" class="nav-link">
+                        <i class="fas fa-search"></i> 查詢歌曲
+                    </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="sidebar.html?target=insertAlbums.html" class="nav-link">新增專輯</a>
+                    <a href="sidebar.html?target=musicCharts.html" class="nav-link">
+                        <i class="fas fa-chart-line"></i> 音樂排行榜
+                    </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="sidebar.html?target=insertSongs.html" class="nav-link">新增歌曲</a>
+                    <a href="sidebar.html?target=popularArtists.html" class="nav-link">
+                        <i class="fas fa-star"></i> 最受歡迎歌手
+                    </a>
+                </div>
+
+                <div class="nav-section-title">➕ 新增功能</div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=insertArtists.html" class="nav-link">
+                        <i class="fas fa-microphone"></i> 新增歌手
+                    </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="sidebar.html?target=insertUsers.html" class="nav-link">新增使用者</a>
+                    <a href="sidebar.html?target=insertAlbums.html" class="nav-link">
+                        <i class="fas fa-compact-disc"></i> 新增專輯
+                    </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="sidebar.html?target=insertPlaylists.html" class="nav-link">建立播放清單</a>
+                    <a href="sidebar.html?target=insertSongs.html" class="nav-link">
+                        <i class="fas fa-music"></i> 新增歌曲
+                    </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="sidebar.html?target=insertPlaylistSongs.html" class="nav-link">建立播放清單歌曲</a>
-                </div>
-
-                <div class="nav-section-title">資料管理</div>
-
-                <div class="nav-item">
-                    <a href="sidebar.html?target=demoAPI.html" class="nav-link">更新歌手資料</a>
+                    <a href="sidebar.html?target=insertUsers.html" class="nav-link">
+                        <i class="fas fa-user-plus"></i> 新增使用者
+                    </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="sidebar.html?target=demoAPI2.html" class="nav-link">更新歌手資料</a>
+                    <a href="sidebar.html?target=insertPlaylists.html" class="nav-link">
+                        <i class="fas fa-list"></i> 建立播放清單
+                    </a>
                 </div>
 
                 <div class="nav-item">
-                    <a href="sidebar.html?target=updateUser.html" class="nav-link">個人設定</a>
+                    <a href="sidebar.html?target=insertPlaylistSongs.html" class="nav-link">
+                        <i class="fas fa-plus-circle"></i> 建立播放清單歌曲
+                    </a>
+                </div>
+
+                <div class="nav-section-title">⚙️ 資料管理</div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=demoAPI.html" class="nav-link">
+                        <i class="fas fa-edit"></i> 資料操作
+                    </a>
+                </div>
+
+                <div class="nav-item">
+                    <a href="sidebar.html?target=updateUser.html" class="nav-link">
+                        <i class="fas fa-cog"></i> 個人設定
+                    </a>
                 </div>
             </nav>
         </div>
 
+        <!-- 🎵 主要內容區域 -->
         <div class="content" id="mainContent">
             <div class="content-header">
                 <h1 class="welcome-title">歡迎來到 Kilin 音樂世界</h1>
-                <p class="welcome-subtitle">管理您的音樂收藏</p>
+                <p class="welcome-subtitle">管理您的音樂收藏，享受美好時光</p>
             </div>
 
             <div class="content-body">
@@ -294,73 +677,165 @@
         </div>
 
         <script>
+            // 🎯 響應式選單控制
             function toggleSidebar() {
-                document.getElementById("sidebar").classList.toggle("active");
+                const sidebar = document.getElementById("sidebar");
+                const overlay = document.querySelector(".mobile-overlay");
+
+                sidebar.classList.toggle("active");
+                overlay.classList.toggle("active");
+
+                // 防止背景滾動
+                if (sidebar.classList.contains("active")) {
+                    document.body.style.overflow = "hidden";
+                } else {
+                    document.body.style.overflow = "";
+                }
             }
 
+            function closeSidebar() {
+                const sidebar = document.getElementById("sidebar");
+                const overlay = document.querySelector(".mobile-overlay");
+
+                sidebar.classList.remove("active");
+                overlay.classList.remove("active");
+                document.body.style.overflow = "";
+            }
+
+            // 🔍 URL 參數處理
             function getQueryParam(name) {
                 const params = new URLSearchParams(window.location.search);
                 return params.get(name);
             }
 
+            // 📄 頁面載入功能
             async function loadPage(fileName) {
+                const pageContent = document.getElementById("pageContent");
+
                 try {
+                    // 顯示載入狀態
+                    pageContent.innerHTML = `
+                        <div class="loading">
+                            <i class="fas fa-spinner"></i>
+                            <p>載入中...</p>
+                        </div>
+                    `;
+
                     const response = await fetch(fileName);
-                    if (!response.ok) throw new Error("載入失敗");
+                    if (!response.ok) throw new Error(`載入失敗 (${response.status})`);
                     const html = await response.text();
 
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, "text/html");
 
-                    const pageArea = document.getElementById("pageContent");
-                    pageArea.innerHTML = "";
+                    pageContent.innerHTML = "";
 
-                    // 移除舊 script（標記為 data-dynamic 的）
+                    // 移除舊的動態腳本
                     document.querySelectorAll("script[data-dynamic]").forEach((s) => s.remove());
 
-                    // 插入非 script 元素
+                    // 插入非腳本元素
                     Array.from(doc.body.childNodes).forEach((node) => {
                         if (node.tagName !== "SCRIPT") {
-                            pageArea.appendChild(document.importNode(node, true));
+                            pageContent.appendChild(document.importNode(node, true));
                         }
                     });
 
-                    // 使用 setTimeout 延遲執行 scripts
+                    // 延遲執行腳本
                     setTimeout(() => {
                         const scripts = doc.querySelectorAll("script");
                         scripts.forEach((oldScript) => {
                             const newScript = document.createElement("script");
                             newScript.setAttribute("data-dynamic", "true");
 
-                            // 包裝原本的 script 內容，加入延遲
                             if (oldScript.src) {
                                 newScript.src = oldScript.src;
                             } else {
-                                // 在 script 內容前加入延遲
                                 newScript.textContent = `
-                        setTimeout(function() {
-                            ${oldScript.textContent}
-                        }, 100);
-                    `;
+                                    setTimeout(function() {
+                                        ${oldScript.textContent}
+                                    }, 100);
+                                `;
                             }
 
                             document.body.appendChild(newScript);
                         });
                     }, 50);
 
-                    if (window.innerWidth <= 768) toggleSidebar();
+                    // 手機版自動關閉側邊欄
+                    if (window.innerWidth <= 768) {
+                        closeSidebar();
+                    }
                 } catch (err) {
-                    const pageContent = document.getElementById("pageContent");
-                    pageContent.innerHTML = `<p style="color:red;">⚠ 無法載入 ${fileName}：${err.message}</p>`;
+                    console.error("載入頁面失敗:", err);
+                    pageContent.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: var(--claude-text);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ff6b35; margin-bottom: 20px;"></i>
+                            <h3>載入失敗</h3>
+                            <p>無法載入 ${fileName}</p>
+                            <p style="color: var(--claude-text-muted); font-size: 0.9rem;">${err.message}</p>
+                            <button onclick="loadPage('${fileName}')" style="
+                                background: var(--claude-primary);
+                                color: white;
+                                border: none;
+                                padding: 10px 20px;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                margin-top: 15px;
+                            ">
+                                <i class="fas fa-redo"></i> 重新載入
+                            </button>
+                        </div>
+                    `;
                 }
             }
 
+            // 🎯 視窗大小改變處理
+            window.addEventListener("resize", () => {
+                if (window.innerWidth > 768) {
+                    closeSidebar();
+                }
+            });
+
+            // 🔑 鍵盤快捷鍵
+            document.addEventListener("keydown", (e) => {
+                // ESC 鍵關閉側邊欄
+                if (e.key === "Escape") {
+                    closeSidebar();
+                }
+
+                // Ctrl/Cmd + M 切換選單
+                if ((e.ctrlKey || e.metaKey) && e.key === "m") {
+                    e.preventDefault();
+                    toggleSidebar();
+                }
+            });
+
+            // 🚀 頁面初始化
             window.addEventListener("DOMContentLoaded", () => {
                 const target = getQueryParam("target");
                 if (target) {
                     loadPage(target);
                 }
+
+                // 預載入關鍵頁面
+                const criticalPages = ["searchAllSong.html", "playMusic.html"];
+                criticalPages.forEach((page) => {
+                    const link = document.createElement("link");
+                    link.rel = "prefetch";
+                    link.href = page;
+                    document.head.appendChild(link);
+                });
             });
+
+            // 📊 效能監控
+            if ("performance" in window) {
+                window.addEventListener("load", () => {
+                    const loadTime = performance.now();
+                    console.log(`🚀 頁面載入時間: ${Math.round(loadTime)}ms`);
+                });
+            }
+
+            console.log("🎵 Kilin 音樂系統已成功初始化");
         </script>
     </body>
 </html>
