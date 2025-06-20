@@ -861,20 +861,16 @@
 
                             tableHtml += `<tr>`;
                             tableHtml += `
-    <td>
-        <div id="actions-${index}">
-    <button class="claude-action-btn claude-restore-btn" 
-            onclick='ClaudeDataOperations.confirmRestore(${JSON.stringify({
-                ...row,
-                state: 0,
-                table: tablename,
-            }).replace(/'/g, "\\'")}，"${displayName}", ${index + 1})'
-            title="復原這筆記錄">
-        <i class="fas fa-undo"></i>
-        復原
-    </button>
-</div>
-    </td>
+<td>
+    <div id="actions-${index}">
+        <button class="claude-action-btn claude-restore-btn" 
+                onclick='ClaudeDataOperations.confirmRestore(${index})'
+                title="復原這筆記錄">
+            <i class="fas fa-undo"></i>
+            復原
+        </button>
+    </div>
+</td>
 `;
                             keys.forEach((k) => {
                                 // 排除 state 欄位
@@ -903,14 +899,30 @@
                 }
 
                 // 確認復原
-                function confirmRestore(rowData, displayName, rowNumber) {
-                    const confirmMessage = `確定要復原這筆${displayName}資料嗎？\n\n這是第 ${rowNumber} 筆記錄`;
+                function confirmRestore(index) {
+                    const row = currentData[index];
+                    const confirmMessage = `確定要復原這筆${currentTableName}資料嗎？\n\n這是第 ${index + 1} 筆記錄`;
 
                     if (confirm(confirmMessage)) {
-                        restoreRow(rowData, displayName);
+                        // 準備要送給 API 的資料
+                        const rowData = {
+                            ...row,
+                            state: 0, // 復原時設為 0
+                            table: getTableNameFromUrl(currenturl),
+                        };
+                        restoreRow(rowData, currentTableName);
                     }
                 }
-
+                // 新增輔助函數（如果還沒有的話）
+                function getTableNameFromUrl(url) {
+                    if (url === apiArtists) return "artists";
+                    if (url === apiSongs) return "songs";
+                    if (url === apiAlbums) return "albums";
+                    if (url === apiUsers) return "users";
+                    if (url === apiPlaylists) return "playlists";
+                    if (url === apiPlaylistSongs) return "playlist_songs";
+                    return "";
+                }
                 // 復原函數
                 async function restoreRow(returnbody, displayName) {
                     try {
@@ -942,10 +954,12 @@
                 console.log("Claude Data Operations 系統就緒");
 
                 // 公開 API
+                // restoreRow 函數保持不變，只需要確保在公開 API 中加入 getTableNameFromUrl
                 return {
                     loadTable: loadTable,
-                    confirmRestore: confirmRestore, // 👈 新增
-                    restoreRow: restoreRow, // 👈 新增
+                    confirmRestore: confirmRestore,
+                    restoreRow: restoreRow,
+                    getTableNameFromUrl: getTableNameFromUrl, // 新增這行
                     apiArtists: apiArtists,
                     apiSongs: apiSongs,
                     apiAlbums: apiAlbums,
