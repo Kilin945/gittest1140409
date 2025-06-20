@@ -9,6 +9,22 @@
         <link rel="stylesheet" href="main.css" />
     </head>
     <style>
+        .user-welcome {
+            background: linear-gradient(135deg, #5e3d2c, #b5653d) !important;
+            color: #fdf6f0 !important;
+        }
+
+        .user-welcome .welcome-text,
+        .user-welcome .user-name,
+        .user-welcome .session-info,
+        .user-welcome .usage-time {
+            color: #fdf6f0 !important;
+        }
+
+        body {
+            background: linear-gradient(135deg, #121212, #1a1a1a) !important;
+        }
+
         :root {
             --claude-card: rgba(255, 255, 255, 0.1);
             --claude-card-hover: rgba(255, 255, 255, 0.15);
@@ -41,9 +57,10 @@
             width: 280px;
             height: 100vh;
             overflow-y: auto;
-            background: var(--claude-card);
-            backdrop-filter: blur(20px);
-            border-right: 1px solid var(--claude-border);
+            /* 改為純黑色背景 */
+            background: linear-gradient(135deg, #000000, #1a1a1a) !important;
+            backdrop-filter: blur(20px) !important;
+            border-right: 1px solid rgba(217, 119, 66, 0.3) !important;
             z-index: 1000;
             transition: transform var(--transition-speed) ease;
         }
@@ -112,16 +129,18 @@
 
         .nav-link:hover {
             text-decoration: none;
-            color: inherit;
-            background: var(--claude-card-hover);
+            background: rgba(217, 119, 66, 0.2) !important;
+            color: var(--claude-accent) !important;
             transform: translateX(5px);
         }
 
         /* 側邊欄標題 */
         .sidebar-header {
-            padding: 25px 20px;
-            border-bottom: 1px solid var(--claude-border);
-            text-align: center;
+            /* 改為與主背景一致的深色 */
+            background: linear-gradient(135deg, #0a0f0d, #0f1512) !important;
+            color: white !important;
+            padding: 25px 20px !important;
+            border-bottom: 1px solid rgba(217, 119, 66, 0.3) !important;
         }
 
         .sidebar-header h2 {
@@ -147,15 +166,31 @@
 
         /* 🆕 使用者歡迎區域 */
         .user-welcome {
-            background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent));
-            color: white;
-            padding: 12px 15px;
-            margin: 10px 15px;
-            border-radius: var(--border-radius);
+            background: linear-gradient(135deg, #3a2a21, #6e3d2a) !important;
+            color: #fceee3 !important;
+            padding: 12px 15px !important;
+            margin: 10px 15px !important;
+            border-radius: var(--border-radius) !important;
+            box-shadow: var(--claude-shadow) !important;
             text-align: center;
-            box-shadow: var(--claude-shadow);
             position: relative;
             overflow: hidden;
+        }
+        .user-welcome .welcome-text,
+        .user-welcome .user-name,
+        .user-welcome .session-info,
+        .user-welcome .usage-time {
+            color: #fceee3 !important;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            color: #fceee3 !important;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.2) !important;
         }
 
         /* 🆕 遊客模式樣式 */
@@ -216,9 +251,9 @@
         }
 
         .logout-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white;
+            background: rgba(45, 45, 45, 0.2) !important;
+            border: 1px solid rgba(45, 45, 45, 0.3) !important;
+            color: #2d2d2d !important;
             padding: 4px 10px !important;
             font-size: 0.7rem !important;
             border-radius: 15px;
@@ -227,7 +262,7 @@
         }
 
         .logout-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(45, 45, 45, 0.3) !important;
             transform: scale(1.05);
         }
 
@@ -299,9 +334,10 @@
 
         /* 選單項目 */
         .menu-item {
-            background: var(--claude-card);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--claude-border);
+            /* 改為黑色背景 */
+            background: rgba(0, 0, 0, 0.6) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(100, 100, 100, 0.3) !important;
             border-radius: var(--border-radius);
             padding: 0;
             min-height: 120px;
@@ -326,8 +362,8 @@
         .menu-item:hover {
             transform: translateY(-5px) scale(1.02);
             box-shadow: var(--claude-shadow-strong);
-            background: var(--claude-card-hover);
-            border-color: var(--claude-primary);
+            background: rgba(0, 0, 0, 0.8) !important;
+            border-color: rgba(217, 119, 66, 0.5) !important;
         }
 
         .menu-item:hover::before {
@@ -335,7 +371,7 @@
         }
 
         .menu-item a {
-            color: var(--claude-text);
+            color: var(--claude-text) !important;
             text-decoration: none;
             display: flex;
             align-items: center;
@@ -352,7 +388,7 @@
         }
 
         .menu-item:hover a {
-            color: var(--claude-accent);
+            color: var(--claude-accent) !important;
         }
 
         .menu-item .icon {
