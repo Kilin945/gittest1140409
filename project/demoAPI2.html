@@ -838,24 +838,21 @@
 
                             tableHtml += `<tr>`;
                             tableHtml += `
-    <td>
-        <div id="actions-${index}">
-            <button class="claude-action-btn claude-edit-btn" 
-                    onclick='ClaudeDataOperations.editRow(${index})' 
-                    title="編輯這筆記錄">
-                <i class="fas fa-edit"></i>
-                編輯
-            </button>
-            <button class="claude-action-btn claude-delete-btn" 
-        onclick='ClaudeDataOperations.confirmDelete(${JSON.stringify(rowData).replace(
-            /'/g,
-            "\\'"
-        )}，"${displayName}", ${index + 1})'
-        title="刪除這筆記錄">
-    <i class="fas fa-trash"></i>
-    刪除
-</button>
-        </div>
+<td>
+    <div id="actions-${index}">
+        <button class="claude-action-btn claude-edit-btn" 
+                onclick='ClaudeDataOperations.editRow(${index})' 
+                title="編輯這筆記錄">
+            <i class="fas fa-edit"></i>
+            編輯
+        </button>
+        <button class="claude-action-btn claude-delete-btn" 
+                onclick='ClaudeDataOperations.confirmDelete(${index})'
+                title="刪除這筆記錄">
+            <i class="fas fa-trash"></i>
+            刪除
+        </button>
+    </div>
         <div id="edit-actions-${index}" style="display: none;">
             <button class="claude-action-btn claude-save-btn" 
                     onclick='ClaudeDataOperations.saveRow(${index}, "${tablename}")' 
@@ -994,16 +991,35 @@
                 }
 
                 // 確認刪除
-                function confirmDelete(rowData, displayName, rowNumber) {
-                    const confirmMessage = `確定要刪除這筆${displayName}資料嗎？\n\n這是第 ${rowNumber} 筆記錄\n此操作無法復原！`;
+                function confirmDelete(index) {
+                    const row = currentData[index];
+                    const confirmMessage = `確定要刪除這筆${currentTableName}資料嗎？\n\n這是第 ${
+                        index + 1
+                    } 筆記錄\n此操作無法復原！`;
 
                     if (confirm(confirmMessage)) {
-                        updaterow(rowData, displayName);
+                        // 準備要送給 API 的資料
+                        const rowData = {
+                            ...row,
+                            state: -1,
+                            table: getTableNameFromUrl(currenturl),
+                        };
+                        updaterow(rowData, currentTableName, index);
                     }
+                }
+                // 輔助函數來取得表格名稱
+                function getTableNameFromUrl(url) {
+                    if (url === apiArtists) return "artists";
+                    if (url === apiSongs) return "songs";
+                    if (url === apiAlbums) return "albums";
+                    if (url === apiUsers) return "users";
+                    if (url === apiPlaylists) return "playlists";
+                    if (url === apiPlaylistSongs) return "playlist_songs";
+                    return "";
                 }
 
                 // 執行刪除
-                async function updaterow(returnbody, displayName) {
+                async function updaterow(returnbody, displayName, index) {
                     try {
                         console.log("📤 提交刪除請求:", returnbody);
 
@@ -1019,6 +1035,8 @@
                         if (response.ok) {
                             console.log(`✅ ${displayName}刪除成功`);
                             alert(`✅ ${displayName}記錄已成功刪除！`);
+
+                            // 重新載入資料
                             loadTable(currenturl, currenttodiv, currentTableName);
                         } else {
                             const errorText = await response.text();
@@ -1035,11 +1053,12 @@
                 // 公開 API
                 return {
                     loadTable: loadTable,
-                    editRow: editRow, // 新增
-                    cancelEdit: cancelEdit, // 新增
-                    saveRow: saveRow, // 新增
+                    editRow: editRow,
+                    cancelEdit: cancelEdit,
+                    saveRow: saveRow,
                     confirmDelete: confirmDelete,
                     updaterow: updaterow,
+                    getTableNameFromUrl: getTableNameFromUrl, // 輔助函數
                     apiArtists: apiArtists,
                     apiSongs: apiSongs,
                     apiAlbums: apiAlbums,
