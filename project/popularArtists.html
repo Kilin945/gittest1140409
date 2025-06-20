@@ -42,7 +42,7 @@
             async function loadPopularArtists() {
                 console.log("=== 開始載入最受歡迎歌手資料 ===");
                 try {
-                    const apiUrl = "http://localhost:8000/api/popularartists";
+                    const apiUrl = "https://1140412connectproject-production.up.railway.app/api/popularartists";
                     console.log("準備呼叫 API:", apiUrl);
                     const response = await fetch(apiUrl);
                     console.log("Response URL:", response.url);

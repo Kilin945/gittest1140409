@@ -43,7 +43,7 @@
             async function loadCharts() {
                 console.log("=== 開始載入音樂排行榜 ===");
                 try {
-                    const apiUrl = "http://localhost:8000/api/popularsongs";
+                    const apiUrl = "https://1140412connectproject-production.up.railway.app/api/popularsongs";
                     console.log("準備呼叫 API:", apiUrl);
                     const response = await fetch(apiUrl);
                     console.log("Response URL:", response.url);
