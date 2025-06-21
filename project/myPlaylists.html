@@ -2,34 +2,34 @@
 <html lang="zh-Hant">
     <head>
         <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>我的播放清單</title>
         <style>
+            /* 最簡樣式，避免衝突 */
             body {
-                font-family: Arial, sans-serif;
                 margin: 20px;
-                background: #222;
+            }
+
+            table {
+                margin: 30px 0;
+                border-spacing: 0;
+            }
+
+            th {
+                background: #ff6b35;
                 color: white;
-            }
-            .playlist {
-                border: 1px solid #444;
-                margin: 10px 0;
                 padding: 15px;
-                border-radius: 5px;
+                font-size: 18px;
+                text-align: left;
             }
-            .playlist h3 {
-                margin: 0 0 10px 0;
-                color: #ff6b35;
+
+            td {
+                padding: 10px 15px;
+                border-bottom: 1px solid #444;
             }
-            .songs {
-                margin-left: 20px;
-            }
-            .song {
-                padding: 5px 0;
-                border-bottom: 1px solid #333;
-            }
-            .loading {
-                text-align: center;
-                padding: 20px;
+
+            .song-name {
+                padding-right: 50px;
             }
         </style>
     </head>
@@ -38,80 +38,82 @@
         <div id="content">載入中...</div>
 
         <script>
-            // API 設定
-            const API_BASE = "http://localhost:8000/api";
-
-            // 動態取得當前登入使用者 ID
-            const USER_ID = (() => {
-                if (window.currentUserSession && window.currentUserSession.user_id) {
-                    return String(window.currentUserSession.user_id); // 轉成字串
-                }
-                return "1"; // 預設值，測試用
-            })();
-
-            console.log("當前使用者 ID:", USER_ID);
-
-            async function loadData() {
+            async function loadMyPlaylists() {
                 try {
-                    // 載入播放清單
+                    // 取得當前登入使用者
+                    const sessionData = localStorage.getItem("kilin_user_session");
+                    if (!sessionData) {
+                        document.getElementById("content").innerHTML = "<p>請先登入</p>";
+                        return;
+                    }
+
+                    const currentUser = JSON.parse(sessionData);
+                    const userId = currentUser.user_id;
+
+                    // API 基準 URL
+                    const API_BASE = "https://1140412connectproject-production.up.railway.app/api";
+
+                    // 載入所有播放清單，過濾出屬於當前使用者的
                     const playlistsRes = await fetch(`${API_BASE}/playlists`);
                     const allPlaylists = await playlistsRes.json();
-                    // 強制轉換為字串比較，確保過濾正確
-                    const userPlaylists = allPlaylists.filter((p) => String(p.user_id) === String(USER_ID));
+                    const myPlaylists = allPlaylists.filter((p) => p.user_id == userId);
 
-                    console.log(`所有播放清單數量: ${allPlaylists.length}`);
-                    console.log(`使用者 ${USER_ID} 的播放清單數量: ${userPlaylists.length}`);
+                    // 載入歌手和歌曲資料
+                    const [artistsRes, songsRes] = await Promise.all([
+                        fetch(`${API_BASE}/artists`),
+                        fetch(`${API_BASE}/songs`),
+                    ]);
 
-                    // 載入歌手資料
-                    const artistsRes = await fetch(`${API_BASE}/artists`);
                     const artists = await artistsRes.json();
+                    const songs = await songsRes.json();
+
+                    // 建立歌手對應表
                     const artistMap = {};
                     artists.forEach((a) => (artistMap[a.artist_id] = a.artist_name));
 
-                    // 載入歌曲資料
-                    const songsRes = await fetch(`${API_BASE}/songs`);
-                    const allSongs = await songsRes.json();
-
                     let html = "";
 
-                    for (const playlist of userPlaylists) {
-                        // 取得這個播放清單的歌曲
+                    for (const playlist of myPlaylists) {
+                        // 取得播放清單中的歌曲
                         const playlistSongsRes = await fetch(
                             `${API_BASE}/playlist_songs?playlist_id=${playlist.playlist_id}`
                         );
                         const playlistSongs = await playlistSongsRes.json();
 
-                        html += `<div class="playlist">`;
-                        html += `<h3>${playlist.playlist_name} (${playlistSongs.length} 首歌)</h3>`;
-                        html += `<div class="songs">`;
+                        html += `<table>`;
+                        html += `<tr><th colspan="2">${playlist.playlist_name} (${playlistSongs.length} 首歌)</th></tr>`;
 
                         if (playlistSongs.length === 0) {
-                            html += `<div class="song">沒有歌曲</div>`;
+                            html += `<tr><td colspan="2">此播放清單沒有歌曲</td></tr>`;
                         } else {
                             playlistSongs.forEach((ps) => {
-                                const song = allSongs.find((s) => s.song_id == ps.song_id);
+                                const song = songs.find((s) => s.song_id == ps.song_id);
                                 if (song) {
                                     const artistName = artistMap[song.artist_id] || "未知歌手";
-                                    html += `<div class="song">${song.song_name} - ${artistName}</div>`;
+                                    html += `<tr>`;
+                                    html += `<td class="song-name">${song.song_name}</td>`;
+                                    html += `<td class="artist-name">${artistName}</td>`;
+                                    html += `</tr>`;
                                 }
                             });
                         }
 
-                        html += `</div></div>`;
+                        html += `</table>`;
                     }
 
-                    if (userPlaylists.length === 0) {
-                        html = "<p>沒有播放清單</p>";
+                    if (myPlaylists.length === 0) {
+                        html = "<p>你還沒有建立任何播放清單</p>";
                     }
 
                     document.getElementById("content").innerHTML = html;
                 } catch (error) {
-                    document.getElementById("content").innerHTML = `錯誤: ${error.message}`;
+                    document.getElementById("content").innerHTML = `載入失敗: ${error.message}`;
+                    console.error("載入播放清單失敗:", error);
                 }
             }
 
             // 頁面載入後執行
-            loadData();
+            loadMyPlaylists();
         </script>
     </body>
 </html>
