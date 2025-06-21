@@ -2,9 +2,372 @@
 <html lang="zh-Hant">
     <head>
         <title>查詢所有歌曲 - Kilin 音樂庫</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <!-- 載入Font Awesome 圖標庫 -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-        <link rel="stylesheet" href="main.css" />
+
+        <style>
+            /* Claude 風格完整重置 */
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* Claude 風格色彩變數 */
+            :root {
+                --claude-bg: #0a0f0d !important;
+                --claude-bg-secondary: #0f1512 !important;
+                --claude-primary: #d97742 !important;
+                --claude-primary-hover: #c56a3a !important;
+                --claude-accent: #e08856 !important;
+                --claude-text: #ffffff !important;
+                --claude-text-secondary: #e5e7eb !important;
+                --claude-text-muted: #9ca3af !important;
+                --claude-card: rgba(217, 119, 66, 0.08) !important;
+                --claude-card-hover: rgba(217, 119, 66, 0.12) !important;
+                --claude-border: rgba(217, 119, 66, 0.3) !important;
+                --claude-shadow: 0 4px 20px rgba(217, 119, 66, 0.15) !important;
+                --claude-shadow-strong: 0 8px 32px rgba(217, 119, 66, 0.25) !important;
+                --claude-warm-beige: #f5f3f0 !important;
+                --claude-warm-cream: #faf9f7 !important;
+                --border-radius: 16px !important;
+                --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+
+            /* 基礎樣式 */
+            body {
+                background: var(--claude-bg) !important;
+                background-image: radial-gradient(circle at 20% 20%, rgba(217, 119, 66, 0.08) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 80%, rgba(224, 136, 86, 0.06) 0%, transparent 50%),
+                    linear-gradient(135deg, var(--claude-bg) 0%, var(--claude-bg-secondary) 100%) !important;
+                background-attachment: fixed !important;
+                color: var(--claude-text) !important;
+                font-family: "Inter", "Segoe UI", "微軟正黑體", sans-serif !important;
+                line-height: 1.6 !important;
+                min-height: 100vh !important;
+                padding: 20px !important;
+            }
+
+            .overlay {
+                min-height: 100vh !important;
+                display: flex !important;
+                align-items: flex-start !important;
+                justify-content: center !important;
+                padding: 20px 0 !important;
+            }
+
+            .container {
+                width: 100% !important;
+                max-width: 1400px !important;
+                margin: 0 auto !important;
+            }
+
+            /* 頁面標題 */
+            .page-header {
+                text-align: center !important;
+                margin: 0 0 40px 0 !important;
+                padding: 30px 20px !important;
+                background: var(--claude-card) !important;
+                backdrop-filter: blur(20px) !important;
+                border: 1px solid var(--claude-border) !important;
+                border-radius: var(--border-radius) !important;
+                box-shadow: var(--claude-shadow) !important;
+            }
+
+            .page-header h1 {
+                font-size: 2.5rem !important;
+                font-weight: 700 !important;
+                color: var(--claude-text) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 15px !important;
+                margin: 0 !important;
+                font-family: inherit !important;
+            }
+
+            .page-header h1 i {
+                color: var(--claude-primary) !important;
+                font-size: 2.2rem !important;
+            }
+
+            /* 卡片容器 */
+            .claude-card {
+                background: var(--claude-card) !important;
+                backdrop-filter: blur(20px) !important;
+                border: 1px solid var(--claude-border) !important;
+                border-radius: var(--border-radius) !important;
+                padding: 35px !important;
+                box-shadow: var(--claude-shadow-strong) !important;
+                position: relative !important;
+                overflow: hidden !important;
+            }
+
+            .claude-card::before {
+                content: "" !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                background: linear-gradient(
+                    45deg,
+                    transparent 0%,
+                    rgba(217, 119, 66, 0.02) 50%,
+                    transparent 100%
+                ) !important;
+                z-index: 0 !important;
+            }
+
+            /* 表格容器 */
+            .table-container {
+                position: relative !important;
+                z-index: 1 !important;
+                margin: 0 0 30px 0 !important;
+            }
+
+            /* 載入和錯誤狀態 */
+            .loading-state,
+            .error-state,
+            .no-data-state {
+                text-align: center !important;
+                padding: 80px 20px !important;
+                color: var(--claude-text-muted) !important;
+                background: var(--claude-warm-cream) !important;
+                border-radius: var(--border-radius) !important;
+                border: 2px dashed var(--claude-border) !important;
+            }
+
+            .loading-state i {
+                font-size: 3rem !important;
+                color: var(--claude-primary) !important;
+                margin: 0 0 20px 0 !important;
+                animation: spin 1s linear infinite !important;
+            }
+
+            @keyframes spin {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* 美化表格樣式 */
+            .table-scroll {
+                overflow-x: auto !important;
+                border-radius: var(--border-radius) !important;
+                box-shadow: var(--claude-shadow) !important;
+                background: var(--claude-warm-cream) !important;
+                margin: 0 0 30px 0 !important;
+            }
+
+            .beautiful-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin: 0 !important;
+                background: var(--claude-warm-cream) !important;
+                border-radius: var(--border-radius) !important;
+                overflow: hidden !important;
+                font-family: inherit !important;
+            }
+
+            .beautiful-table th {
+                background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent)) !important;
+                color: white !important;
+                font-weight: 700 !important;
+                padding: 20px 16px !important;
+                text-align: left !important;
+                font-size: 0.95rem !important;
+                letter-spacing: 0.5px !important;
+                text-transform: uppercase !important;
+                border: none !important;
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 10 !important;
+            }
+
+            .beautiful-table td {
+                padding: 16px !important;
+                border-bottom: 1px solid rgba(217, 119, 66, 0.1) !important;
+                color: var(--claude-bg) !important;
+                vertical-align: middle !important;
+                background: var(--claude-warm-cream) !important;
+                transition: background-color 0.2s ease !important;
+                font-size: 0.9rem !important;
+                line-height: 1.4 !important;
+            }
+
+            .beautiful-table tr:nth-child(even) td {
+                background: var(--claude-warm-beige) !important;
+            }
+
+            .beautiful-table tr:hover td {
+                background: rgba(217, 119, 66, 0.08) !important;
+                transform: scale(1.001) !important;
+            }
+
+            /* 特殊欄位樣式 */
+            .song-title {
+                font-weight: 600 !important;
+                color: var(--claude-primary) !important;
+            }
+
+            .artist-name {
+                font-weight: 500 !important;
+                color: #2563eb !important;
+            }
+
+            .release-date {
+                font-family: monospace !important;
+                color: var(--claude-text-muted) !important;
+            }
+
+            /* 分頁控制樣式 */
+            .pagination-container {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 25px 0 0 0 !important;
+                border-top: 2px solid var(--claude-border) !important;
+                margin: 30px 0 0 0 !important;
+                position: relative !important;
+                z-index: 1 !important;
+                flex-wrap: wrap !important;
+                gap: 20px !important;
+            }
+
+            .pagination-info {
+                color: var(--claude-text-secondary) !important;
+                font-size: 0.95rem !important;
+                font-weight: 500 !important;
+            }
+
+            .pagination-controls {
+                display: flex !important;
+                align-items: center !important;
+                gap: 15px !important;
+            }
+
+            .pagination-btn {
+                background: linear-gradient(135deg, var(--claude-primary), var(--claude-accent)) !important;
+                color: white !important;
+                border: none !important;
+                padding: 12px 20px !important;
+                border-radius: 10px !important;
+                cursor: pointer !important;
+                font-size: 0.9rem !important;
+                font-weight: 600 !important;
+                transition: var(--transition) !important;
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+                box-shadow: 0 3px 10px rgba(217, 119, 66, 0.3) !important;
+            }
+
+            .pagination-btn:hover {
+                background: linear-gradient(135deg, var(--claude-primary-hover), var(--claude-primary)) !important;
+                transform: translateY(-2px) !important;
+                box-shadow: 0 5px 15px rgba(217, 119, 66, 0.4) !important;
+            }
+
+            .pagination-btn:disabled {
+                background: #666 !important;
+                cursor: not-allowed !important;
+                transform: none !important;
+                opacity: 0.5 !important;
+            }
+
+            .page-numbers {
+                display: flex !important;
+                align-items: center !important;
+                gap: 8px !important;
+            }
+
+            .page-num {
+                min-width: 40px !important;
+                height: 40px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                background: var(--claude-bg-secondary) !important;
+                color: var(--claude-text) !important;
+                border-radius: 8px !important;
+                cursor: pointer !important;
+                font-weight: 600 !important;
+                transition: var(--transition) !important;
+                border: 1px solid var(--claude-border) !important;
+            }
+
+            .page-num:hover {
+                background: var(--claude-primary) !important;
+                color: white !important;
+                transform: translateY(-1px) !important;
+            }
+
+            .page-num.active {
+                background: var(--claude-primary) !important;
+                color: white !important;
+                box-shadow: 0 3px 10px rgba(217, 119, 66, 0.4) !important;
+            }
+
+            /* 響應式設計 */
+            @media (max-width: 768px) {
+                body {
+                    padding: 10px !important;
+                }
+
+                .claude-card {
+                    padding: 25px 20px !important;
+                }
+
+                .page-header h1 {
+                    font-size: 2rem !important;
+                    flex-direction: column !important;
+                    gap: 10px !important;
+                }
+
+                .pagination-container {
+                    flex-direction: column !important;
+                    gap: 15px !important;
+                    text-align: center !important;
+                }
+
+                .beautiful-table th,
+                .beautiful-table td {
+                    padding: 12px 8px !important;
+                    font-size: 0.85rem !important;
+                }
+
+                .table-scroll {
+                    margin: 0 -20px 20px -20px !important;
+                    border-radius: 0 !important;
+                }
+            }
+
+            /* 滾動條美化 */
+            .table-scroll::-webkit-scrollbar {
+                height: 8px !important;
+            }
+
+            .table-scroll::-webkit-scrollbar-track {
+                background: rgba(217, 119, 66, 0.1) !important;
+            }
+
+            .table-scroll::-webkit-scrollbar-thumb {
+                background: var(--claude-primary) !important;
+                border-radius: 4px !important;
+            }
+
+            .table-scroll::-webkit-scrollbar-thumb:hover {
+                background: var(--claude-primary-hover) !important;
+            }
+        </style>
     </head>
     <body>
         <div class="overlay">
@@ -19,12 +382,17 @@
                 <!-- 內容區域 -->
                 <div class="claude-card">
                     <!-- 表格容器 -->
-                    <div id="tableContainer" class="table-container">載入中...</div>
+                    <div id="tableContainer" class="table-container">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner"></i>
+                            <p>正在載入歌曲資料...</p>
+                        </div>
+                    </div>
                     <!-- 分頁控制 -->
                     <div class="pagination-container" id="paginationContainer" style="display: none">
                         <div class="pagination-info">
                             顯示第 <span id="startItem">1</span> - <span id="endItem">10</span> 筆，共
-                            <span id="totalItems">0</span> 筆
+                            <span id="totalItems">0</span> 筆歌曲
                         </div>
                         <div class="pagination-controls">
                             <!-- 上一頁按鈕 -->
@@ -54,36 +422,78 @@
             const itemsPerPage = 10; //每頁顯示的資料數量
             let totalPages = 0; //總頁數
 
+            // 欄位名稱對應（美化顯示）
+            const fieldNames = {
+                song_id: "歌曲編號",
+                song_name: "歌曲名稱",
+                artist_id: "歌手編號",
+                album_id: "專輯編號",
+                release_date: "發行日期",
+                state: "狀態",
+            };
+
             // 載入資料
             async function loadData() {
-                const container = document.getElementById("tableContainer"); // 表格容器 tableContainer
+                const container = document.getElementById("tableContainer");
                 try {
-                    container.innerHTML = "載入中..."; // 顯示載入訊息
+                    container.innerHTML = `
+                        <div style="
+                            text-align: center !important;
+                            padding: 80px 20px !important;
+                            color: #9ca3af !important;
+                            background: #faf9f7 !important;
+                            border-radius: 16px !important;
+                            border: 2px dashed rgba(217, 119, 66, 0.3) !important;
+                        ">
+                            <i class="fas fa-spinner" style="
+                                font-size: 3rem !important;
+                                color: #d97742 !important;
+                                margin: 0 0 20px 0 !important;
+                                animation: spin 1s linear infinite !important;
+                            "></i>
+                            <p style="font-size: 1.1rem !important; margin: 0 !important;">正在載入歌曲資料...</p>
+                        </div>
+                    `;
 
-                    const resp = await fetch(apiUrl); // 發送 HTTP 請求到API
+                    const resp = await fetch(apiUrl);
                     console.log(`API 回應狀態: ${resp.status}`);
 
                     if (!resp.ok) {
                         throw new Error(`HTTP 錯誤: ${resp.status}`);
                     }
 
-                    const data = await resp.json(); // 將回應轉為JSON格式
+                    const data = await resp.json();
                     console.log("收到的資料:", data);
 
                     if (!Array.isArray(data)) {
                         throw new Error("資料格式不是陣列");
                     }
                     if (data.length === 0) {
-                        container.innerHTML = "沒有資料";
+                        container.innerHTML = `
+                            <div style="
+                                text-align: center !important;
+                                padding: 80px 20px !important;
+                                color: #9ca3af !important;
+                                background: #faf9f7 !important;
+                                border-radius: 16px !important;
+                                border: 2px dashed rgba(217, 119, 66, 0.3) !important;
+                            ">
+                                <i class="fas fa-music" style="
+                                    font-size: 3rem !important;
+                                    color: #d97742 !important;
+                                    margin: 0 0 20px 0 !important;
+                                "></i>
+                                <p style="font-size: 1.1rem !important; margin: 0 !important;">目前沒有歌曲資料</p>
+                            </div>
+                        `;
                         return;
                     }
 
-                    allData = data; // 將資料儲存到全域變數
-                    totalPages = Math.ceil(allData.length / itemsPerPage); // 計算總頁數
+                    allData = data;
+                    totalPages = Math.ceil(allData.length / itemsPerPage);
 
-                    displayPage(currentPage); // 顯示第一頁資料
-
-                    document.getElementById("paginationContainer").style.display = "flex"; // 顯示分頁控制
+                    displayPage(currentPage);
+                    document.getElementById("paginationContainer").style.display = "flex";
 
                     // 綁定按鈕事件
                     setTimeout(() => {
@@ -91,86 +501,194 @@
                     }, 10);
                 } catch (err) {
                     console.error("載入錯誤:", err);
-                    container.innerHTML = "載入失敗：" + err.message;
+                    container.innerHTML = `
+                        <div style="
+                            text-align: center !important;
+                            padding: 80px 20px !important;
+                            color: #ef4444 !important;
+                            background: rgba(239, 68, 68, 0.1) !important;
+                            border-radius: 16px !important;
+                            border: 2px solid rgba(239, 68, 68, 0.3) !important;
+                        ">
+                            <i class="fas fa-exclamation-triangle" style="
+                                font-size: 3rem !important;
+                                color: #ef4444 !important;
+                                margin: 0 0 20px 0 !important;
+                            "></i>
+                            <h3 style="
+                                font-size: 1.4rem !important;
+                                margin: 0 0 15px 0 !important;
+                                color: #fca5a5 !important;
+                            ">載入失敗</h3>
+                            <p style="
+                                font-size: 1.1rem !important;
+                                color: #fca5a5 !important;
+                                margin: 0 0 15px 0 !important;
+                            ">${err.message}</p>
+                            <button onclick="loadData()" style="
+                                margin-top: 15px !important;
+                                background: #d97742 !important;
+                                color: white !important;
+                                border: none !important;
+                                padding: 10px 20px !important;
+                                border-radius: 8px !important;
+                                cursor: pointer !important;
+                                font-size: 0.9rem !important;
+                                font-weight: 600 !important;
+                                transition: all 0.3s ease !important;
+                            " onmouseover="this.style.background='#c56a3a'" onmouseout="this.style.background='#d97742'">
+                                <i class="fas fa-redo"></i> 重新載入
+                            </button>
+                        </div>
+                    `;
                 }
             }
 
             // 顯示特定頁面的資料
             function displayPage(page) {
-                const container = document.getElementById("tableContainer"); //取得表格容器
-                const start = (page - 1) * itemsPerPage; // 計算起始資料索引：例如第2頁 = (2-1) * 10 = 10
-                const end = start + itemsPerPage; // 計算結束索引：10 + 10 = 20
-                const pageData = allData.slice(start, end); // 從全部資料中切出當前頁面的資料
+                const container = document.getElementById("tableContainer");
+                const start = (page - 1) * itemsPerPage;
+                const end = start + itemsPerPage;
+                const pageData = allData.slice(start, end);
 
                 if (pageData.length === 0) {
-                    container.innerHTML = "沒有資料";
+                    container.innerHTML = `
+                        <div class="no-data-state">
+                            <i class="fas fa-music"></i>
+                            <p>沒有資料</p>
+                        </div>
+                    `;
                     return;
                 }
 
-                // 產生表格
-                let table = "<table><thead><tr>";
-
-                // 自動產出表頭
+                // 產生美化表格 - 使用內聯樣式避免被覆蓋
                 const keys = Object.keys(pageData[0]);
-                keys.forEach((k) => {
-                    table += `<th>${k}</th>`;
-                });
-                table += "</tr></thead><tbody>";
 
-                // 每一列資料
-                pageData.forEach((row) => {
-                    table += "<tr>";
-                    keys.forEach((k) => {
-                        table += `<td>${row[k] || ""}</td>`;
+                let table = `
+                    <div style="
+                        overflow-x: auto !important;
+                        border-radius: 16px !important;
+                        box-shadow: 0 4px 20px rgba(217, 119, 66, 0.15) !important;
+                        background: #faf9f7 !important;
+                        margin: 0 0 30px 0 !important;
+                    ">
+                        <table style="
+                            width: 100% !important;
+                            border-collapse: collapse !important;
+                            margin: 0 !important;
+                            background: #faf9f7 !important;
+                            border-radius: 16px !important;
+                            overflow: hidden !important;
+                            font-family: 'Inter', 'Segoe UI', '微軟正黑體', sans-serif !important;
+                        ">
+                            <thead>
+                                <tr>
+                `;
+
+                // 表頭 - 使用內聯樣式
+                keys.forEach((key) => {
+                    const displayName = fieldNames[key] || key;
+                    table += `<th style="
+                        background: linear-gradient(135deg, #d97742, #e08856) !important;
+                        color: white !important;
+                        font-weight: 700 !important;
+                        padding: 20px 16px !important;
+                        text-align: left !important;
+                        font-size: 0.95rem !important;
+                        letter-spacing: 0.5px !important;
+                        text-transform: uppercase !important;
+                        border: none !important;
+                        position: sticky !important;
+                        top: 0 !important;
+                        z-index: 10 !important;
+                    ">${displayName}</th>`;
+                });
+                table += `</tr></thead><tbody>`;
+
+                // 資料列 - 使用內聯樣式
+                pageData.forEach((row, index) => {
+                    const isEven = index % 2 === 0;
+                    const bgColor = isEven ? "#faf9f7" : "#f5f3f0";
+
+                    table += `<tr style="transition: all 0.2s ease !important;" 
+                              onmouseover="this.style.background='rgba(217, 119, 66, 0.08) !important'; this.style.transform='scale(1.001) !important';"
+                              onmouseout="this.style.background='${bgColor} !important'; this.style.transform='scale(1) !important';">`;
+
+                    keys.forEach((key) => {
+                        let value = row[key] || "";
+                        let extraStyle = "";
+
+                        // 根據欄位類型添加特殊樣式
+                        if (key === "song_name") {
+                            extraStyle = "font-weight: 600 !important; color: #d97742 !important;";
+                        } else if (key === "artist_id") {
+                            extraStyle = "font-weight: 500 !important; color: #2563eb !important;";
+                        } else if (key === "release_date") {
+                            extraStyle = "font-family: monospace !important; color: #6b7280 !important;";
+                            // 格式化日期
+                            if (value) {
+                                try {
+                                    const date = new Date(value);
+                                    value = date.toLocaleDateString("zh-TW");
+                                } catch (e) {
+                                    // 如果日期格式錯誤，保持原值
+                                }
+                            }
+                        } else if (key === "state") {
+                            // 美化狀態顯示
+                            if (value == 0) {
+                                value = '<span style="color: #22c55e; font-weight: 600;">正常</span>';
+                            } else if (value == 1) {
+                                value = '<span style="color: #ef4444; font-weight: 600;">停用</span>';
+                            }
+                        }
+
+                        table += `<td style="
+                            padding: 16px !important;
+                            border-bottom: 1px solid rgba(217, 119, 66, 0.1) !important;
+                            color: #0a0f0d !important;
+                            vertical-align: middle !important;
+                            background: ${bgColor} !important;
+                            font-size: 0.9rem !important;
+                            line-height: 1.4 !important;
+                            ${extraStyle}
+                        ">${value}</td>`;
                     });
                     table += "</tr>";
                 });
-                table += "</tbody></table>";
 
+                table += `</tbody></table></div>`;
                 container.innerHTML = table;
 
-                // 更新分頁資訊
                 updatePaginationInfo();
             }
 
             // 更新分頁資訊
             function updatePaginationInfo() {
-                // 計算顯示範圍
-                const start = (currentPage - 1) * itemsPerPage + 1; // 起始筆數：第2頁 = (2-1)*10+1 = 11
-                const end = Math.min(currentPage * itemsPerPage, allData.length); // 結束筆數，不超過總筆數
+                const start = (currentPage - 1) * itemsPerPage + 1;
+                const end = Math.min(currentPage * itemsPerPage, allData.length);
 
-                // 更新顯示文字
                 document.getElementById("startItem").textContent = start;
                 document.getElementById("endItem").textContent = end;
                 document.getElementById("totalItems").textContent = allData.length;
 
-                // 更新按鈕狀態
                 const prevBtn = document.getElementById("prevBtn");
                 const nextBtn = document.getElementById("nextBtn");
 
-                // 先移除所有 disabled 相關的類別
-                prevBtn.classList.remove("disabled");
-                nextBtn.classList.remove("disabled");
-                console.log("移除後 prevBtn.className:", prevBtn.className);
-                console.log("移除後 nextBtn.className:", nextBtn.className);
-                // 根據條件添加 disabled 類別
                 prevBtn.disabled = currentPage === 1;
                 nextBtn.disabled = currentPage === totalPages;
 
-                // 更新頁碼
                 updatePageNumbers();
             }
 
             // 更新頁碼顯示
             function updatePageNumbers() {
-                const pageNumbersContainer = document.getElementById("pageNumbers"); // 取得頁碼容器
+                const pageNumbersContainer = document.getElementById("pageNumbers");
                 pageNumbersContainer.innerHTML = "";
 
-                // 計算要顯示的頁碼範圍
-                let startPage = Math.max(1, currentPage - 2); // 最少從第1頁開始，或當前頁面-2
-                let endPage = Math.min(totalPages, currentPage + 2); // 最多到最後一頁，或當前頁面+2
+                let startPage = Math.max(1, currentPage - 2);
+                let endPage = Math.min(totalPages, currentPage + 2);
 
-                // 如果總頁數少於5頁，顯示所有頁碼
                 if (totalPages <= 5) {
                     startPage = 1;
                     endPage = totalPages;
@@ -180,23 +698,23 @@
                 if (startPage > 1) {
                     addPageNumber(1);
                     if (startPage > 2) {
-                        // 如果中間有間隔，加入 "..."
-                        pageNumbersContainer.innerHTML += '<span style="color: var(--claude-text-muted);">...</span>';
+                        pageNumbersContainer.innerHTML +=
+                            '<span style="color: var(--claude-text-muted); padding: 0 5px;">...</span>';
                     }
                 }
 
                 // 中間頁碼
                 for (let i = startPage; i <= endPage; i++) {
-                    addPageNumber(i); // 為每一頁建立按鈕
+                    addPageNumber(i);
                 }
 
-                // 如果結束頁不是最後一頁，顯示最後一頁
+                // 最後一頁
                 if (endPage < totalPages) {
                     if (endPage < totalPages - 1) {
-                        // 如果中間有間隔，加入 "..."
-                        pageNumbersContainer.innerHTML += '<span style="color: var(--claude-text-muted);">...</span>';
+                        pageNumbersContainer.innerHTML +=
+                            '<span style="color: var(--claude-text-muted); padding: 0 5px;">...</span>';
                     }
-                    addPageNumber(totalPages); // 加入最後一頁按鈕
+                    addPageNumber(totalPages);
                 }
             }
 
@@ -208,23 +726,17 @@
                 if (pageNum === currentPage) {
                     pageBtn.classList.add("active");
                 }
-                pageBtn.textContent = pageNum; // 設定按鈕顯示的數字
-                pageBtn.onclick = () => goToPage(pageNum); //設定點擊事件
-                pageNumbersContainer.appendChild(pageBtn); //將按鈕加入容器
+                pageBtn.textContent = pageNum;
+                pageBtn.onclick = () => goToPage(pageNum);
+                pageNumbersContainer.appendChild(pageBtn);
             }
+
             // 切換頁面
             function changePage(direction) {
-                console.log("changePage 被呼叫, direction:", direction);
-                console.log("當前頁面:", currentPage, "總頁數:", totalPages);
-
                 const newPage = currentPage + direction;
-
                 if (newPage >= 1 && newPage <= totalPages) {
                     currentPage = newPage;
-                    console.log("切換到頁面:", currentPage);
                     displayPage(currentPage);
-                } else {
-                    console.log("頁面超出範圍, newPage:", newPage);
                 }
             }
 
@@ -235,27 +747,26 @@
                     displayPage(currentPage);
                 }
             }
+
             // 綁定分頁事件
             function bindPaginationEvents() {
                 document.getElementById("prevBtn").addEventListener("click", function (e) {
-                    //檢查按鈕是否被禁用
-                    if (this.classList.contains("disabled")) {
+                    if (this.disabled) {
                         e.preventDefault();
                         return;
                     }
-                    console.log("上一頁按鈕被點擊");
                     changePage(-1);
                 });
 
                 document.getElementById("nextBtn").addEventListener("click", function (e) {
-                    if (this.classList.contains("disabled")) {
+                    if (this.disabled) {
                         e.preventDefault();
                         return;
                     }
-                    console.log("下一頁按鈕被點擊");
                     changePage(1);
                 });
             }
+
             // 初始載入
             loadData();
         </script>
