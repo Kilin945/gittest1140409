@@ -79,6 +79,34 @@
 
             console.log("📡 API_BASE:", window.API_BASE);
 
+            //檢查重複的播放清單名稱
+            async function checkPlaylistNameDuplicate(playlistName, userId) {
+                try {
+                    console.log(`檢查名稱重複: ${playlistName}`);
+
+                    const response = await fetch(`${window.API_BASE}/check-duplicate`, {
+                        method: "POST",
+                        mode: "cors",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            table: "playlists",
+                            playlist_name: playlistName,
+                            user_id: userId,
+                        }),
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        return result.exists; //回傳是否重複
+                    }
+                    return false; //檢查失敗假設不重複
+                } catch (error) {
+                    console.error("檢查重複時發生錯誤:", error);
+                    return false; //發生錯誤時不阻擋使用者
+                }
+            }
+
             // 執行狀態檢查
             let isSubmitting = false;
 
@@ -118,6 +146,14 @@
                         return;
                     }
 
+                    // 檢查重複的播放清單名稱
+                    const isDuplicate = await checkPlaylistNameDuplicate(playlistName, userId);
+                    if (isDuplicate) {
+                        alert(`播放清單名稱" + ${playlistName} +"重複囉~請改用其他名稱!`);
+                        document.getElementById("playlist_name").focus();
+                        return;
+                    }
+
                     if (!userId) {
                         alert("使用者資訊錯誤，請重新登入！");
                         return;
@@ -152,9 +188,9 @@
 
                         // 創建成功訊息
                         const successMessage = `✅ 播放清單建立成功！
-📋 播放清單名稱: ${playlistName}
-${privacyIcon} 隱私設定: ${privacyText}
-👤 建立者: ${currentUser}`;
+            📋 播放清單名稱: ${playlistName}
+            ${privacyIcon} 隱私設定: ${privacyText}
+            👤 建立者: ${currentUser}`;
 
                         alert(successMessage);
                         console.log("✅ 播放清單新增成功");
